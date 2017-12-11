@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
  */
 
 
+
 //Activity hosting PixListFragment
 public class PixListActivity extends SingleFragmentActivity {
 

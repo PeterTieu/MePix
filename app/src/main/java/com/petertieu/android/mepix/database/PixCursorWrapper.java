@@ -36,6 +36,7 @@ public class PixCursorWrapper extends CursorWrapper{
         String date = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DATE));
         int favorited = getInt(getColumnIndex(PixDatabaseSchema.PixTable.Columns.FAVORITED));
         String tagged = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.TAGGED));
+        String text = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.TEXT));
 
         //Assign data to the instance variables of the Pix object
         Pix pix = new Pix(UUID.fromString(id));
@@ -43,6 +44,7 @@ public class PixCursorWrapper extends CursorWrapper{
         pix.setDate(new Date(date));
         pix.setFavorited(favorited != 0);
         pix.setTagged(tagged);
+        pix.setText(text);
 
         return pix;
     }

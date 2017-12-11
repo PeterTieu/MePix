@@ -11,8 +11,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.Toast;
 
+import java.util.List;
 
 
 /**
@@ -25,8 +27,11 @@ public class PixListFragment extends Fragment{
     //Define Log identifier
     private final String TAG = "PixListFragment";
 
-    //Declare instance variables
+    //Declare the RecyclerView
     private RecyclerView mPixRecyclerView;
+
+    //Declare the Adapter
+    private Adapter mPixAdapter;
 
 
     @Override
@@ -59,8 +64,28 @@ public class PixListFragment extends Fragment{
         //Set layout for the RecyclerView
         mPixRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        //Create the Adapter and link it with the RecyclerView
+        updateUI();
+
         return view;
     }
+
+
+
+
+    //Helper method for creating the Adapter and linking it with the RecyclerView
+    public void updateUI(){
+
+        PixManager pixManager = PixManager.get(getActivity());
+
+        List<Pix> mPixes = pixManager.getPixes();
+
+        if (mPixAdapter == null){
+            mPixAdapter = new PixAdapter(mPixes);
+        }
+
+    }
+
 
 
 
@@ -75,7 +100,6 @@ public class PixListFragment extends Fragment{
         menuInflater.inflate(R.menu.fragment_pix_list, menu);
 
     }
-
 
 
 
@@ -102,18 +126,44 @@ public class PixListFragment extends Fragment{
 
 
 
+    private class PixAdapter extends RecyclerView.Adapter<PixHolder>{
+
+        private List<Pix> mPixes;
 
 
-//    private class PixAdapter extends RecyclerView.Adapter<PixHolder>{
-//
-//
-//    }
-//
-//
-//
-//    private class PixHolder extends RecyclerView.ViewHolder{
-//
-//    }
+        public PixAdapter(List<Pix> pixes){
+            mPixes = pixes;
+        }
+
+
+        @Override
+        public int getItemCount(){
+            return mPixes.size();
+        }
+
+        @Override
+        public PixViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType){
+
+            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+
+            View view = layoutInflater.inflate(R.layout.list_item_pix, viewGroup, false);
+
+            return new PixViewHolder(view);
+        }
+
+
+
+    }
+
+
+
+    private class PixViewHolder extends RecyclerView.ViewHolder{
+
+
+        @Override
+        public PixViewHolder()
+
+    }
 
 
 

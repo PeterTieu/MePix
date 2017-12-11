@@ -20,6 +20,7 @@ public class PixDatabaseSchema {
             public static final String DATE = "date";
             public static final String FAVORITED = "favorited";
             public static final String TAGGED = "tagged";
+            public static final String TEXT = "text";
         }
     }
 

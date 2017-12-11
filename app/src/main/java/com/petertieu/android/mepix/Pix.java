@@ -19,7 +19,8 @@ public class Pix {
     private String mTitle;          //TITLE of the Pix
     private Date mDate;             //DATE of the Pix
     private boolean mFavorited;     //If Pix has been FAVORITED
-    private String mTagged;        //ENTITY TAGGED in the Pix
+    private String mTagged;         //TAGGED in the Pix
+    private String mText;           //TEXT in the Pix
 
 
 
@@ -73,6 +74,14 @@ public class Pix {
 
     public void setTagged(String tagged) {
         mTagged = tagged;
+    }
+
+    public void setText(String text){
+        mText = text;
+    }
+
+    public String getText(){
+        return mText;
     }
 
 
