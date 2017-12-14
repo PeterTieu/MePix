@@ -1,6 +1,5 @@
 package com.petertieu.android.mepix;
 
-import android.graphics.Bitmap;
 import java.util.Date;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ public class Pix {
     private Date mDate;             //DATE of the Pix
     private boolean mFavorited;     //If Pix has been FAVORITED
     private String mTagged;         //TAGGED in the Pix
-    private String mText;           //TEXT in the Pix
+    private String mDescription;           //TEXT in the Pix
 
 
 
@@ -76,12 +75,12 @@ public class Pix {
         mTagged = tagged;
     }
 
-    public void setText(String text){
-        mText = text;
+    public void setDescription(String description){
+        mDescription = description;
     }
 
-    public String getText(){
-        return mText;
+    public String getDescription(){
+        return mDescription;
     }
 
 

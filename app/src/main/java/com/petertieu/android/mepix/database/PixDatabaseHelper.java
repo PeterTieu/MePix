@@ -41,7 +41,7 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
                         PixDatabaseSchema.PixTable.Columns.DATE + "," +
                         PixDatabaseSchema.PixTable.Columns.FAVORITED + "," +
                         PixDatabaseSchema.PixTable.Columns.TAGGED +
-                        PixDatabaseSchema.PixTable.Columns.TEXT +
+                        PixDatabaseSchema.PixTable.Columns.DESCRIPTION +
                         ")"
 
         );

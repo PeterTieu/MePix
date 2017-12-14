@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,8 +12,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.Toast;
+import android.widget.TextView;
+
 
 import java.util.List;
 
@@ -31,7 +32,23 @@ public class PixListFragment extends Fragment{
     private RecyclerView mPixRecyclerView;
 
     //Declare the Adapter
-    private Adapter mPixAdapter;
+    private PixAdapter mPixAdapter;
+
+
+    private Callbacks mCallbacks;
+
+
+
+
+
+    interface Callbacks{
+        void onNewPix(Pix pix);
+    }
+
+
+
+
+
 
 
     @Override
@@ -82,6 +99,14 @@ public class PixListFragment extends Fragment{
 
         if (mPixAdapter == null){
             mPixAdapter = new PixAdapter(mPixes);
+            mPixRecyclerView.setAdapter(mPixAdapter);
+        }
+        else{
+
+            mPixAdapter.setPixes(mPixes);
+
+            mPixAdapter.notifyDataSetChanged();
+
         }
 
     }
@@ -98,6 +123,8 @@ public class PixListFragment extends Fragment{
 
         //Inflate a menu hiearchy from specified resource
         menuInflater.inflate(R.menu.fragment_pix_list, menu);
+
+
 
     }
 
@@ -116,6 +143,13 @@ public class PixListFragment extends Fragment{
                 //Add the Pix object to the SQLiteDatabase, "pixes"
                 PixManager.get(getActivity()).addPix(pix);
 
+
+                updateUI();
+
+                mCallbacks.onNewPix(pix);
+
+
+
                 return true;
 
 
@@ -126,30 +160,58 @@ public class PixListFragment extends Fragment{
 
 
 
-    private class PixAdapter extends RecyclerView.Adapter<PixHolder>{
 
+    private class PixAdapter extends RecyclerView.Adapter<PixViewHolder>{
+
+        //Declare List of Pix objects
         private List<Pix> mPixes;
-
 
         public PixAdapter(List<Pix> pixes){
             mPixes = pixes;
         }
 
 
+
+
+        //
         @Override
         public int getItemCount(){
             return mPixes.size();
         }
 
+
+
+
         @Override
         public PixViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType){
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-
             View view = layoutInflater.inflate(R.layout.list_item_pix, viewGroup, false);
 
             return new PixViewHolder(view);
         }
+
+
+
+
+        @Override
+        public void onBindViewHolder(PixViewHolder pixViewHolder, int position){
+
+            Pix pix = mPixes.get(position);
+
+            pixViewHolder.bind(pix);
+        }
+
+
+
+
+        public void setPixes(List<Pix> pixes){
+            mPixes = pixes;
+        }
+
+
+
+
 
 
 
@@ -159,10 +221,86 @@ public class PixListFragment extends Fragment{
 
     private class PixViewHolder extends RecyclerView.ViewHolder{
 
+        TextView mPixTitle;
+        TextView mPixDescription;
+        DateFormat mPixDate;
 
-        @Override
-        public PixViewHolder()
+        Pix mPix;
 
+
+
+        public PixViewHolder(View view){
+            super(view);
+
+            mPixTitle = (TextView) view.findViewById(R.id.pix_title);
+            mPixDescription = (TextView) view.findViewById(R.id.pix_description);
+
+
+            view.setOnClickListener(new View.OnClickListener(){
+
+                @Override
+                public void onClick(View view){
+
+                }
+            });
+
+
+
+        }
+
+
+
+
+        public void bind(Pix pix){
+            mPix = pix;
+
+            mPixTitle.setText(mPix.getTitle());
+            mPixDescription.setText(mPix.getDescription());
+
+            mPixDate = new DateFormat();
+
+        }
+
+    }
+
+
+
+
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.i(TAG, "onStart() called");
+    }
+
+
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.i(TAG, "onResume() called");
+        updateUI();
+    }
+
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.i(TAG, "onPause() called");
+    }
+
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.i(TAG, "onStop() called");
+    }
+
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.i(TAG, "onDestroy() called");
     }
 
 
