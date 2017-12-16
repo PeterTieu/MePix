@@ -26,7 +26,7 @@ public class PixViewPagerActivity extends AppCompatActivity{
     //Define 'key' for the Intent 'value'
     private static final String EXTRA_PIX_ID = "com.petertieu.android.mepix";
 
-    //Define number of fragments to load on either side of the fragment on screen
+    //Define total number of fragments to pre-load outside of the fragment on screen
     private static final int OFF_SCREEN_PAGE_LIMIT = 5;
 
     //Declare ViewPager
@@ -73,7 +73,7 @@ public class PixViewPagerActivity extends AppCompatActivity{
         //Assign the ViwePager to its associated resource ID
         mViewPager = (ViewPager) findViewById(R.id.pix_view_pager);
 
-        //Set the number of detail fragments to load on either side of the current fragment on screen
+        //Set total number of detail fragments to pre-load outside of the current fragment on screen
         mViewPager.setOffscreenPageLimit(OFF_SCREEN_PAGE_LIMIT);
 
         //Assign the Pix instance reference variable to the PixManager singleton
@@ -82,6 +82,8 @@ public class PixViewPagerActivity extends AppCompatActivity{
         //Create a FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
 
+        Log.i(TAG, "1");
+        Log.i(TAG, "mPixes.size() = " + mPixes.size());
 
         //Set the Adapter to the ViewPager
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
@@ -90,7 +92,9 @@ public class PixViewPagerActivity extends AppCompatActivity{
             @Override
             public Fragment getItem(int position) {
 
-                //Assign a Pix local reference variable to a specific Pix from the List of Pix objects
+                Log.i(TAG, "2");
+
+                //Get a specific Pix from the List of Pix objects
                 Pix pix = mPixes.get(position);
 
                 //Create and return a new PixDetailFragment fragment
@@ -101,6 +105,7 @@ public class PixViewPagerActivity extends AppCompatActivity{
             @Override
             public int getCount() {
 
+                Log.i(TAG, "3");
                 //Get the size of the List of Pix objects
                 return mPixes.size();
             }
@@ -109,6 +114,8 @@ public class PixViewPagerActivity extends AppCompatActivity{
 
         //Get the 'value' associated with the 'key' from the Intent that started this activity
         UUID pixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
+
+        Log.i(TAG, "4");
 
         //Display the detail view of the Pix that was clicked on in the list view
         for(int i=0; i<mPixes.size(); i++){

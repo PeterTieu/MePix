@@ -13,7 +13,7 @@
 
     <!--Image-->
     <ImageView
-        android:id="@+id/pix_picture"
+        android:id="@+id/list_pix_picture"
 
         android:layout_width="65dp"
         android:layout_height="65dp"
@@ -28,7 +28,7 @@
 
     <!--Title of the Pix-->
     <TextView
-        android:id="@+id/pix_title"
+        android:id="@+id/list_pix_title"
         android:text="Pix Title"
         android:textColor="@android:color/black"
         android:textSize="22sp"
@@ -45,7 +45,7 @@
 
     <!--Description of the Pix-->
     <TextView
-        android:id="@+id/pix_description"
+        android:id="@+id/list_pix_description"
         android:textSize="14sp"
         android:text="Pix Description"
 

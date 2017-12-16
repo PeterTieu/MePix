@@ -125,7 +125,7 @@ public class PixDetailFragment extends Fragment {
 
         //================ SET UP mTitle ==================================================================
         //Assign title instance variable to its associated resource ID
-        mTitle = (EditText) view.findViewById(R.id.pix_title);
+        mTitle = (EditText) view.findViewById(R.id.detail_pix_title);
 
         //Set text of the title to title instance variable of the Pix
         mTitle.setText(mPix.getTitle());

@@ -140,8 +140,12 @@ public class PixListFragment extends Fragment{
     //Helper method for creating the Adapter and linking it with the RecyclerView
     public void updateUI(){
 
+        PixManager pixManager = PixManager.get(getActivity());
+
         //Assign the mPixes reference variable to the List of Pix objects from the PixManager singleton
-        List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
+        //List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
+
+        List<Pix> mPixes = pixManager.getPixes();
 
         //If an Adapter does NOT exist...
         if (mPixAdapter == null){
@@ -305,10 +309,10 @@ public class PixListFragment extends Fragment{
             super(view);
 
             //Assign the list item's title instance variable to its associated resource ID
-            mPixTitle = (TextView) view.findViewById(R.id.pix_title);
+            mPixTitle = (TextView) view.findViewById(R.id.list_pix_title);
 
             //Assign the list item's description instance variable to its associated resource ID
-            mPixDescription = (TextView) view.findViewById(R.id.pix_description);
+            mPixDescription = (TextView) view.findViewById(R.id.list_pix_description);
 
 
             //Set a listener for the list item

@@ -32,10 +32,10 @@ public class PixCursorWrapper extends CursorWrapper{
         //Pull the data from the column
         String id = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.ID));
         String title = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.TITLE));
-        String date = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DATE));
+        long date = getLong(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DATE));
         int favorited = getInt(getColumnIndex(PixDatabaseSchema.PixTable.Columns.FAVORITED));
         String tagged = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.TAGGED));
-        String text = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DESCRIPTION));
+        String description = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DESCRIPTION));
 
         //Assign data to the instance variables of the Pix object
         Pix pix = new Pix(UUID.fromString(id));
@@ -43,7 +43,7 @@ public class PixCursorWrapper extends CursorWrapper{
         pix.setDate(new Date(date));
         pix.setFavorited(favorited != 0);
         pix.setTagged(tagged);
-        pix.setDescription(text);
+        pix.setDescription(description);
 
         return pix;
     }

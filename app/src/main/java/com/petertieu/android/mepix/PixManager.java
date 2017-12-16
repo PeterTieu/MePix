@@ -163,7 +163,7 @@ public class PixManager {
     //============= Define HELPER METHODS ==============================================================================================
 
     //WRITE data from the Crime object to a ContentValues object. The ContentValues object acts as a 'buffer' data storage for data from the Pix object
-    private ContentValues getContentValues(Pix pix){
+    private static ContentValues getContentValues(Pix pix){
 
         //Create a ContentValues object
         ContentValues contentValues = new ContentValues();
@@ -171,7 +171,7 @@ public class PixManager {
         //Put value... FROM: the Pix object (argument 2)... TO: The SQLiteDatabase (argument 1)
         contentValues.put(PixDatabaseSchema.PixTable.Columns.ID, pix.getId().toString());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TITLE, pix.getTitle());
-        contentValues.put(PixDatabaseSchema.PixTable.Columns.DATE, pix.getDate().toString());
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.DATE, pix.getDate().getTime());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.FAVORITED, pix.isFavorited() ? 1:0); //IF crime.isFavorited() == true, put 1. Else, put 0
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TAGGED, pix.getTagged());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DESCRIPTION, pix.getDescription());

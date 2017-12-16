@@ -40,7 +40,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         //Log lifecycle callback
         Log.i(TAG, "newIntent(..) onPixSelected(..) called");
 
-        //If the two-pane view does NOT exist... sw < 600dp
+        //If the two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
             //Create an Intent to start the PixViewPagerActivity activity
@@ -50,7 +50,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
             startActivity(PixViewPagerIntent);
         }
 
-        //If the two-pane view EXISTS... sw > 600dp
+        //If the two-pane view EXISTS... i.e. sw > 600dp
         else{
 
             //Create the PixDetailFragment fragment for the 2nd pane
