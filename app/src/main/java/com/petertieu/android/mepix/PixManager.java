@@ -191,8 +191,8 @@ public class PixManager {
         Cursor pixCursor = mSQLiteDatabase.query(
                 PixDatabaseSchema.PixTable.NAME, //(String) Name of table to query from
                 null, //(String[]) List of columns to select. "null" selects all columns
-                whereClause, //(String) Which row to return in the selected column(s). "null" returns all rows in the selected column(s)
-                whereArgs, //(String) Which value to return
+                whereClause, //(String) Which column to select. "null" returns all columns
+                whereArgs, //(String) Which value to return in the selected column
                 null, //(String) How rows are grouped. "null" causes the rows not to be grouped
                 null, //(String) Which rows groups are selected. "null" selects all row groups
                 null //(Sting) How to order the rows. "null" uses the default sort order
@@ -207,17 +207,18 @@ public class PixManager {
 
     public void updatePixOnDatabase(Pix pix){
 
-        //
+        //Get the specific Pix ID in String form
         String pixId = pix.getId().toString();
 
-        //
+        //Create a ContentValue and store data from the specifc Pix
         ContentValues contentValues = getContentValues(pix);
 
+        //UPDATE the database with data from the specific pix
         mSQLiteDatabase.update(
-                PixDatabaseSchema.PixTable.NAME,
-                contentValues,
-                PixDatabaseSchema.PixTable.Columns.ID + " = ? ",
-                new String[]{pixId}
+                PixDatabaseSchema.PixTable.NAME, //(String) Name of database to update
+                contentValues, //(ContentValues) Data to be added to the database
+                PixDatabaseSchema.PixTable.Columns.ID + " = ? ", //(String) whereClause - Which column to select
+                new String[]{pixId} //(String) whereArgs - Which value to add to the selected column
         );
 
     }

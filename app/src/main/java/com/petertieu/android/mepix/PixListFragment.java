@@ -42,10 +42,10 @@ public class PixListFragment extends Fragment{
 
 
 
-    //Declare the Callbacks interface
+    //Declare callbacks interface
     interface Callbacks{
 
-        //Method for when a Pix is selected.. by either: New Pix created OR Pix selected in the list view
+        //Calback method for when a Pix is selected.. by either: New Pix created OR Pix selected in the list view
         void onPixSelected(Pix pix);
     }
 
