@@ -1,8 +1,12 @@
 package com.petertieu.android.mepix;
 
+;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,44 +20,108 @@ import java.util.UUID;
 
 public class PixViewPagerActivity extends AppCompatActivity{
 
+    //Define log identifier
     private static final String TAG = "PixViewPagerActivity";
+
+    //Define 'key' for the Intent 'value'
     private static final String EXTRA_PIX_ID = "com.petertieu.android.mepix";
+
+    //Define number of fragments to load on either side of the fragment on screen
     private static final int OFF_SCREEN_PAGE_LIMIT = 5;
 
-
+    //Declare ViewPager
     private static ViewPager mViewPager;
+
+    //Declare List of Pix objects
     private List<Pix> mPixes;
 
 
+
+
+
+    //Method to call for
     public static Intent newIntent(Context context, UUID pixId){
 
+        //Log to Logcat
+        Log.i(TAG, "newIntent(..) called");
+
+        //Create new intent to start PixViewPagerActivity
         Intent intent = new Intent(context, PixViewPagerActivity.class);
 
+        //Add extra to intent
         intent.putExtra(EXTRA_PIX_ID, pixId);
 
+        //Return the Intent
         return intent;
     }
 
 
 
+
+
+    //Override onCreate(..) activity lifecycle callback method
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
+        //Log to Logcat
         Log.i(TAG, "onCreate(..) called");
 
+        //Set the activity content from the ViewPager layout resource
         setContentView(R.layout.activity_pix_view_pager);
 
+        //Assign the ViwePager to its associated resource ID
         mViewPager = (ViewPager) findViewById(R.id.pix_view_pager);
 
+        //Set the number of detail fragments to load on either side of the current fragment on screen
         mViewPager.setOffscreenPageLimit(OFF_SCREEN_PAGE_LIMIT);
 
+        //Assign the Pix instance reference variable to the PixManager singleton
         mPixes = PixManager.get(this).getPixes();
 
+        //Create a FragmentManager
+        FragmentManager fragmentManager = getSupportFragmentManager();
 
 
+        //Set the Adapter to the ViewPager
+        mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
+
+            //Override method from the FragmentStatePagerAdapter
+            @Override
+            public Fragment getItem(int position) {
+
+                //Assign a Pix local reference variable to a specific Pix from the List of Pix objects
+                Pix pix = mPixes.get(position);
+
+                //Create and return a new PixDetailFragment fragment
+                return PixDetailFragment.newInstance(pix.getId());
+            }
+
+            //Override method from the FragmentStatePagerAdapter
+            @Override
+            public int getCount() {
+
+                //Get the size of the List of Pix objects
+                return mPixes.size();
+            }
+        });
+
+
+        //Get the 'value' associated with the 'key' from the Intent that started this activity
+        UUID pixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
+
+        //Display the detail view of the Pix that was clicked on in the list view
+        for(int i=0; i<mPixes.size(); i++){
+
+            //If the current Pix object from the List of Pix objects has the same UUID as the one clicked on in the list iew
+            if (mPixes.get(i).getId().equals(pixId)){
+
+                //Set detail view to display this Pix
+                mViewPager.setCurrentItem(i);
+
+                break;
+            }
+        }
 
     }
-
-
 }

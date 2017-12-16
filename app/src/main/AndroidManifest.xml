@@ -20,6 +20,11 @@
         </activity>
 
 
+        <activity android:name=".PixViewPagerActivity"
+                  android:parentActivityName=".PixListActivity">
+        </activity>
+
+
 
     </application>
 

@@ -41,9 +41,8 @@ public class PixManager {
         if (sPixManager == null){
             return new PixManager(context);
         }
-        else{
-            return sPixManager;
-        }
+
+        return sPixManager;
     }
 
 
@@ -201,6 +200,25 @@ public class PixManager {
 
         //Pass the Cursor into the PixCursorWrapper constructor
         return new PixCursorWrapper(pixCursor);
+    }
+
+
+
+
+    public void updatePixOnDatabase(Pix pix){
+
+        //
+        String pixId = pix.getId().toString();
+
+        //
+        ContentValues contentValues = getContentValues(pix);
+
+        mSQLiteDatabase.update(
+                PixDatabaseSchema.PixTable.NAME,
+                contentValues,
+                PixDatabaseSchema.PixTable.Columns.ID + " = ? ",
+                new String[]{pixId}
+        );
 
     }
 

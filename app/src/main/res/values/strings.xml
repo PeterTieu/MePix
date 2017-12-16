@@ -1,5 +1,15 @@
 <resources>
+
+    //App name
     <string name="app_name">MePix</string>
 
+    //menu/fragment_pix_list.xml
     <string name="new_pix">New Pix</string>
+
+    //fragment_pix_detail.xml
+    <string name="pix_title_hint">Title</string>
+
+
+
+
 </resources>

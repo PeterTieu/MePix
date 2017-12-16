@@ -12,14 +12,14 @@ import java.util.UUID;
     
 public class Pix {
 
-
-    ///================= Declare Instance Variables ================================
+    //================ Declare Instance Variables ================================
     private UUID mId;               //UUID specific to each Pix
     private String mTitle;          //TITLE of the Pix
     private Date mDate;             //DATE of the Pix
     private boolean mFavorited;     //If Pix has been FAVORITED
     private String mTagged;         //TAGGED in the Pix
-    private String mDescription;           //TEXT in the Pix
+    private String mDescription;    //TEXT in the Pix
+
 
 
 
@@ -30,10 +30,18 @@ public class Pix {
         this(UUID.randomUUID());
     }
 
+
+
     //Constructor #2
     public Pix(UUID id){
+
+        //Assign the (UUID) mId field
         mId = id;
+
+        //Initialise the (Date) mDate field - so that pix.getDate.toString() in PixManager.getContentValues(..) would work
+        mDate = new Date();
     }
+
 
 
 
