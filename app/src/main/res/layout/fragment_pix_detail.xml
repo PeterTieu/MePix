@@ -5,14 +5,14 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
 
     <LinearLayout
-        android:layout_height="match_parent"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_margin="5dp"
         android:orientation="vertical">
 
@@ -20,34 +20,95 @@
         <!--Title of the Pix-->
         <EditText
             android:id="@+id/detail_pix_title"
-            android:hint="@string/pix_title_hint"
+            android:hint="@string/title_hint"
+            android:textSize="25dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"/>
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            />
 
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+
+
+            <!--Picture of the Pix-->
             <ImageView
                 android:id="@+id/detail_pix_picture"
-                app:srcCompat="@android:drawable/ic_menu_gallery"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
+                app:srcCompat="@android:drawable/ic_menu_gallery"
                 />
 
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
+                <TextView
+                    android:text="@string/details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <!--Date of the Pix-->
+                <Button
+                    android:id="@+id/detail_pix_date"
+                    android:text="@string/date"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+
+                <!--Tagged in the Pix-->
+                <Button
+                    android:id="@+id/detail_pix_tagged"
+                    android:text="@string/tagged"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"/>
+
+
+            </LinearLayout>
 
         </LinearLayout>
 
 
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!--Picture Add button for the Pix-->
+            <ImageButton
+                android:id="@+id/detail_pix_add_picture"
+                android:src="@android:drawable/ic_menu_camera"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="20dp"/>
+
+            <!--Location of the Pix-->
+            <Button
+                android:id="@+id/detail_pix_location"
+                android:text="@string/location"
+                android:layout_marginLeft="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"/>
+
+        </LinearLayout>
+
+
+
+        <!--Description of Pix-->
+        <EditText
+            android:id="@+id/detail_pix_description"
+            android:hint="@string/description_hint"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
 
     </LinearLayout>

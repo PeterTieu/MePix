@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".PixListActivity">
+        <activity
+            android:name=".PixListActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -20,8 +21,10 @@
         </activity>
 
 
-        <activity android:name=".PixViewPagerActivity"
-                  android:parentActivityName=".PixListActivity">
+        <activity
+            android:name=".PixViewPagerActivity"
+            android:label="@string/pix_details"
+            android:parentActivityName=".PixListActivity">
         </activity>
 
 

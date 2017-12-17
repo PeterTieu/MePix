@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--Layout for Date dialog fragment-->
+
+<DatePicker
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_pix_date_picker"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:calendarViewShown="false">
+
+    //android:calendarViewShown describes whether the calendar view is shown.
+        //false: No calendar view shown. Spinner view is shown instead
+        //true: Calendar view is shown.
+
+</DatePicker>

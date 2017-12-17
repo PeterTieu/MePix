@@ -3,13 +3,29 @@
     //App name
     <string name="app_name">MePix</string>
 
+
+    //Label of PixListActivity
+    <string name="pix_log">Pix Log</string>
+
+
+    //Label of PixViewPagerActivity
+    <string name="pix_details">Pix Details</string>
+
+
     //menu/fragment_pix_list.xml
     <string name="new_pix">New Pix</string>
 
+
     //fragment_pix_detail.xml
-    <string name="pix_title_hint">Title</string>
+    <string name="title_hint">Title</string>
+    <string name="details">Details</string>
+    <string name="date">Date</string>
+    <string name="tagged">Tagged</string>
+    <string name="location">Location</string>
+    <string name="description_hint">Description</string>
 
 
-
+    //Title of DatePicker
+    <string name="date_picker_title">Date of Pix</string>
 
 </resources>

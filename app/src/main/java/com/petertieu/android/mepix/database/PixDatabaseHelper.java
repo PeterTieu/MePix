@@ -36,11 +36,11 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
                         PixDatabaseSchema.PixTable.NAME +
                         "(" +
                         " _id integer primary key autoincrement, " +
-                        PixDatabaseSchema.PixTable.Columns.ID + "," +
-                        PixDatabaseSchema.PixTable.Columns.TITLE + "," +
-                        PixDatabaseSchema.PixTable.Columns.DATE + "," +
-                        PixDatabaseSchema.PixTable.Columns.FAVORITED + "," +
-                        PixDatabaseSchema.PixTable.Columns.TAGGED + "," +
+                        PixDatabaseSchema.PixTable.Columns.ID + ", " +
+                        PixDatabaseSchema.PixTable.Columns.TITLE + ", " +
+                        PixDatabaseSchema.PixTable.Columns.DATE + ", " +
+                        PixDatabaseSchema.PixTable.Columns.FAVORITED + ", " +
+                        PixDatabaseSchema.PixTable.Columns.TAGGED + ", " +
                         PixDatabaseSchema.PixTable.Columns.DESCRIPTION +
                         ")"
 

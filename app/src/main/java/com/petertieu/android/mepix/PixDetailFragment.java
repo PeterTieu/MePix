@@ -3,6 +3,7 @@ package com.petertieu.android.mepix;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 
+import android.text.format.DateFormat;
 import java.util.UUID;
 
 /**
@@ -32,8 +35,16 @@ public class PixDetailFragment extends Fragment {
     //Declare Pix instance variable
     private Pix mPix;
 
-    //Declare title instance variable
-    private EditText mTitle;
+    //Declare View instance variables
+    private EditText mTitle;    //Title
+    private Button mDateButton; //Date Button
+
+
+
+    private DateFormat mCurrentDate;
+    private static final int REQUEST_DATE = 0;
+    private static final String DIALOG_DATE = "DialogDate";
+
 
 
 
@@ -153,6 +164,47 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //================ SET UP mDate ==================================================================
+        //Assign date button instance variable to its associated resource ID
+        mDateButton = (Button) view.findViewById(R.id.detail_pix_date);
+
+        //If a date exists for the Pix
+        if (mPix.getDate() != null){
+
+            //Set text of the date button to date of the Pix
+            mDateButton.setText(mCurrentDate.format("EEE d MMM yyyy", mPix.getDate()));
+        }
+
+
+        //Set listener the Date button
+        mDateButton.setOnClickListener(new View.OnClickListener(){
+
+            //Override onClick(..) from View.OnClickListener
+            @Override
+            public void onClick(View view){
+
+                FragmentManager fragmentManager = getFragmentManager();
+
+                DatePickerFragment datePickerDialog = DatePickerFragment.newInstance(mPix.getDate());
+
+
+                datePickerDialog.setTargetFragment(PixDetailFragment.this, REQUEST_DATE);
+
+                datePickerDialog.show(fragmentManager, DIALOG_DATE);
+
+
+            }
+        });
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -166,7 +218,7 @@ public class PixDetailFragment extends Fragment {
     //Update the Pix (upon any changes)
     private void updatePix(){
 
-        //Update the Pix on the SQLite database
+        //Update the SQLite database based on the Pix passed
         PixManager.get(getActivity()).updatePixOnDatabase(mPix);
 
     }

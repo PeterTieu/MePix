@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -207,7 +208,7 @@ public class PixListFragment extends Fragment{
                 //Create/call the Adapter and link it with the RecyclerView
                 updateUI();
 
-                //Call the method from the PixListFragment.Callbacks interface
+                //Open up the Pix (just created)
                 mCallbacks.onPixSelected(pix);
 
                 return true;
@@ -321,6 +322,9 @@ public class PixListFragment extends Fragment{
                 //Override method of the View.OnClickListener interface of View
                 @Override
                 public void onClick(View view){
+
+                    //Open up the Pix (existing)
+                    mCallbacks.onPixSelected(mPix);
                 }
             });
         }
