@@ -1,10 +1,11 @@
 package com.petertieu.android.mepix;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -15,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import android.text.format.DateFormat;
+
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -42,8 +45,8 @@ public class PixDetailFragment extends Fragment {
 
 
     private DateFormat mCurrentDate;
-    private static final int REQUEST_DATE = 0;
-    private static final String DIALOG_DATE = "DialogDate";
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
 
 
@@ -164,6 +167,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
+
         //================ SET UP mDate ==================================================================
         //Assign date button instance variable to its associated resource ID
         mDateButton = (Button) view.findViewById(R.id.detail_pix_date);
@@ -183,16 +187,17 @@ public class PixDetailFragment extends Fragment {
             @Override
             public void onClick(View view){
 
+                //Create FragmentManager
                 FragmentManager fragmentManager = getFragmentManager();
 
+                //Create DatePickerFragment fragment
                 DatePickerFragment datePickerDialog = DatePickerFragment.newInstance(mPix.getDate());
 
+                //Start the dialog fragment
+                datePickerDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DATE);
 
-                datePickerDialog.setTargetFragment(PixDetailFragment.this, REQUEST_DATE);
-
-                datePickerDialog.show(fragmentManager, DIALOG_DATE);
-
-
+                //Show dialog
+                datePickerDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DATE);
             }
         });
 
@@ -327,4 +332,38 @@ public class PixDetailFragment extends Fragment {
         //Log in Logcat
         Log.i(TAG, "onDetach() called");
     }
+
+
+
+
+
+    //Override onActivityResult(..) callback method
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent){
+
+        //If a result code DOES NOT exist
+        if (resultCode != Activity.RESULT_OK){
+            return;
+        }
+
+        //If request code matches the date dialog fragment's
+        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE){
+
+            //Get Date object from date dialog fragment
+            Date newSetdate = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+
+            //Set new date for Pix
+            mPix.setDate(newSetdate);
+
+            //Set new date display for date button
+            mDateButton.setText(mCurrentDate.format("EEE d MMMM yyyy", mPix.getDate()));
+        }
+
+        //Update the Pix (upon new date change)
+        updatePix();
+
+
+    }
+
+
 }

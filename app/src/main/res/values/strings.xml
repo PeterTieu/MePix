@@ -18,6 +18,7 @@
 
     //fragment_pix_detail.xml
     <string name="title_hint">Title</string>
+    <string name="favorite">Favorite</string>
     <string name="details">Details</string>
     <string name="date">Date</string>
     <string name="tagged">Tagged</string>

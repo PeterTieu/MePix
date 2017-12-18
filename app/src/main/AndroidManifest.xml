@@ -24,7 +24,9 @@
         <activity
             android:name=".PixViewPagerActivity"
             android:label="@string/pix_details"
-            android:parentActivityName=".PixListActivity">
+            android:parentActivityName=".PixListActivity">  //Adds the Up button to PixViewPagerActivity
+                                                            //so when this is pressed, the user moves "up"
+                                                            //the hierarchy to: PixListActivity
         </activity>
 
 

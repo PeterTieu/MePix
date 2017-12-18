@@ -345,6 +345,8 @@ public class PixListFragment extends Fragment{
 
             //
             mPixDate = new DateFormat();
+
+
         }
     }
 

@@ -25,8 +25,8 @@ public class DatePickerFragment extends DialogFragment {
     //Declare 'key'
     private static final String ARG_PIX_DATE = "pixDate";
 
-    //Declare
-    private static final String EXTRA_DATE = "com.petertieu.android.mepix";
+    //Define identifier for dialog fragment extra
+    public static final String EXTRA_DATE = "com.petertieu.android.mepix";
 
     //Declare layout View of the dialog
     DatePicker mDatePicker;
@@ -115,7 +115,7 @@ public class DatePickerFragment extends DialogFragment {
 
 
     //Send result to the hosting activity
-    private void sendResult(int resultCode, Date date){
+    private void sendResult(int resultCode, Date newSetdate){
 
         //If hosting fragment (PixDetailFragment) DOES NOT exist
         if (getTargetFragment() == null){
@@ -126,9 +126,9 @@ public class DatePickerFragment extends DialogFragment {
         Intent intent = new Intent();
 
         //Add Date data as 'extra'
-        intent.putExtra(EXTRA_DATE, date);
+        intent.putExtra(EXTRA_DATE, newSetdate);
 
-        //Send Intent to hosting activity (PixViewPagerActivity)
+        //Send resultCode and Intent to hosting fragment (PixDetailFragment)
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
 
