@@ -14,6 +14,7 @@ import android.widget.DatePicker;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Peter Tieu on 17/12/2017.
@@ -21,10 +22,13 @@ import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment {
 
+    //Declare 'key'
     private static final String ARG_PIX_DATE = "pixDate";
 
+    //Declare
     private static final String EXTRA_DATE = "com.petertieu.android.mepix";
 
+    //Declare layout View of the dialog
     DatePicker mDatePicker;
 
 
@@ -52,42 +56,54 @@ public class DatePickerFragment extends DialogFragment {
 
 
 
-    //
+    //Override lifecycle callback method from DialogFragment
+    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
+        //Get the 'value' from the argument-bundle
         final Date pixDate = (Date) getArguments().getSerializable(ARG_PIX_DATE);
 
+        //Inflate the DatePicker layout
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_date_picker, null);
 
+        //Assign the DatePicker reference variable to the associated resource ID
         mDatePicker = (DatePicker) view.findViewById(R.id.dialog_pix_date_picker);
 
-
+        //Create a Calendar
         Calendar calendar = Calendar.getInstance();
 
+        //Set time in Calendar to time stored in the Pix object
         calendar.setTime(pixDate);
 
-        calendar.setTime(pixDate);
-
+        //Get year/month/dayOfMonth from Calendar - i.e. saved from the Pix
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int dayOfMonth = calendar.get(Calendar.DATE);
 
-
+        //Initialise DatePicker object
         mDatePicker.init(year, month, dayOfMonth, null);
 
+        //Return AlertDialog (a subclass of Dialog), which sets the dialog properties
         return new AlertDialog
-                .Builder(getActivity())
-                .setView(view)
-                .setTitle(R.string.date_picker_title)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(android.R.string.ok,
+                .Builder(getActivity()) //Create Builder
+                .setView(view) //Set View of the dialog
+                .setTitle(R.string.date_picker_title) //Set TITLE of the dialog
+                .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
+                .setPositiveButton(android.R.string.ok, //Set POSITIVE BUTTON of the dialog, and a listener for it
                         new DialogInterface.OnClickListener() {
+
+                            //Override listener of DialogInterface.OnClickListener.OnClickListener interface
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                int year = mDatePicker.getYear();
-                                int month = mDatePicker.getMonth();
-                                int dayOfMonth = mDatePicker.getDayOfMonth();
-                                sendResult(Activity.RESULT_OK, pixDate);
+                                int year = mDatePicker.getYear(); //Get 'year' from DatePicker view
+                                int month = mDatePicker.getMonth(); //Get 'month' from DatePicker view
+                                int dayOfMonth = mDatePicker.getDayOfMonth(); //Get 'dayOfMonth' from DatePicker view
+
+                                //Save set year/month/dayOfMonth to Date object
+                                Date newSetDate = new GregorianCalendar(year, month, dayOfMonth).getTime();
+
+                                //Send new Date data back to hosting activity (PixViewPagerActivity)
+                                sendResult(Activity.RESULT_OK, newSetDate);
                             }
                         })
                 .create();
@@ -98,16 +114,21 @@ public class DatePickerFragment extends DialogFragment {
 
 
 
+    //Send result to the hosting activity
     private void sendResult(int resultCode, Date date){
 
+        //If hosting fragment (PixDetailFragment) DOES NOT exist
         if (getTargetFragment() == null){
             return;
         }
 
+        //Create Intent
         Intent intent = new Intent();
+
+        //Add Date data as 'extra'
         intent.putExtra(EXTRA_DATE, date);
 
-
+        //Send Intent to hosting activity (PixViewPagerActivity)
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
 
