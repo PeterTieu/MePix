@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import android.text.format.DateFormat;
@@ -43,11 +45,17 @@ public class PixDetailFragment extends Fragment {
     private Button mDateButton; //Date Button
 
 
-
-    private DateFormat mCurrentDate;
+    //Declare DateFormat object for formatting the date display
+    private DateFormat mDateFormat;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
+
+    private CheckBox mFavoritedButton; //Favorited Button
+
+
+    //Declare Callbacks interface reference variable
+    private Callbacks mCallbacks;
 
 
 
@@ -168,7 +176,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
-        //================ SET UP mDate ==================================================================
+        //================ SET UP mDateButton ==================================================================
         //Assign date button instance variable to its associated resource ID
         mDateButton = (Button) view.findViewById(R.id.detail_pix_date);
 
@@ -176,7 +184,7 @@ public class PixDetailFragment extends Fragment {
         if (mPix.getDate() != null){
 
             //Set text of the date button to date of the Pix
-            mDateButton.setText(mCurrentDate.format("EEE d MMM yyyy", mPix.getDate()));
+            mDateButton.setText(mDateFormat.format("EEE d MMM yyyy", mPix.getDate()));
         }
 
 
@@ -204,6 +212,28 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //================ SET UP mFavoritedButton ==================================================================
+        //Assign favorited button instance variable to its associated resource ID
+        mFavoritedButton = (CheckBox) view.findViewById(R.id.detail_pix_favorited);
+
+        //Set sate of favorited button to its equivalent in Pix object
+        mFavoritedButton.setChecked(mPix.isFavorited());
+
+        //Set listener for CheckBox
+        mFavoritedButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            //Override onCheckedChanged(..) from CompountButton.OnCheckedChangedListener
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                //Set favorited field of Pix to state of CheckBox
+                mPix.setFavorited(isChecked);
+
+                //Update Pix (upon new favorited change)
+                updatePix();
+            }
+        });
+
+
 
 
 
@@ -226,6 +256,8 @@ public class PixDetailFragment extends Fragment {
         //Update the SQLite database based on the Pix passed
         PixManager.get(getActivity()).updatePixOnDatabase(mPix);
 
+        //Update PixListFragment() in 'real-time' for two-pane layout
+//        mCallbacks.onPixUpdated(mPix);
     }
 
 
@@ -356,10 +388,10 @@ public class PixDetailFragment extends Fragment {
             mPix.setDate(newSetdate);
 
             //Set new date display for date button
-            mDateButton.setText(mCurrentDate.format("EEE d MMMM yyyy", mPix.getDate()));
+            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
-        //Update the Pix (upon new date change)
+        //Update Pix (upon new date change)
         updatePix();
 
 

@@ -18,7 +18,7 @@ import java.util.UUID;
  * Created by Peter Tieu on 13/12/2017.
  */
 
-public class PixViewPagerActivity extends AppCompatActivity{
+public class PixViewPagerActivity extends AppCompatActivity implements PixDetailFragment.Callbacks{
 
     //Define log identifier
     private static final String TAG = "PixViewPagerActivity";
@@ -36,6 +36,11 @@ public class PixViewPagerActivity extends AppCompatActivity{
     private List<Pix> mPixes;
 
 
+
+    @Override
+    public void onPixUpdated(Pix pix){
+        //do nothing
+    }
 
 
 

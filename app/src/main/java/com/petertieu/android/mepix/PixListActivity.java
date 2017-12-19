@@ -11,9 +11,9 @@ import android.util.Log;
 
 
 //Activity hosting PixListFragment
-public class PixListActivity extends SingleFragmentActivity implements PixListFragment.Callbacks{
+public class PixListActivity extends SingleFragmentActivity implements PixListFragment.Callbacks, PixDetailFragment.Callbacks{
 
-
+    //Declare tag for Logcat
     private static final String TAG = "PixListActivity";
 
 
@@ -25,6 +25,8 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
     }
 
 
+
+
     //Override the abstract method from SingleFragmentActivity
     @Override
     protected int getLayoutResId(){
@@ -33,12 +35,14 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override the method from the PixDetailFragment.Callbacks interface
+
+
+    //Override method from PixListFragment.Callbacks interface
     @Override
     public void onPixSelected(Pix pix){
 
-        //Log lifecycle callback
-        Log.i(TAG, "newIntent(..) onPixSelected(..) called");
+        //Log callback method
+        Log.i(TAG, "PixListFragment.Callbacks onPixSelected(..) called");
 
         //If the two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
@@ -59,12 +63,22 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
             //Replace the 2nd pane with the PixDetailFragment
             getSupportFragmentManager().beginTransaction().replace(R.id.detail_fragment_container, newPixDetailFragment).commit();
         }
-
-
-
     }
 
 
+
+
+    //Override method from PixDetailFragment.Callbacks interface
+    @Override
+    public void onPixUpdated(Pix pix){
+
+        //Log lifecycle callback method
+        Log.i(TAG, "PixDetailFragment.Callbacks onPixUpdated(..) called");
+
+        PixListFragment pixListFragment = (PixListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+        pixListFragment.updateUI();
+    }
 
 
 

@@ -13,9 +13,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +39,7 @@ public class PixListFragment extends Fragment{
     //Declare the Adapter instance variable
     private PixAdapter mPixAdapter;
 
-    //Declare the Callbacks interface instance variable
+    //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
 
 
@@ -291,17 +294,22 @@ public class PixListFragment extends Fragment{
     //Define the ViewHolder class
     private class PixViewHolder extends RecyclerView.ViewHolder{
 
+        //Declare the Pix instance variable
+        private Pix mPix;
+
         //Declare the list item's title instance variable
-        TextView mPixTitle;
+        private TextView mPixTitle;
 
         //Declare the list item's description instance variable
-        TextView mPixDescription;
+        private TextView mPixDescription;
 
-        //Declare the list item's date instance variable
-        DateFormat mPixDate;
+        private TextView mPixDate;
 
-        //Declare the Pix instance variable
-        Pix mPix;
+        //Declare DateFormat for formatting date display
+        private DateFormat mPixDateFormat;
+
+        //Declare ImageView for "Favourited" field
+        private ImageView mPixFavourited;
 
 
 
@@ -314,6 +322,12 @@ public class PixListFragment extends Fragment{
 
             //Assign the list item's description instance variable to its associated resource ID
             mPixDescription = (TextView) view.findViewById(R.id.list_pix_description);
+
+            mPixFavourited = (ImageView) view.findViewById(R.id.list_pix_favorited);
+
+            mPixDate = (TextView) view.findViewById(R.id.list_pix_date);
+
+            mPixFavourited = (ImageView) view.findViewById(R.id.list_pix_favorited);
 
 
             //Set a listener for the list item
@@ -343,9 +357,16 @@ public class PixListFragment extends Fragment{
             //Set the text of the list item's description
             mPixDescription.setText(mPix.getDescription());
 
-            //
-            mPixDate = new DateFormat();
+            //Set new date display for date button
+            mPixDate.setText(mPixDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
 
+            //Resource ID for favorited drawable ('yellow' star)
+            int favoritedDrawable = getResources().getIdentifier("android:drawable/btn_star_big_on", null, null);
+            //If favorited field is true
+            if (mPix.isFavorited()){
+                //Set favorite star from 'grey' to 'yellow'
+                mPixFavourited.setImageResource(favoritedDrawable);
+            }
 
         }
     }
