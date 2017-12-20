@@ -84,5 +84,19 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
+    @Override
+    public void onPixDeleted(Pix pix){
+        if (findViewById(R.id.detail_fragment_container) == null){
+            //kill
+        }
+        else{
+            PixDetailFragment.updatePix;
+        }
+    }
+
+
+
+
+
 
 }

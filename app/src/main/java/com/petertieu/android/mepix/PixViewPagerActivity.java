@@ -18,6 +18,8 @@ import java.util.UUID;
  * Created by Peter Tieu on 13/12/2017.
  */
 
+//Activity hosting PixDetailFragment(s)
+//NOTE: PixDetailFragment.Callbacks interface is implemented because PixDetailFragment, i.e. the fragment class being hosted, declares this interface (mandatory)
 public class PixViewPagerActivity extends AppCompatActivity implements PixDetailFragment.Callbacks{
 
     //Define log identifier
@@ -37,9 +39,14 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
 
 
+    //Mandatory override of callback method from the 'PixDetailFragment.Callbacks' callback interface
     @Override
     public void onPixUpdated(Pix pix){
         //do nothing
+    }
+
+    @Override
+    public void onPixDeleted(Pix pix){
     }
 
 

@@ -10,6 +10,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -28,7 +31,7 @@ import java.util.UUID;
 
 
 
-//Fragment for the detail view
+//Fragment for the DETAIL VIEW
 public class PixDetailFragment extends Fragment {
 
     //Define 'key' for the argument-bundle
@@ -43,7 +46,8 @@ public class PixDetailFragment extends Fragment {
     //Declare View instance variables
     private EditText mTitle;    //Title
     private Button mDateButton; //Date Button
-
+    private CheckBox mFavoritedButton; //Favorited Button
+    private EditText mDescription;
 
     //Declare DateFormat object for formatting the date display
     private DateFormat mDateFormat;
@@ -51,7 +55,7 @@ public class PixDetailFragment extends Fragment {
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
 
-    private CheckBox mFavoritedButton; //Favorited Button
+
 
 
     //Declare Callbacks interface reference variable
@@ -90,6 +94,8 @@ public class PixDetailFragment extends Fragment {
 
         //Callback method for when a Pix's instance variable is changed... inside the detail view
         void onPixUpdated(Pix pix);
+
+        void onPixDeleted(Pix pix);
     }
 
 
@@ -103,6 +109,9 @@ public class PixDetailFragment extends Fragment {
 
         //Log in Logcat
         Log.i(TAG, "onAttach() called");
+
+        //Declare mCallbacks ref. var. (to PixDetailFragment.Callbacks)
+        mCallbacks = (Callbacks) context;
     }
 
 
@@ -152,6 +161,7 @@ public class PixDetailFragment extends Fragment {
         //Set text of the title to title instance variable of the Pix
         mTitle.setText(mPix.getTitle());
 
+        //Add listener to text EditText
         mTitle.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -177,14 +187,14 @@ public class PixDetailFragment extends Fragment {
 
 
         //================ SET UP mDateButton ==================================================================
-        //Assign date button instance variable to its associated resource ID
+        //Assign date EditText instance variable to its associated resource ID
         mDateButton = (Button) view.findViewById(R.id.detail_pix_date);
 
         //If a date exists for the Pix
         if (mPix.getDate() != null){
 
             //Set text of the date button to date of the Pix
-            mDateButton.setText(mDateFormat.format("EEE d MMM yyyy", mPix.getDate()));
+            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
 
@@ -236,6 +246,38 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //================ SET UP mFavoritedButton ==================================================================
+        //Assign description EditText instance variable to its associated resource ID
+        mDescription = (EditText) view.findViewById(R.id.detail_pix_description);
+
+        //Set text of the title to descirption instance variable of the Pix
+        mDescription.setText(mPix.getDescription());
+
+        //Add listener to description EditText
+        mDescription.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Set description of the Pix to the current String in the EditText
+                mPix.setDescription(charSequence.toString());
+
+                //Update the Pix
+                updatePix();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //Do nothing
+            }
+        });
+
+
+
 
 
 
@@ -257,8 +299,62 @@ public class PixDetailFragment extends Fragment {
         PixManager.get(getActivity()).updatePixOnDatabase(mPix);
 
         //Update PixListFragment() in 'real-time' for two-pane layout
-//        mCallbacks.onPixUpdated(mPix);
+        mCallbacks.onPixUpdated(mPix);
     }
+
+
+
+
+
+    //Override onCreateOptionsMenu(..) fragment lifecycle callback method
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater){
+
+        //Log lifcycle callback
+        Log.i(TAG, "onCreateOptionsMenu(..) called");
+
+        //Inflate a menu hiearchy from specified resource
+        menuInflater.inflate(R.menu.fragment_pix_detail, menu);
+    }
+
+
+
+
+
+    //Override onOptionsItemSelected(..) fragment lifecycle callback method
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem){
+
+        //Log lifecycle callback
+        Log.i(TAG, "onOptionsItemSelected(..) called");
+
+        switch(menuItem.getItemId()){
+
+            case(R.id.delete_pix):
+
+                PixManager.get(getActivity()).deletePix(mPix);
+
+                updatePix();
+
+
+                mCallbacks.onPixDeleted(mPix);
+
+//                if (findView){
+//                    getActivity().finish();
+//                }
+
+
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(menuItem);
+
+
+        }
+
+    }
+
+
 
 
 
@@ -363,6 +459,9 @@ public class PixDetailFragment extends Fragment {
 
         //Log in Logcat
         Log.i(TAG, "onDetach() called");
+
+        //Null mCallbacks ref. var. (to PixDetailFragment.Callbacks object)
+        mCallbacks = null;
     }
 
 

@@ -1,6 +1,7 @@
 package com.petertieu.android.mepix;
 
 import android.content.Context;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,21 +14,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 
 /**
  * Created by Peter Tieu on 7/12/2017.
  */
 
-//Activity hosting PixList
+//Fragment for the LIST VIEW
 public class PixListFragment extends Fragment{
 
     //Define Log identifier
@@ -62,6 +60,10 @@ public class PixListFragment extends Fragment{
     public void onAttach(Context context){
         super.onAttach(context);
 
+        //Log in Logcat
+        Log.i(TAG, "onAttach() called");
+
+        //Declare mCallbacks ref. var. (to PixListFragment.Callbacks)
         mCallbacks = (Callbacks) context;
     }
 
@@ -240,12 +242,14 @@ public class PixListFragment extends Fragment{
         }
 
 
+
         //Override method from the RecyclerView.Adapter inner class of Adapter
         @Override
         public int getItemCount(){
             //Return number of items in the Adapter
             return mPixes.size();
         }
+
 
 
         //Override method from the RecyclerView.Adapter inner class of Adapter
@@ -264,8 +268,6 @@ public class PixListFragment extends Fragment{
 
 
 
-
-
         //Override method from the ReyclerView.Adapter inner class of Adapter
         @Override
         public void onBindViewHolder(PixViewHolder pixViewHolder, int position){
@@ -276,8 +278,6 @@ public class PixListFragment extends Fragment{
             //Pass the Pix object to the bind(Pix) method of the ViewHolder
             pixViewHolder.bind(pix);
         }
-
-
 
 
 
@@ -309,7 +309,7 @@ public class PixListFragment extends Fragment{
         private DateFormat mPixDateFormat;
 
         //Declare ImageView for "Favourited" field
-        private ImageView mPixFavourited;
+        private ImageView mPixFavorited;
 
 
 
@@ -323,11 +323,11 @@ public class PixListFragment extends Fragment{
             //Assign the list item's description instance variable to its associated resource ID
             mPixDescription = (TextView) view.findViewById(R.id.list_pix_description);
 
-            mPixFavourited = (ImageView) view.findViewById(R.id.list_pix_favorited);
+            mPixFavorited = (ImageView) view.findViewById(R.id.list_pix_favorited);
 
             mPixDate = (TextView) view.findViewById(R.id.list_pix_date);
 
-            mPixFavourited = (ImageView) view.findViewById(R.id.list_pix_favorited);
+            mPixFavorited = (ImageView) view.findViewById(R.id.list_pix_favorited);
 
 
             //Set a listener for the list item
@@ -358,16 +358,18 @@ public class PixListFragment extends Fragment{
             mPixDescription.setText(mPix.getDescription());
 
             //Set new date display for date button
-            mPixDate.setText(mPixDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+            mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
 
+
+            //============ Set Favorited 'star' view===================================
             //Resource ID for favorited drawable ('yellow' star)
             int favoritedDrawable = getResources().getIdentifier("android:drawable/btn_star_big_on", null, null);
-            //If favorited field is true
-            if (mPix.isFavorited()){
-                //Set favorite star from 'grey' to 'yellow'
-                mPixFavourited.setImageResource(favoritedDrawable);
-            }
 
+            //Resource ID for non-faovirted drawable ('grey' star)
+            int nonFavoritedDrawable = getResources().getIdentifier("android:drawable/btn_star_big_off", null, null);
+
+            //If: mPix.isFavorited() == true.. then: mPixFavorited.setImageResource(favoriteDrawable).. else: mPixFavorited.setImageResource(nonFavoriteDrawable)
+            mPixFavorited.setImageResource(mPix.isFavorited() ? favoritedDrawable : nonFavoritedDrawable);
         }
     }
 
@@ -423,6 +425,10 @@ public class PixListFragment extends Fragment{
     public void onDetach(){
         super.onDetach();
 
+        //Log in Logcat
+        Log.i(TAG, "onDetach() called");
+
+        //Null mCallbacks ref. var. (to PixListFragment.Callbacks object)
         mCallbacks = null;
     }
 

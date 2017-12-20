@@ -6,18 +6,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--New Pix-->
     <item
         android:id="@+id/new_pix"
         android:title="@string/new_pix"
         android:icon="@drawable/ic_menu_add"
-        app:showAsAction="ifRoom|withText">
+        app:showAsAction="ifRoom|withText"/>
             //ifRoom: Show ICON if there is room
             //withText: Show TEXT if there is room
-
-    </item>
-
-
-
-
 
 </menu>
