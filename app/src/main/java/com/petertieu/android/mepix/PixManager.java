@@ -142,10 +142,15 @@ public class PixManager {
 
 
 
+
+
+    //Delete Pix from SQLiteDatabase, "pixes"
     public void deletePix(Pix pix){
 
+        //Get Pix mId instance variable in String form
         String pixIdString = pix.getId().toString();
 
+        //Delete Pix from SQLiteDatabase
         mSQLiteDatabase.delete(PixDatabaseSchema.PixTable.NAME, PixDatabaseSchema.PixTable.Columns.ID + " = ? ", new String[]{pixIdString});
     }
 

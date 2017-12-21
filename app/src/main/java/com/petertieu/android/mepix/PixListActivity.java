@@ -3,6 +3,7 @@ package com.petertieu.android.mepix;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Created by Peter Tieu on 7/12/2017.
@@ -68,15 +69,17 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override method from PixDetailFragment.Callbacks interface
+    //Override method from PixDetailFragment.Callbacks interface to update PixListFragment in realtime (for two-pane view)
     @Override
     public void onPixUpdated(Pix pix){
 
-        //Log lifecycle callback method
+        //Log lifecycle callback method in Logcat
         Log.i(TAG, "PixDetailFragment.Callbacks onPixUpdated(..) called");
 
+        //Get PixListFragment from SupportFragmentManager
         PixListFragment pixListFragment = (PixListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
+        //Update PixListFragment
         pixListFragment.updateUI();
     }
 
@@ -84,14 +87,18 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
+    //Override method from PixDetailFragment.Callbacks interface to delete Pix from PixDetailFragment in realtime (for two-pane view)
     @Override
     public void onPixDeleted(Pix pix){
-        if (findViewById(R.id.detail_fragment_container) == null){
-            //kill
-        }
-        else{
-            PixDetailFragment.updatePix;
-        }
+
+        //Log lifecycle callback method in Logcat
+        Log.i(TAG, "PixDetailFragment.Callbacks onPixDeleted(..) called");
+
+        //Get PixDetailFragment from SupportFragmentManager
+        PixDetailFragment pixDetailFragment = (PixDetailFragment) getSupportFragmentManager().findFragmentById(R.id.detail_fragment_container);
+
+        //Remove PixDetailFragment from 2nd pane
+        getSupportFragmentManager().beginTransaction().remove(pixDetailFragment).commit();
     }
 
 

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,12 +16,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import android.text.format.DateFormat;
+import android.widget.Toast;
 
 import java.util.Date;
 import java.util.UUID;
@@ -92,9 +95,10 @@ public class PixDetailFragment extends Fragment {
     //Declare callback interface
     interface Callbacks{
 
-        //Callback method for when a Pix's instance variable is changed... inside the detail view
+        //Callback method for when a Pix's instance variable is changed (for two-pane layout)
         void onPixUpdated(Pix pix);
 
+        //Callback method for when a Pix is deleted (for two-pane layout)
         void onPixDeleted(Pix pix);
     }
 
@@ -292,7 +296,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
-    //Update the Pix (upon any changes)
+    //Update the Pix SQLiteDatabase and two-pane UI (upon any changes)
     private void updatePix(){
 
         //Update the SQLite database based on the Pix passed
@@ -328,28 +332,43 @@ public class PixDetailFragment extends Fragment {
         //Log lifecycle callback
         Log.i(TAG, "onOptionsItemSelected(..) called");
 
+        //Get
         switch(menuItem.getItemId()){
 
             case(R.id.delete_pix):
 
+                //Delete Pix from SQLiteDatabase, "pixes"
                 PixManager.get(getActivity()).deletePix(mPix);
 
+                //Call callback method to delete Pix
+                mCallbacks.onPixDeleted(mPix);
+
+                //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
                 updatePix();
 
 
-                mCallbacks.onPixDeleted(mPix);
+                //======= Hide soft keyboard ========
+                //Get InputMethodManager object
+                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 
-//                if (findView){
-//                    getActivity().finish();
-//                }
+                //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
 
+
+                //======= Display Toast on Pix delete ========
+                //If no Pix title exists or is empty
+                if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
+                    Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
+                }
+                //If Pix title exists or is not empty
+                else{
+                    Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
+                }
 
                 return true;
 
             default:
                 return super.onOptionsItemSelected(menuItem);
-
-
         }
 
     }

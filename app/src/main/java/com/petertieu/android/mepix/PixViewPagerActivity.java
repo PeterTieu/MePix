@@ -42,11 +42,12 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
     //Mandatory override of callback method from the 'PixDetailFragment.Callbacks' callback interface
     @Override
     public void onPixUpdated(Pix pix){
-        //do nothing
+        //Do nothing
     }
 
     @Override
     public void onPixDeleted(Pix pix){
+        //Do nothing
     }
 
 
@@ -143,4 +144,6 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         }
 
     }
+
+
 }

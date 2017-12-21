@@ -1,6 +1,7 @@
 package com.petertieu.android.mepix;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -352,10 +353,24 @@ public class PixListFragment extends Fragment{
             mPix = pix;
 
             //Set the text of the list item's title
-            mPixTitle.setText(mPix.getTitle());
+            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
+                mPixTitle.setText("* Untitled *");
+                mPixTitle.setTextSize(15f);
+                mPixTitle.setTypeface(null, Typeface.ITALIC);
+            }
+            else{
+                mPixTitle.setText(mPix.getTitle());
+            }
 
             //Set the text of the list item's description
-            mPixDescription.setText(mPix.getDescription());
+            if (mPix.getDescription() == null || mPix.getDescription().isEmpty()){
+                mPixDescription.setText("* No description *");
+                mPixDescription.setTextSize(10f);
+                mPixDescription.setTypeface(null, Typeface.ITALIC);
+            }
+            else{
+                mPixDescription.setText(mPix.getDescription());
+            }
 
             //Set new date display for date button
             mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
