@@ -58,6 +58,8 @@ public class PixDetailFragment extends Fragment {
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
 
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 0; //Request code for receiving results from dialog fragment
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE = "DialogDelete"; //Identifier of dialog fragment
 
 
 
@@ -337,41 +339,68 @@ public class PixDetailFragment extends Fragment {
 
             case(R.id.delete_pix):
 
-                //Delete Pix from SQLiteDatabase, "pixes"
-                PixManager.get(getActivity()).deletePix(mPix);
+//                //Display 'delete confirmation' dialog
+//                deleteConfirmationDialog();
 
-                //Call callback method to delete Pix
-                mCallbacks.onPixDeleted(mPix);
+            //Delete Pix from SQLiteDatabase, "pixes"
+            PixManager.get(getActivity()).deletePix(mPix);
 
-                //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
-                updatePix();
+            //Call callback method to delete Pix
+            mCallbacks.onPixDeleted(mPix);
 
-
-                //======= Hide soft keyboard ========
-                //Get InputMethodManager object
-                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-
-                //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
-                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+            //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
+            updatePix();
 
 
-                //======= Display Toast on Pix delete ========
-                //If no Pix title exists or is empty
-                if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
-                    Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
-                }
-                //If Pix title exists or is not empty
-                else{
-                    Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
-                }
+            //======= Hide soft keyboard ========
+            //Get InputMethodManager object
+            InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 
-                return true;
+            //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+            inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+
+
+            //======= Display Toast on Pix delete ========
+            //If no Pix title exists or is empty
+            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
+                Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
+            }
+            //If Pix title exists or is not empty
+            else{
+                Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
+            }
+
+            updatePix();
+
+
+
+            return true;
 
             default:
                 return super.onOptionsItemSelected(menuItem);
         }
 
     }
+
+
+
+
+
+//    private void deleteConfirmationDialog(){
+//
+//        //Create FragmentManager
+//        FragmentManager fragmentManager = getFragmentManager();
+//
+//        //Create DatePickerFragment fragment
+//        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle());
+//
+//        //Start the dialog fragment
+//        pixDeleteDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE);
+//
+//        //Show dialog
+//        pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
+//    }
+
 
 
 
@@ -507,10 +536,54 @@ public class PixDetailFragment extends Fragment {
 
             //Set new date display for date button
             mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+
+            //Update Pix (upon new date change)
+            updatePix();
+
         }
 
-        //Update Pix (upon new date change)
-        updatePix();
+
+
+
+
+
+
+
+
+//        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE){
+//
+//
+//            //Delete Pix from SQLiteDatabase, "pixes"
+//            PixManager.get(getActivity()).deletePix(mPix);
+//
+//            //Call callback method to delete Pix
+//            mCallbacks.onPixDeleted(mPix);
+//
+//            //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
+//            updatePix();
+//
+//
+//            //======= Hide soft keyboard ========
+//            //Get InputMethodManager object
+//            InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+//
+//            //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+//            inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+//
+//
+//            //======= Display Toast on Pix delete ========
+//            //If no Pix title exists or is empty
+//            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
+//                Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
+//            }
+//            //If Pix title exists or is not empty
+//            else{
+//                Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
+//            }
+//
+//            updatePix();
+//
+//        }
 
 
     }

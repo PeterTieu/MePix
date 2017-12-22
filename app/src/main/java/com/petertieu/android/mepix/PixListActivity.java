@@ -31,6 +31,14 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
     //Override the abstract method from SingleFragmentActivity
     @Override
     protected int getLayoutResId(){
+
+        //If no pixes exist (regardless of screen width or smallest screen width value)
+        if (PixManager.get(this).getPixes().size() == 0){
+            //Return single fragment view
+            return R.layout.activity_fragment;
+        }
+
+        //If one or more pixes exist, return ref.xml file, which is dependent on screen width and smallest screen width
         return R.layout.activity_masterdetail;
     }
 
@@ -45,7 +53,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         //Log callback method
         Log.i(TAG, "PixListFragment.Callbacks onPixSelected(..) called");
 
-        //If the two-pane view does NOT exist... i.e. sw < 600dp
+        //If the 2nd pane doesn NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
             //Create an Intent to start the PixViewPagerActivity activity

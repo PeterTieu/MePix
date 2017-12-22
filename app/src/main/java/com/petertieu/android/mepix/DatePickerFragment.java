@@ -63,13 +63,13 @@ public class DatePickerFragment extends DialogFragment {
         //Get the 'value' from the argument-bundle
         final Date pixDate = (Date) getArguments().getSerializable(ARG_PIX_DATE);
 
-        //Inflate the DatePicker layout
+        //Inflate DatePicker layout
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_date_picker, null);
 
-        //Assign the DatePicker reference variable to the associated resource ID
+        //Assign DatePicker reference variable to the associated resource ID
         mDatePicker = (DatePicker) view.findViewById(R.id.dialog_pix_date_picker);
 
-        //Create a Calendar
+        //Create Calendar object
         Calendar calendar = Calendar.getInstance();
 
         //Set time in Calendar to time stored in the Pix object

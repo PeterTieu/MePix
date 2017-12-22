@@ -8,6 +8,11 @@
     <string name="pix_log">Pix Log</string>
 
 
+    //fragment_pix_list.xml
+    <string name="you_have_no_pixes">You have no Pixes</string>
+    <string name="add_new_pix">Add New Pix</string>
+
+
     //Label of PixViewPagerActivity
     <string name="pix_details">Pix Details</string>
 
@@ -27,7 +32,11 @@
     <string name="description_hint">Description</string>
 
 
-    //Title of DatePicker
+    //Title of 'sate picker' dialog
     <string name="date_picker_title">Date of Pix</string>
+
+    //Title of 'pix delete' dialog
+    <string name="pix_delete_confirm">Are you sure you want to delete Pix:  </string>
+
 
 </resources>

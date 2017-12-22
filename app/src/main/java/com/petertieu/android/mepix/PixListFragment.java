@@ -15,7 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
@@ -35,8 +37,14 @@ public class PixListFragment extends Fragment{
     //Declare the RecyclerView instance variable
     private RecyclerView mPixRecyclerView;
 
-    //Declare the Adapter instance variable
+    //Declare Adapter instance variable
     private PixAdapter mPixAdapter;
+
+    //Declare "no pixes view" layout
+    private LinearLayout mNoPixView;
+
+    //Declare "add new pix" button
+    private Button mAddNewPix;
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
@@ -134,6 +142,33 @@ public class PixListFragment extends Fragment{
         //Set layout for the RecyclerView
         mPixRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+
+        //======= Add first pix layout =========================================
+        //Create view for "no pix view", i.e. view before any pix is added
+        mNoPixView = (LinearLayout) view.findViewById(R.id.no_pixes_view);
+
+        //Create button for adding first Pix
+        mAddNewPix = (Button) view.findViewById(R.id.add_new_pix);
+
+        //Add listener to button to add first pix
+        mAddNewPix.setOnClickListener(new View.OnClickListener(){
+
+            //Override method from View.OnClickListener interface
+            @Override
+            public void onClick(View view){
+                //Create new Pix
+                Pix pix = new Pix();
+
+                //Add new Pix to SQLiteDatabase, "pixes"
+                PixManager.get(getActivity()).addPix(pix);
+
+                //Call callback method from PixListFragment.Callbacks
+                mCallbacks.onPixSelected(pix);
+            }
+        });
+
+
+
         //Create/call the Adapter and link it with the RecyclerView
         updateUI();
 
@@ -172,6 +207,17 @@ public class PixListFragment extends Fragment{
 
             //Invalidate the previous Adapter version, and update it
             mPixAdapter.notifyDataSetChanged();
+        }
+
+
+
+
+        //Set visibility of "no pix view"
+        if (mPixes.size() == 0){
+            mNoPixView.setVisibility(View.VISIBLE);
+        }
+        else{
+            mNoPixView.setVisibility(View.GONE);
         }
     }
 

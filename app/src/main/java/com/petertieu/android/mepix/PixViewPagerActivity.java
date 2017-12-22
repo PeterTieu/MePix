@@ -95,7 +95,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         //Create a FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        Log.i(TAG, "1");
+        //Log size of mPixes to Logcat
         Log.i(TAG, "mPixes.size() = " + mPixes.size());
 
         //Set the Adapter to the ViewPager
@@ -104,8 +104,6 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
             //Override method from the FragmentStatePagerAdapter
             @Override
             public Fragment getItem(int position) {
-
-                Log.i(TAG, "2");
 
                 //Get a specific Pix from the List of Pix objects
                 Pix pix = mPixes.get(position);
