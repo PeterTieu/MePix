@@ -233,8 +233,10 @@ public class PixListFragment extends Fragment{
         //Log lifecycle callback
         Log.i(TAG, "onCreateOptionsMenu(..) called");
 
-        //Inflate a menu hiearchy from specified resource
-        menuInflater.inflate(R.menu.fragment_pix_list, menu);
+        if (PixManager.get(getActivity()).getPixes().size() > 0) {
+            //Inflate a menu hiearchy from specified resource
+            menuInflater.inflate(R.menu.fragment_pix_list, menu);
+        }
     }
 
 
