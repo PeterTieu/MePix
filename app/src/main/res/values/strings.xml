@@ -27,8 +27,8 @@
     <string name="favorite">Favorite</string>
     <string name="details">Details</string>
     <string name="date">Date</string>
-    <string name="tagged">Tagged</string>
-    <string name="location">Location</string>
+    <string name="add_tag">Add Tag</string>
+    <string name="add_location">Add Location</string>
     <string name="description_hint">Description</string>
 
 

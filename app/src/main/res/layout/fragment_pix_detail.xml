@@ -72,10 +72,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp"/>
 
-                <!--Tagged in the Pix-->
+                <!--Tag in the Pix-->
                 <Button
-                    android:id="@+id/detail_pix_tagged"
-                    android:text="@string/tagged"
+                    android:id="@+id/detail_pix_tag"
+                    android:text="@string/add_tag"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"/>
 
@@ -102,7 +102,7 @@
             <!--Location of the Pix-->
             <Button
                 android:id="@+id/detail_pix_location"
-                android:text="@string/location"
+                android:text="@string/add_location"
                 android:layout_marginLeft="15dp"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"/>

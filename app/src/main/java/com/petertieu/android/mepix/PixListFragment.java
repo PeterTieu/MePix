@@ -179,16 +179,23 @@ public class PixListFragment extends Fragment{
 
 
 
-    //Helper method for creating the Adapter and linking it with the RecyclerView
+    //Helper method for creating setting the list view, including setting "Add New Pix" button and set up Adapter and linking it with the RecyclerView
     public void updateUI(){
 
-        PixManager pixManager = PixManager.get(getActivity());
-
         //Assign the mPixes reference variable to the List of Pix objects from the PixManager singleton
-        //List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
+        List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
 
-        List<Pix> mPixes = pixManager.getPixes();
 
+        //============ Set visibility of "no pix view" - if no Pixes exist ==============================
+        if (mPixes.size() == 0){
+            mNoPixView.setVisibility(View.VISIBLE);
+        }
+        else{
+            mNoPixView.setVisibility(View.GONE);
+        }
+
+
+        //============ Set up Adapter ==============================
         //If an Adapter does NOT exist...
         if (mPixAdapter == null){
 
@@ -207,17 +214,6 @@ public class PixListFragment extends Fragment{
 
             //Invalidate the previous Adapter version, and update it
             mPixAdapter.notifyDataSetChanged();
-        }
-
-
-
-
-        //Set visibility of "no pix view"
-        if (mPixes.size() == 0){
-            mNoPixView.setVisibility(View.VISIBLE);
-        }
-        else{
-            mNoPixView.setVisibility(View.GONE);
         }
     }
 

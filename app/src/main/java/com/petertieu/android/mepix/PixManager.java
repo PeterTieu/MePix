@@ -187,7 +187,7 @@ public class PixManager {
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TITLE, pix.getTitle());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DATE, pix.getDate().getTime());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.FAVORITED, pix.isFavorited() ? 1:0); //IF crime.isFavorited() == true, put 1. Else, put 0
-        contentValues.put(PixDatabaseSchema.PixTable.Columns.TAGGED, pix.getTagged());
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.TAG, pix.getTag());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DESCRIPTION, pix.getDescription());
 
         //Return the ContentValues object

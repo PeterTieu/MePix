@@ -40,7 +40,7 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
                         PixDatabaseSchema.PixTable.Columns.TITLE + ", " +
                         PixDatabaseSchema.PixTable.Columns.DATE + ", " +
                         PixDatabaseSchema.PixTable.Columns.FAVORITED + ", " +
-                        PixDatabaseSchema.PixTable.Columns.TAGGED + ", " +
+                        PixDatabaseSchema.PixTable.Columns.TAG + ", " +
                         PixDatabaseSchema.PixTable.Columns.DESCRIPTION +
                         ")"
 

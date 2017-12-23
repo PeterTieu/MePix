@@ -3,7 +3,11 @@ package com.petertieu.android.mepix;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
@@ -50,17 +54,20 @@ public class PixDetailFragment extends Fragment {
     private EditText mTitle;    //Title
     private Button mDateButton; //Date Button
     private CheckBox mFavoritedButton; //Favorited Button
-    private EditText mDescription;
+    private EditText mDescription; //Description Button
+    private Button mTagButton; //Tagged Button
 
     //Declare DateFormat object for formatting the date display
     private DateFormat mDateFormat;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
-
+    //Declare constants for delete confirmation dialog
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 0; //Request code for receiving results from dialog fragment
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE = "DialogDelete"; //Identifier of dialog fragment
 
+    //Declare constants for tag requests
+    private static final int REQUEST_CODE_CONTACT = 1;
 
 
     //Declare Callbacks interface reference variable
@@ -200,7 +207,7 @@ public class PixDetailFragment extends Fragment {
         if (mPix.getDate() != null){
 
             //Set text of the date button to date of the Pix
-            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+            mDateButton.setText("Date:   " + mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
 
@@ -281,6 +288,27 @@ public class PixDetailFragment extends Fragment {
                 //Do nothing
             }
         });
+
+
+
+
+        //================ SET UP mText ==================================================================
+        //Assign tag Button instance variable to its associated resource ID
+        mTagButton = (Button) view.findViewById(R.id.detail_pix_tag);
+
+        if (mPix.getTag() != null){
+            mTagButton.setText("Tagged:   " + mPix.getTag());
+        }
+
+        final Intent pickTagIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+
+        mTagButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                startActivityForResult(pickTagIntent, REQUEST_CODE_CONTACT);
+            }
+        });
+
 
 
 
@@ -535,18 +563,12 @@ public class PixDetailFragment extends Fragment {
             mPix.setDate(newSetdate);
 
             //Set new date display for date button
-            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+            mDateButton.setText("Date:   " + mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
 
             //Update Pix (upon new date change)
             updatePix();
 
         }
-
-
-
-
-
-
 
 
 
@@ -584,6 +606,54 @@ public class PixDetailFragment extends Fragment {
 //            updatePix();
 //
 //        }
+
+
+
+        if (requestCode == REQUEST_CODE_CONTACT && intent != null){
+            Uri contactUri = intent.getData();
+
+            String[] queryFields = new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
+
+
+            Cursor cursor = getActivity().getContentResolver().query(
+                    contactUri,
+                    queryFields,
+                    null,
+                    null,
+                    null
+            );
+
+
+            try {
+                if (cursor.getCount() == 0) {
+                    return;
+                }
+
+                cursor.moveToFirst();
+                String tag = cursor.getString(0);
+
+                long tagId = cursor.getLong(1);
+
+                mPix.setTag(tag);
+
+                mTagButton.setText("Tagged:   " + tag);
+
+                updatePix();
+
+            }
+
+            finally{
+                cursor.close();
+            }
+
+
+
+
+
+
+        }
+
+
 
 
     }
