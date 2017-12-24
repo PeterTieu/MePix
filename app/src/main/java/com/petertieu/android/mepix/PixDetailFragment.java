@@ -1,7 +1,9 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -11,7 +13,6 @@ import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,10 +53,13 @@ public class PixDetailFragment extends Fragment {
 
     //Declare View instance variables
     private EditText mTitle;    //Title
-    private Button mDateButton; //Date Button
     private CheckBox mFavoritedButton; //Favorited Button
+    private Button mDateButton; //Date Button
+    private Button mTagButton; //Tag Button
+    private Button mPictureButton; //Photo Button
+    private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
-    private Button mTagButton; //Tagged Button
+
 
     //Declare DateFormat object for formatting the date display
     private DateFormat mDateFormat;
@@ -207,7 +211,7 @@ public class PixDetailFragment extends Fragment {
         if (mPix.getDate() != null){
 
             //Set text of the date button to date of the Pix
-            mDateButton.setText("Date:   " + mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
 
@@ -292,22 +296,63 @@ public class PixDetailFragment extends Fragment {
 
 
 
-        //================ SET UP mText ==================================================================
+        //================ SET UP mTagButton ==================================================================
         //Assign tag Button instance variable to its associated resource ID
         mTagButton = (Button) view.findViewById(R.id.detail_pix_tag);
 
+        //If tag data exists for Pix
         if (mPix.getTag() != null){
-            mTagButton.setText("Tagged:   " + mPix.getTag());
+            //Display tag in the tag button
+            mTagButton.setText(mPix.getTag());
         }
 
+        //Create implicit Intent to open contacts app to search for a contact (via ContactsContract.Contacts.CONTENT_URI), with the action of picking it
         final Intent pickTagIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
 
+        //Set listener for tag button
         mTagButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                //Start intent, requesting for result
                 startActivityForResult(pickTagIntent, REQUEST_CODE_CONTACT);
             }
         });
+
+        //Ensure contacts app exists in device - so as to prevent app from crashing. Create PackageManager
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        //If PackageManager does not resolve contacts activity from pickTagIntent
+        if (packageManager.resolveActivity(pickTagIntent, PackageManager.MATCH_DEFAULT_ONLY) == null){
+            //Disable mTagButton
+            mTagButton.setEnabled(false);
+        }
+
+
+
+
+
+        //================ SET UP mPhotoButton ==================================================================
+        mPictureButton = (Button) view.findViewById(R.id.detail_pix_add_picture);
+
+//        mPictureButton.setOnClickListener(new View.OnClickListener(){
+//            @Override
+//            public void onClick(View view){
+//                final CharSequence[] dialogPictureItems = {"Take Photo", "Choose from Library", "Cancel"};
+//
+//                AlertDialog pictureAlertDialog = new AlertDialog()
+//                        .Builder(getActivity())
+//                        .setTitle("Add Picture")
+//                        .setItems(dialogPictureItems, new DialogInterface.OnClickListener(){
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int item){
+//                                boolean result = Utility.checkPermission().getActivity
+//
+//                    }
+//                })
+//
+//            }
+//        });
+
 
 
 
@@ -326,7 +371,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
-    //Update the Pix SQLiteDatabase and two-pane UI (upon any changes)
+    //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
     private void updatePix(){
 
         //Update the SQLite database based on the Pix passed
@@ -553,6 +598,7 @@ public class PixDetailFragment extends Fragment {
             return;
         }
 
+
         //If request code matches the date dialog fragment's
         if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE){
 
@@ -563,7 +609,7 @@ public class PixDetailFragment extends Fragment {
             mPix.setDate(newSetdate);
 
             //Set new date display for date button
-            mDateButton.setText("Date:   " + mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
+            mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
 
             //Update Pix (upon new date change)
             updatePix();
@@ -609,15 +655,19 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //If resultCode matches the contact's activity and its intent exists
         if (requestCode == REQUEST_CODE_CONTACT && intent != null){
+
+            //Get contact's URI from contact intent
             Uri contactUri = intent.getData();
 
-            String[] queryFields = new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
+            //Get display name
+            String[] displayNameField = new String[]{ContactsContract.Contacts.DISPLAY_NAME};
 
-
-            Cursor cursor = getActivity().getContentResolver().query(
-                    contactUri,
-                    queryFields,
+            //Create cursor to query ContactsContract.Contacts table
+            Cursor cursorDisplayName = getActivity().getContentResolver().query(
+                    contactUri, //URI of the contact to query
+                    displayNameField, //Contains display name of the contact to query
                     null,
                     null,
                     null
@@ -625,36 +675,33 @@ public class PixDetailFragment extends Fragment {
 
 
             try {
-                if (cursor.getCount() == 0) {
+
+                //Check if cursor contains results
+                if (cursorDisplayName.getCount() == 0) {
                     return;
                 }
 
-                cursor.moveToFirst();
-                String tag = cursor.getString(0);
+                //Move cursor to first field
+                cursorDisplayName.moveToFirst();
 
-                long tagId = cursor.getLong(1);
+                //Extract data (i.e. DISPLAY_NAME) that cursor points to
+                String displayName = cursorDisplayName.getString(0);
 
-                mPix.setTag(tag);
+                //Set tag field of Pix to obtained data
+                mPix.setTag(displayName);
 
-                mTagButton.setText("Tagged:   " + tag);
+                //Display obtained data to mTagButton
+                mTagButton.setText(displayName);
 
+                //Update the Pix SQLiteDatabase and two-pane UI (upon change with Pix's tag field)
                 updatePix();
-
             }
 
             finally{
-                cursor.close();
+                //Close curosr
+                cursorDisplayName.close();
             }
-
-
-
-
-
-
         }
-
-
-
 
     }
 

@@ -10,7 +10,7 @@
 
     //fragment_pix_list.xml
     <string name="you_have_no_pixes">You have no Pixes</string>
-    <string name="add_new_pix">Add New Pix</string>
+    <string name="add_new_pix">Add New\nPix</string>
 
 
     //Label of PixViewPagerActivity
@@ -27,8 +27,12 @@
     <string name="favorite">Favorite</string>
     <string name="details">Details</string>
     <string name="date">Date</string>
-    <string name="add_tag">Add Tag</string>
+    <string name="add_date">Add Date</string>
+    <string name="location">Location</string>
     <string name="add_location">Add Location</string>
+    <string name="with">With</string>
+    <string name="no_tag_added">No Tag Added</string>
+    <string name="add_tag">Add Tag</string>
     <string name="description_hint">Description</string>
 
 
