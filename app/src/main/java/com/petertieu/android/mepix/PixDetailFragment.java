@@ -56,6 +56,8 @@ public class PixDetailFragment extends Fragment {
     private CheckBox mFavoritedButton; //Favorited Button
     private Button mDateButton; //Date Button
     private Button mTagButton; //Tag Button
+    private EditText mTagEditText; //Tag EditText
+    private String mTotalTag;
     private Button mPictureButton; //Photo Button
     private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
@@ -300,12 +302,6 @@ public class PixDetailFragment extends Fragment {
         //Assign tag Button instance variable to its associated resource ID
         mTagButton = (Button) view.findViewById(R.id.detail_pix_tag);
 
-        //If tag data exists for Pix
-        if (mPix.getTag() != null){
-            //Display tag in the tag button
-            mTagButton.setText(mPix.getTag());
-        }
-
         //Create implicit Intent to open contacts app to search for a contact (via ContactsContract.Contacts.CONTENT_URI), with the action of picking it
         final Intent pickTagIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
 
@@ -330,9 +326,52 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //================ SET UP mTagEditText ==================================================================
+        //Assign tag EditText instance variable to its associated resource ID
+        mTagEditText = (EditText) view.findViewById(R.id.detail_edit_pix_tag);
+
+        //If Pix tag exists, display it in tag EditText
+        if (mPix.getTag() != null){
+            mTagEditText.setText(mPix.getTag());
+        }
+
+        //Set listener for tag EditText
+        mTagEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Set String containing all tags from input
+                mTotalTag = charSequence.toString();
+
+                //Set Pix tag to String containing all tags from input
+                mPix.setTag(mTotalTag);
+
+                //Update Pix SQLiteDatabase and two-pane UI (upon changes in Pix tag EditText to tag field in Pix)
+                updatePix();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //Do nothing
+            }
+        });
+
+        //Display Pix tag field in Pix tag EditText
+        mTagEditText.setText(mPix.getTag());
+
+
+
+
+
+
+
 
         //================ SET UP mPhotoButton ==================================================================
-        mPictureButton = (Button) view.findViewById(R.id.detail_pix_add_picture);
+//        mPictureButton = (Button) view.findViewById(R.id.detail_pix_add_picture);
 
 //        mPictureButton.setOnClickListener(new View.OnClickListener(){
 //            @Override
@@ -687,11 +726,25 @@ public class PixDetailFragment extends Fragment {
                 //Extract data (i.e. DISPLAY_NAME) that cursor points to
                 String displayName = cursorDisplayName.getString(0);
 
+                //If total Pix tag String is NOT empty
+                if (!mTotalTag.isEmpty()){
+                    //Append total Pix tag String to display name of contact
+                    mTotalTag = mTotalTag + ",\n" + displayName;
+                }
+                //If total Pix tag String is empty initially (i.e. no tags made, i.e. EditText not filled)
+                else{
+                    //Let total Pix tag String equal display name of contact
+                    mTotalTag = displayName;
+                }
+
+
                 //Set tag field of Pix to obtained data
-                mPix.setTag(displayName);
+                mPix.setTag(mTotalTag);
 
                 //Display obtained data to mTagButton
-                mTagButton.setText(displayName);
+//                mTagButton.setText(displayName);
+
+                mTagEditText.setText(mPix.getTag());
 
                 //Update the Pix SQLiteDatabase and two-pane UI (upon change with Pix's tag field)
                 updatePix();

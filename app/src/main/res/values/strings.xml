@@ -31,8 +31,8 @@
     <string name="location">Location</string>
     <string name="add_location">Add Location</string>
     <string name="with">With</string>
-    <string name="no_tag_added">No Tag Added</string>
-    <string name="add_tag">Add Tag</string>
+    <string name="tag_people">Tag people</string>
+    <string name="add_tag">+ Tag</string>
     <string name="description_hint">Description</string>
 
 
