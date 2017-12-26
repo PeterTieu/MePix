@@ -57,9 +57,9 @@
                 <ImageButton
                     android:id="@+id/detail_pix_add_picture"
                     android:src="@android:drawable/ic_menu_camera"
+                    android:layout_gravity="center"
                     android:layout_width="92dp"
-                    android:layout_height="50dp"
-                    android:layout_marginLeft="15dp"/>
+                    android:layout_height="50dp"/>
 
             </LinearLayout>
             <!--Picture of the Pix-->

@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
@@ -28,6 +29,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import android.text.format.DateFormat;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -58,7 +60,7 @@ public class PixDetailFragment extends Fragment {
     private Button mTagButton; //Tag Button
     private EditText mTagEditText; //Tag EditText
     private String mTotalTag;
-    private Button mPictureButton; //Photo Button
+    private ImageButton mPictureButton; //Photo Button
     private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
 
@@ -74,6 +76,9 @@ public class PixDetailFragment extends Fragment {
 
     //Declare constants for tag requests
     private static final int REQUEST_CODE_CONTACT = 1;
+    private static final int REQUEST_CAMERA = 2;
+    private static final int SELECT_FILE = 3;
+    private String userChoosenTask;
 
 
     //Declare Callbacks interface reference variable
@@ -371,27 +376,35 @@ public class PixDetailFragment extends Fragment {
 
 
         //================ SET UP mPhotoButton ==================================================================
-//        mPictureButton = (Button) view.findViewById(R.id.detail_pix_add_picture);
+        mPictureButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
 
-//        mPictureButton.setOnClickListener(new View.OnClickListener(){
-//            @Override
-//            public void onClick(View view){
-//                final CharSequence[] dialogPictureItems = {"Take Photo", "Choose from Library", "Cancel"};
-//
-//                AlertDialog pictureAlertDialog = new AlertDialog()
-//                        .Builder(getActivity())
-//                        .setTitle("Add Picture")
-//                        .setItems(dialogPictureItems, new DialogInterface.OnClickListener(){
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int item){
-//                                boolean result = Utility.checkPermission().getActivity
-//
-//                    }
-//                })
-//
-//            }
-//        });
 
+        mPictureButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view){
+
+                final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Add Photo!");
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int item) {
+                        boolean result = Utility.checkPermission(getActivity());
+                        if (items[item].equals("Take Photo")) {
+                            if (result)
+                                cameraIntent();
+                        } else if (items[item].equals("Choose from Library")) {
+                            if (result)
+                                galleryIntent();
+                        } else if (items[item].equals("Cancel")) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
+                builder.show();
+            }
+        });
 
 
 
@@ -409,6 +422,21 @@ public class PixDetailFragment extends Fragment {
 
 
 
+    private void cameraIntent(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+
+    private void galleryIntent(){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE);
+    }
+
+
+
 
     //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
     private void updatePix(){
@@ -418,6 +446,26 @@ public class PixDetailFragment extends Fragment {
 
         //Update PixListFragment() in 'real-time' for two-pane layout
         mCallbacks.onPixUpdated(mPix);
+    }
+
+
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if(userChoosenTask.equals("Take Photo"))
+                        cameraIntent();
+                    else if(userChoosenTask.equals("Choose from Library"))
+                        galleryIntent();
+                } else {
+                    //code for deny
+                }
+                break;
+        }
     }
 
 
