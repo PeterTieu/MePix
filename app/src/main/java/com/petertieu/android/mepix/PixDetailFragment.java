@@ -6,13 +6,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -30,9 +33,12 @@ import android.widget.EditText;
 
 import android.text.format.DateFormat;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -60,10 +66,12 @@ public class PixDetailFragment extends Fragment {
     private Button mTagButton; //Tag Button
     private EditText mTagEditText; //Tag EditText
     private String mTotalTag;
-    private ImageButton mPictureButton; //Photo Button
     private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
-
+    private ImageButton mPictureButton; //Photo Button
+    private File mPictureFile;
+//    private File mPictureFile = new File(getContext().getFilesDir(), "images");
+    private ImageView mPictureView; //Picture ImageView
 
     //Declare DateFormat object for formatting the date display
     private DateFormat mDateFormat;
@@ -379,10 +387,21 @@ public class PixDetailFragment extends Fragment {
         mPictureButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
 
 
+
+
+
+
         mPictureButton.setOnClickListener(new View.OnClickListener(){
+
 
             @Override
             public void onClick(View view){
+
+
+//                if (mPictureFile == null){
+//                    Toast.makeText(getContext(), "mPictureFile does not exist", Toast.LENGTH_LONG).show();
+//                }
+
 
                 final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -390,14 +409,21 @@ public class PixDetailFragment extends Fragment {
                 builder.setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
-                        boolean result = Utility.checkPermission(getActivity());
+//                        boolean result = Utility.checkPermission(getActivity());
                         if (items[item].equals("Take Photo")) {
-                            if (result)
-                                cameraIntent();
-                        } else if (items[item].equals("Choose from Library")) {
-                            if (result)
-                                galleryIntent();
-                        } else if (items[item].equals("Cancel")) {
+                            Log.i(TAG, "*Take Photo* pressed");
+                            cameraIntent();
+//                            if (result)
+//                                cameraIntent();
+                        }
+                        else if (items[item].equals("Choose from Library")) {
+                            Log.i(TAG, "*Choose from Library* pressed");
+                            galleryIntent();
+//                            if (result)
+//                                galleryIntent();
+                        }
+                        else if (items[item].equals("Cancel")) {
+                            Log.i(TAG, "*Cancel* pressed");
                             dialog.dismiss();
                         }
                     }
@@ -415,6 +441,24 @@ public class PixDetailFragment extends Fragment {
 
 
 
+        //================ SET UP mPictureView ==================================================================
+        mPictureView = (ImageView) view.findViewById(R.id.detail_pix_picture);
+
+        mPictureView.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                FragmentManager fragmentManager = getFragmentManager();
+                ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
+
+
+            }
+        });
+
+
+
+
+
+
 
         //Return the View
         return view;
@@ -423,8 +467,52 @@ public class PixDetailFragment extends Fragment {
 
 
     private void cameraIntent(){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, REQUEST_CAMERA);
+
+
+
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+
+        PackageManager packageManager = getActivity().getPackageManager();
+
+
+        boolean canTakePhoto = (mPictureFile != null) && (captureImage.resolveActivity(packageManager) != null);
+        mPictureButton.setEnabled(canTakePhoto);
+
+
+
+//        File imagePath = new File(getContext().getFilesDir(), "images");
+//        File newFile = new File(imagePath, "default_image.jpg");
+        mPictureFile = new File(getContext().getFilesDir(), "images");
+
+        Uri uri = FileProvider.getUriForFile(
+                getActivity(),
+                "com.petertieu.android.mepix.fileprovider",
+//                imagePath
+                mPictureFile
+        );
+
+        captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+
+        PackageManager pm = getActivity().getPackageManager();
+
+        List<ResolveInfo> cameraActivities = pm.queryIntentActivities(
+                captureImage,
+                PackageManager.MATCH_DEFAULT_ONLY
+        );
+
+        for (ResolveInfo activity : cameraActivities){
+            getActivity().grantUriPermission(
+                    activity.activityInfo.packageName,
+                    uri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            );
+        }
+
+
+
+
+        startActivityForResult(captureImage, REQUEST_CAMERA);
     }
 
 
@@ -452,21 +540,33 @@ public class PixDetailFragment extends Fragment {
 
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if(userChoosenTask.equals("Take Photo"))
-                        cameraIntent();
-                    else if(userChoosenTask.equals("Choose from Library"))
-                        galleryIntent();
-                } else {
-                    //code for deny
-                }
-                break;
+
+    private void updatePictureView(){
+
+        if (mPictureFile == null || !mPictureFile.exists()){
+            mPictureView
         }
     }
+
+
+
+
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        switch (requestCode) {
+//            case Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    if(userChoosenTask.equals("Take Photo"))
+//                        cameraIntent();
+//                    else if(userChoosenTask.equals("Choose from Library"))
+//                        galleryIntent();
+//                } else {
+//                    //code for deny
+//                }
+//                break;
+//        }
+//    }
 
 
 
@@ -803,6 +903,23 @@ public class PixDetailFragment extends Fragment {
                 cursorDisplayName.close();
             }
         }
+
+
+
+        if (requestCode == REQUEST_CAMERA){
+            Uri uri = FileProvider.getUriForFile(
+                    getActivity(),
+                    "com.petertieu.android.mepix.fileprovider",
+                    mPictureFile
+            );
+
+            getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+
+        updatePictureView();
+
+        updatePix();
+
 
     }
 

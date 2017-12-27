@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.petertieu.android.mepix">
 
+    <uses-feature android:name="android.hardware.camera"
+                  android:required="false"/> //Tells Android that this app uses a camera feature (strongly recommended)
+    //So that Google Play Store *could* refuse to install the app if...
+    //the user's device does not support this feature
+    //android:required="false": means that the app can work fine without the camera (i.e. doesn't need camera)
+    // BUT some parts may be disabled as a result
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,6 +36,22 @@
                                                             //so when this is pressed, the user moves "up"
                                                             //the hierarchy to: PixListActivity
         </activity>
+
+
+
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.petertieu.android.mepix.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/files"/> //Hook up the files.xml file to the FileProvider
+
+        </provider>
+
 
 
 
