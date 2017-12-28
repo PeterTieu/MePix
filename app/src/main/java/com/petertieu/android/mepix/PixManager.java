@@ -9,6 +9,7 @@ import com.petertieu.android.mepix.database.PixCursorWrapper;
 import com.petertieu.android.mepix.database.PixDatabaseHelper;
 import com.petertieu.android.mepix.database.PixDatabaseSchema;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -158,6 +159,12 @@ public class PixManager {
 
 
 
+    public File getPictureFile(Pix pix){
+
+        File filesDirectory = mContext.getFilesDir();
+
+        return new File(filesDirectory, pix.getPictureFilename());
+    }
 
 
 

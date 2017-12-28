@@ -1,14 +1,14 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
-import android.media.Image;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -84,8 +84,9 @@ public class PixDetailFragment extends Fragment {
 
     //Declare constants for tag requests
     private static final int REQUEST_CODE_CONTACT = 1;
-    private static final int REQUEST_CAMERA = 2;
+    private static final int REQUEST_PICTURE = 2;
     private static final int SELECT_FILE = 3;
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
     private String userChoosenTask;
 
 
@@ -166,6 +167,8 @@ public class PixDetailFragment extends Fragment {
 
         //Assign Pix object to Pix object from PixManager singleton
         mPix = PixManager.get(getActivity()).getPix(pixId);
+
+        mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
         //Declare an options menu for the fragment
         setHasOptionsMenu(true);
@@ -444,11 +447,16 @@ public class PixDetailFragment extends Fragment {
         //================ SET UP mPictureView ==================================================================
         mPictureView = (ImageView) view.findViewById(R.id.detail_pix_picture);
 
+        updatePictureView();
+
         mPictureView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 FragmentManager fragmentManager = getFragmentManager();
                 ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
+
+                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_PICTURE);
+                pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
 
 
             }
@@ -476,14 +484,14 @@ public class PixDetailFragment extends Fragment {
         PackageManager packageManager = getActivity().getPackageManager();
 
 
-        boolean canTakePhoto = (mPictureFile != null) && (captureImage.resolveActivity(packageManager) != null);
-        mPictureButton.setEnabled(canTakePhoto);
+//        boolean canTakePhoto = (mPictureFile != null) && (captureImage.resolveActivity(packageManager) != null);
+//        mPictureButton.setEnabled(canTakePhoto);
 
 
 
 //        File imagePath = new File(getContext().getFilesDir(), "images");
 //        File newFile = new File(imagePath, "default_image.jpg");
-        mPictureFile = new File(getContext().getFilesDir(), "images");
+//        mPictureFile = new File(getContext().getFilesDir(), "images.jpg");
 
         Uri uri = FileProvider.getUriForFile(
                 getActivity(),
@@ -512,7 +520,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
-        startActivityForResult(captureImage, REQUEST_CAMERA);
+        startActivityForResult(captureImage, REQUEST_PICTURE);
     }
 
 
@@ -544,7 +552,19 @@ public class PixDetailFragment extends Fragment {
     private void updatePictureView(){
 
         if (mPictureFile == null || !mPictureFile.exists()){
-            mPictureView
+            mPictureView.setImageDrawable(null);
+
+            mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
+        }
+
+        else{
+
+            Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+
+            mPictureView.setImageBitmap(bitmap);
+
+            mPictureView.setContentDescription(getString(R.string.pix_picture_description));
+
         }
     }
 
@@ -906,7 +926,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
-        if (requestCode == REQUEST_CAMERA){
+        if (requestCode == REQUEST_PICTURE){
             Uri uri = FileProvider.getUriForFile(
                     getActivity(),
                     "com.petertieu.android.mepix.fileprovider",
@@ -914,11 +934,16 @@ public class PixDetailFragment extends Fragment {
             );
 
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+
+
+            updatePictureView();
+
+            updatePix();
+
         }
 
-        updatePictureView();
 
-        updatePix();
 
 
     }
