@@ -1,8 +1,8 @@
 package com.petertieu.android.mepix;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
+import java.io.File;
 import java.util.List;
 
 
@@ -48,6 +49,10 @@ public class PixListFragment extends Fragment{
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
+
+    private File mPictureFile;
+
+    private ImageView mPictureView;
 
 
 
@@ -356,6 +361,11 @@ public class PixListFragment extends Fragment{
         //Declare ImageView for "Favourited" field
         private ImageView mPixFavorited;
 
+        //Declare ImageView for "Picture" of Pix
+        private ImageView mPictureView;
+
+
+
 
 
         //Build constructor #1
@@ -373,6 +383,11 @@ public class PixListFragment extends Fragment{
             mPixDate = (TextView) view.findViewById(R.id.list_pix_date);
 
             mPixFavorited = (ImageView) view.findViewById(R.id.list_pix_favorited);
+
+            //Assign list item's picture instance variable to its associated resource ID
+            mPictureView = (ImageView) view.findViewById(R.id.list_pix_picture);
+
+
 
 
             //Set a listener for the list item
@@ -429,8 +444,45 @@ public class PixListFragment extends Fragment{
 
             //If: mPix.isFavorited() == true.. then: mPixFavorited.setImageResource(favoriteDrawable).. else: mPixFavorited.setImageResource(nonFavoriteDrawable)
             mPixFavorited.setImageResource(mPix.isFavorited() ? favoritedDrawable : nonFavoritedDrawable);
+
+
+            //============ Set Picture view===================================
+            if (mPix.getPictureFilename() != null){
+
+                mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
+                updatePictureView();
+            }
+
         }
+
+
+        private void updatePictureView(){
+
+            if (mPictureFile == null || !mPictureFile.exists()){
+                mPictureView.setImageDrawable(null);
+
+                mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
+            }
+
+            else{
+
+                Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+
+                mPictureView.setImageBitmap(bitmap);
+
+                mPictureView.setContentDescription(getString(R.string.pix_picture_description));
+
+            }
+        }
+
+
+
     }
+
+
+
+
+
 
 
 
