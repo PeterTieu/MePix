@@ -1,6 +1,7 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -389,11 +391,6 @@ public class PixDetailFragment extends Fragment {
         //================ SET UP mPhotoButton ==================================================================
         mPictureButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
 
-
-
-
-
-
         mPictureButton.setOnClickListener(new View.OnClickListener(){
 
 
@@ -527,7 +524,21 @@ public class PixDetailFragment extends Fragment {
     private void galleryIntent(){
         Intent intent = new Intent();
         intent.setType("image/*");
+
         intent.setAction(Intent.ACTION_GET_CONTENT);
+
+        Uri uri = FileProvider.getUriForFile(
+                getActivity(),
+                "com.petertieu.android.mepix.fileprovider",
+//                imagePath
+                mPictureFile
+        );
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+
+
+
+
         startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE);
     }
 
@@ -555,6 +566,7 @@ public class PixDetailFragment extends Fragment {
             mPictureView.setImageDrawable(null);
 
             mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
+//            Toast.makeText(getActivity(), "No mPictureFile", Toast.LENGTH_SHORT).show();
         }
 
         else{
@@ -564,6 +576,7 @@ public class PixDetailFragment extends Fragment {
             mPictureView.setImageBitmap(bitmap);
 
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
+//            Toast.makeText(getActivity(), "mPictureFile exists", Toast.LENGTH_SHORT).show();
 
         }
     }
@@ -798,16 +811,16 @@ public class PixDetailFragment extends Fragment {
 
     //Override onActivityResult(..) callback method
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent){
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
         //If a result code DOES NOT exist
-        if (resultCode != Activity.RESULT_OK){
+        if (resultCode != Activity.RESULT_OK) {
             return;
         }
 
 
         //If request code matches the date dialog fragment's
-        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE){
+        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE) {
 
             //Get Date object from date dialog fragment
             Date newSetdate = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
@@ -822,7 +835,6 @@ public class PixDetailFragment extends Fragment {
             updatePix();
 
         }
-
 
 
 //        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE){
@@ -861,9 +873,8 @@ public class PixDetailFragment extends Fragment {
 //        }
 
 
-
         //If resultCode matches the contact's activity and its intent exists
-        if (requestCode == REQUEST_CODE_CONTACT && intent != null){
+        if (requestCode == REQUEST_CODE_CONTACT && intent != null) {
 
             //Get contact's URI from contact intent
             Uri contactUri = intent.getData();
@@ -895,12 +906,12 @@ public class PixDetailFragment extends Fragment {
                 String displayName = cursorDisplayName.getString(0);
 
                 //If total Pix tag String is NOT empty
-                if (!mTotalTag.isEmpty()){
+                if (!mTotalTag.isEmpty()) {
                     //Append total Pix tag String to display name of contact
                     mTotalTag = mTotalTag + ",\n" + displayName;
                 }
                 //If total Pix tag String is empty initially (i.e. no tags made, i.e. EditText not filled)
-                else{
+                else {
                     //Let total Pix tag String equal display name of contact
                     mTotalTag = displayName;
                 }
@@ -916,17 +927,14 @@ public class PixDetailFragment extends Fragment {
 
                 //Update the Pix SQLiteDatabase and two-pane UI (upon change with Pix's tag field)
                 updatePix();
-            }
-
-            finally{
+            } finally {
                 //Close curosr
                 cursorDisplayName.close();
             }
         }
 
 
-
-        if (requestCode == REQUEST_PICTURE){
+        if (requestCode == REQUEST_PICTURE) {
             Uri uri = FileProvider.getUriForFile(
                     getActivity(),
                     "com.petertieu.android.mepix.fileprovider",
@@ -936,7 +944,6 @@ public class PixDetailFragment extends Fragment {
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
 
-
             updatePictureView();
 
             updatePix();
@@ -944,6 +951,30 @@ public class PixDetailFragment extends Fragment {
         }
 
 
+        if (requestCode == SELECT_FILE) {
+//            Uri uri = FileProvider.getUriForFile(
+//                    getActivity(),
+//                    "com.petertieu.android.mepix.fileprovider",
+//                    mPictureFile
+//            );
+
+            Uri uri = intent.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                // Log.d(TAG, String.valueOf(bitmap));
+
+                mPictureView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            updatePictureView();
+
+            updatePix();
+
+
+        }
 
 
     }
