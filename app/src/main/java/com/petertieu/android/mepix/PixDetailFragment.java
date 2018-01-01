@@ -958,20 +958,20 @@ public class PixDetailFragment extends Fragment {
 //                    mPictureFile
 //            );
 
-            Uri uri = intent.getData();
-
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-                // Log.d(TAG, String.valueOf(bitmap));
-
-                mPictureView.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            updatePictureView();
-
-            updatePix();
+//            Uri uri = intent.getData();
+//
+//            try {
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+//                // Log.d(TAG, String.valueOf(bitmap));
+//
+//                mPictureView.setImageBitmap(bitmap);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            updatePictureView();
+//
+//            updatePix();
 
 
         }
