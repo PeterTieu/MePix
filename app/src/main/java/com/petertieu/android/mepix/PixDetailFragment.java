@@ -955,7 +955,53 @@ public class PixDetailFragment extends Fragment {
 
 
 
-//            Uri uri = FileProvider.getUriForFile(
+            Uri uri = FileProvider.getUriForFile(
+                    getActivity(),
+                    "com.petertieu.android.mepix.fileprovider",
+                    mPictureFile
+            );
+
+            Uri uri = intent.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                // Log.d(TAG, String.valueOf(bitmap));
+
+                mPictureView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            updatePictureView();
+
+            updatePix();
+
+
+                        Uri uri = FileProvider.getUriForFile(
+                    getActivity(),
+                    "com.petertieu.android.mepix.fileprovider",
+                    mPictureFile
+            );
+
+            Uri uri = intent.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                // Log.d(TAG, String.valueOf(bitmap));
+
+                mPictureView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            updatePictureView();
+
+            updatePix();
+
+
+
+
+            //            Uri uri = FileProvider.getUriForFile(
 //                    getActivity(),
 //                    "com.petertieu.android.mepix.fileprovider",
 //                    mPictureFile
@@ -975,6 +1021,29 @@ public class PixDetailFragment extends Fragment {
 //            updatePictureView();
 //
 //            updatePix();
+
+
+            //            Uri uri = FileProvider.getUriForFile(
+//                    getActivity(),
+//                    "com.petertieu.android.mepix.fileprovider",
+//                    mPictureFile
+//            );
+
+//            Uri uri = intent.getData();
+//
+//            try {
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+//                // Log.d(TAG, String.valueOf(bitmap));
+//
+//                mPictureView.setImageBitmap(bitmap);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            updatePictureView();
+//
+//            updatePix();
+
 
 
         }
