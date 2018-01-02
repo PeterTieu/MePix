@@ -872,6 +872,7 @@ public class PixDetailFragment extends Fragment {
 //
 //        }
 
+
         //If resultCode matches the contact's activity and its intent exists
         if (requestCode == REQUEST_CODE_CONTACT && intent != null) {
 
