@@ -952,6 +952,9 @@ public class PixDetailFragment extends Fragment {
 
 
         if (requestCode == SELECT_FILE) {
+
+
+
 //            Uri uri = FileProvider.getUriForFile(
 //                    getActivity(),
 //                    "com.petertieu.android.mepix.fileprovider",
