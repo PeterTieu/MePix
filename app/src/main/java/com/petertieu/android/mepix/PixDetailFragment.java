@@ -463,8 +463,6 @@ public class PixDetailFragment extends Fragment {
 
 
 
-
-
         //Return the View
         return view;
     }
