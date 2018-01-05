@@ -94,6 +94,4 @@ public class Pix {
     public String getPictureFilename(){
         return "IMG" + getId().toString() + ".jpg";
     }
-
-
 }
