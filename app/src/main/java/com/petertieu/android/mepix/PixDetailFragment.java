@@ -444,6 +444,7 @@ public class PixDetailFragment extends Fragment {
         //================ SET UP mPictureView ==================================================================
         mPictureView = (ImageView) view.findViewById(R.id.detail_pix_picture);
 
+        //Update bitmap view
         updatePictureView();
 
         mPictureView.setOnClickListener(new View.OnClickListener(){
