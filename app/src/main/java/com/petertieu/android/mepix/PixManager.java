@@ -159,10 +159,13 @@ public class PixManager {
 
 
 
+    //Get picture file of the Pix via its file location
     public File getPictureFile(Pix pix){
 
+        //Return absolute path to the directory on the filesystem
         File filesDirectory = mContext.getFilesDir();
 
+        //Return File object
         return new File(filesDirectory, pix.getPictureFilename());
     }
 

@@ -387,9 +387,6 @@ public class PixListFragment extends Fragment{
             //Assign list item's picture instance variable to its associated resource ID
             mPictureView = (ImageView) view.findViewById(R.id.list_pix_picture);
 
-
-
-
             //Set a listener for the list item
             view.setOnClickListener(new View.OnClickListener(){
 
@@ -459,30 +456,19 @@ public class PixListFragment extends Fragment{
         private void updatePictureView(){
 
             if (mPictureFile == null || !mPictureFile.exists()){
-                mPictureView.setImageDrawable(null);
-
                 mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
             }
 
             else{
-
                 Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
-
                 mPictureView.setImageBitmap(bitmap);
-
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));
-
             }
         }
 
 
 
     }
-
-
-
-
-
 
 
 

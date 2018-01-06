@@ -1,7 +1,6 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,7 +37,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -71,26 +69,23 @@ public class PixDetailFragment extends Fragment {
     private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
     private ImageButton mPictureButton; //Photo Button
-    private File mPictureFile;
-//    private File mPictureFile = new File(getContext().getFilesDir(), "images");
+    private File mPictureFile; //Picture File
     private ImageView mPictureView; //Picture ImageView
 
     //Declare DateFormat object for formatting the date display
     private DateFormat mDateFormat;
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
 
-    //Declare constants for delete confirmation dialog
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 0; //Request code for receiving results from dialog fragment
+    //Declare identifiers for dialog fragments
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE = "DialogDelete"; //Identifier of dialog fragment
 
     //Declare constants for tag requests
-    private static final int REQUEST_CODE_CONTACT = 1;
-    private static final int REQUEST_PICTURE = 2;
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
+    private static final int REQUEST_CODE_CONTACT = 1; //Request code for results returned from contact activity/app
+    private static final int REQUEST_CODE_PICTURE = 2; //Request code for results returned from camer activity/app
     private static final int SELECT_FILE = 3;
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
-    private String userChoosenTask;
-
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
@@ -170,6 +165,7 @@ public class PixDetailFragment extends Fragment {
         //Assign Pix object to Pix object from PixManager singleton
         mPix = PixManager.get(getActivity()).getPix(pixId);
 
+        //Assign reference variable, mPictureFile, to picture file in FoleProvider
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
         //Declare an options menu for the fragment
@@ -384,79 +380,92 @@ public class PixDetailFragment extends Fragment {
 
 
 
-
-
-
-
         //================ SET UP mPhotoButton ==================================================================
+        //Assign picture instance variable to its associated resource ID
         mPictureButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
 
+        //Set listener for mPhotoButton
         mPictureButton.setOnClickListener(new View.OnClickListener(){
-
-
             @Override
             public void onClick(View view){
 
+                //Set dialog prompt items
+                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery", "Cancel"};
 
-//                if (mPictureFile == null){
-//                    Toast.makeText(getContext(), "mPictureFile does not exist", Toast.LENGTH_LONG).show();
-//                }
+                //Create AlertDialog.Builder object
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
+                //Set title of dialog
+                alertDialogBuilder.setTitle("Add a Picture");
 
-                final CharSequence[] items = {"Take Photo", "Choose from Library", "Cancel"};
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Add Photo!");
-                builder.setItems(items, new DialogInterface.OnClickListener() {
+                //Set items of dialog, and create listeners for them
+                alertDialogBuilder.setItems(dialogItems, new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
-//                        boolean result = Utility.checkPermission(getActivity());
-                        if (items[item].equals("Take Photo")) {
+
+                        //If "Take Picture" dialog item is pressed
+                        if (dialogItems[item].equals("Take Picture")) {
+
+                            //Log in Logcat
                             Log.i(TAG, "*Take Photo* pressed");
+
+                            //Open camera activity/app (as new task)
                             cameraIntent();
-//                            if (result)
-//                                cameraIntent();
                         }
-                        else if (items[item].equals("Choose from Library")) {
+
+                        //If "Choose from Gallery" dialog item is pressed
+                        else if (dialogItems[item].equals("Choose from Gallery")) {
+
+                            //Log in Logcat
                             Log.i(TAG, "*Choose from Library* pressed");
+
+                            //Open gallery activity/app (as new task)
                             galleryIntent();
-//                            if (result)
-//                                galleryIntent();
                         }
-                        else if (items[item].equals("Cancel")) {
+
+                        //If "Cancel" dialog item is pressed
+                        else if (dialogItems[item].equals("Cancel")) {
+
+                            //Log in Logcat
                             Log.i(TAG, "*Cancel* pressed");
+
+                            //Close dialog
                             dialog.dismiss();
                         }
                     }
                 });
-                builder.show();
+
+                //Show dialog
+                alertDialogBuilder.show();
             }
         });
 
 
 
 
-
-
-
-
-
-
         //================ SET UP mPictureView ==================================================================
+        //Assign picture view instance variable to its associated resource ID
         mPictureView = (ImageView) view.findViewById(R.id.detail_pix_picture);
 
-        //Update bitmap view
+        //Update picture view bitmap
         updatePictureView();
 
+        //Set listener for picture view
         mPictureView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                //Create FragmentManager (which has access to all fragments)
                 FragmentManager fragmentManager = getFragmentManager();
+
+                //Open picture view dialog
                 ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
 
-                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_PICTURE);
+                //Set PixDetailFragment as target fragment for the dialog fragment
+                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE);
+
+                //Show the fragment
                 pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
-
-
             }
         });
 
@@ -469,61 +478,62 @@ public class PixDetailFragment extends Fragment {
 
 
 
+
+
+    //Open camera activity/app
     private void cameraIntent(){
 
+        //Create implicit intent with action to open camera activity/app
+        final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-
-        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
+        //Create PackageManager (which has access to all aps installed in the device)
         PackageManager packageManager = getActivity().getPackageManager();
 
+        //Set boolean for condition: Picture file exists AND implicit intent can resolve camera activity via PackageManager
+        boolean canTakePicture = (mPictureFile != null) && (takePictureIntent.resolveActivity(packageManager) != null);
+        mPictureButton.setEnabled(canTakePicture);
 
-//        boolean canTakePhoto = (mPictureFile != null) && (captureImage.resolveActivity(packageManager) != null);
-//        mPictureButton.setEnabled(canTakePhoto);
 
-
-
-//        File imagePath = new File(getContext().getFilesDir(), "images");
-//        File newFile = new File(imagePath, "default_image.jpg");
-//        mPictureFile = new File(getContext().getFilesDir(), "images.jpg");
-
-        Uri uri = FileProvider.getUriForFile(
-                getActivity(),
-                "com.petertieu.android.mepix.fileprovider",
-//                imagePath
-                mPictureFile
+        //Get content URI in order to save picture file
+        Uri uriFileProvider = FileProvider.getUriForFile(
+                getActivity(), //(Context): The activity
+                "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
+                mPictureFile //(File): The picture file
         );
 
-        captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        //Add URI as extra to the intent
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
 
-        PackageManager pm = getActivity().getPackageManager();
-
-        List<ResolveInfo> cameraActivities = pm.queryIntentActivities(
-                captureImage,
-                PackageManager.MATCH_DEFAULT_ONLY
+        //Query PackageManager to obtain list of activities/apps that match conditions of captureImageIntent
+        List<ResolveInfo> cameraActivities = packageManager.queryIntentActivities(
+                takePictureIntent, //(Intent): The intent to open camera
+                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
         );
 
-        for (ResolveInfo activity : cameraActivities){
+        //Sort through all activities resolved (in the list)
+        for (ResolveInfo resolvedActivity : cameraActivities){
+            //Grant permsision for the resolved activity to write to the URI of the FileProvider
             getActivity().grantUriPermission(
-                    activity.activityInfo.packageName,
-                    uri,
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
+                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
             );
         }
 
-
-
-
-        startActivityForResult(captureImage, REQUEST_PICTURE);
+        //Start the activity, expecting results to be returned (via onAtcitivyResult(..))
+        startActivityForResult(takePictureIntent, REQUEST_CODE_PICTURE);
     }
 
 
-    private void galleryIntent(){
-        Intent intent = new Intent();
-        intent.setType("image/*");
 
-        intent.setAction(Intent.ACTION_GET_CONTENT);
+
+
+    //Open gallery activity/app
+    private void galleryIntent(){
+
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
 
         Uri uri = FileProvider.getUriForFile(
                 getActivity(),
@@ -543,6 +553,7 @@ public class PixDetailFragment extends Fragment {
 
 
 
+
     //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
     private void updatePix(){
 
@@ -557,11 +568,13 @@ public class PixDetailFragment extends Fragment {
 
 
 
-
+    //Update picture view
     private void updatePictureView(){
 
+        //If picture file does NOT exist
         if (mPictureFile == null || !mPictureFile.exists()){
-            mPictureView.setImageDrawable(null);
+            //Set
+//            mPictureView.setImageDrawable(null);
 
             mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
 //            Toast.makeText(getActivity(), "No mPictureFile", Toast.LENGTH_SHORT).show();
@@ -578,26 +591,6 @@ public class PixDetailFragment extends Fragment {
 
         }
     }
-
-
-
-
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//        switch (requestCode) {
-//            case Utility.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
-//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    if(userChoosenTask.equals("Take Photo"))
-//                        cameraIntent();
-//                    else if(userChoosenTask.equals("Choose from Library"))
-//                        galleryIntent();
-//                } else {
-//                    //code for deny
-//                }
-//                break;
-//        }
-//    }
 
 
 
@@ -932,7 +925,7 @@ public class PixDetailFragment extends Fragment {
         }
 
 
-        if (requestCode == REQUEST_PICTURE) {
+        if (requestCode == REQUEST_CODE_PICTURE) {
             Uri uri = FileProvider.getUriForFile(
                     getActivity(),
                     "com.petertieu.android.mepix.fileprovider",
