@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -83,8 +84,8 @@ public class PixDetailFragment extends Fragment {
     //Declare constants for tag requests
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_CONTACT = 1; //Request code for results returned from contact activity/app
-    private static final int REQUEST_CODE_PICTURE = 2; //Request code for results returned from camer activity/app
-    private static final int SELECT_FILE = 3;
+    private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camer activity/app
+    private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
 
     //Declare Callbacks interface reference variable
@@ -462,7 +463,7 @@ public class PixDetailFragment extends Fragment {
                 ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
 
                 //Set PixDetailFragment as target fragment for the dialog fragment
-                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE);
+                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
 
                 //Show the fragment
                 pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
@@ -474,80 +475,6 @@ public class PixDetailFragment extends Fragment {
 
         //Return the View
         return view;
-    }
-
-
-
-
-
-    //Open camera activity/app
-    private void cameraIntent(){
-
-        //Create implicit intent with action to open camera activity/app
-        final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        //Create PackageManager (which has access to all aps installed in the device)
-        PackageManager packageManager = getActivity().getPackageManager();
-
-        //Set boolean for condition: Picture file exists AND implicit intent can resolve camera activity via PackageManager
-        boolean canTakePicture = (mPictureFile != null) && (takePictureIntent.resolveActivity(packageManager) != null);
-        mPictureButton.setEnabled(canTakePicture);
-
-
-        //Get content URI in order to save picture file
-        Uri uriFileProvider = FileProvider.getUriForFile(
-                getActivity(), //(Context): The activity
-                "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
-                mPictureFile //(File): The picture file
-        );
-
-        //Add URI as extra to the intent
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
-
-        //Query PackageManager to obtain list of activities/apps that match conditions of captureImageIntent
-        List<ResolveInfo> cameraActivities = packageManager.queryIntentActivities(
-                takePictureIntent, //(Intent): The intent to open camera
-                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
-        );
-
-        //Sort through all activities resolved (in the list)
-        for (ResolveInfo resolvedActivity : cameraActivities){
-            //Grant permsision for the resolved activity to write to the URI of the FileProvider
-            getActivity().grantUriPermission(
-                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
-                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
-            );
-        }
-
-        //Start the activity, expecting results to be returned (via onAtcitivyResult(..))
-        startActivityForResult(takePictureIntent, REQUEST_CODE_PICTURE);
-    }
-
-
-
-
-
-    //Open gallery activity/app
-    private void galleryIntent(){
-
-
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-
-        Uri uri = FileProvider.getUriForFile(
-                getActivity(),
-                "com.petertieu.android.mepix.fileprovider",
-//                imagePath
-                mPictureFile
-        );
-
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-
-
-
-
-        startActivityForResult(Intent.createChooser(intent, "Select File"), SELECT_FILE);
     }
 
 
@@ -568,27 +495,131 @@ public class PixDetailFragment extends Fragment {
 
 
 
+    //Open camera activity/app
+    private void cameraIntent(){
+
+        //Create implicit intent with action to open camera activity/app
+        final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        //Create PackageManager (which has access to all aps installed in the device)
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        //Set boolean for condition: Picture file exists AND implicit intent can resolve camera activity via PackageManager
+        boolean canTakePicture = (mPictureFile != null) && (takePictureIntent.resolveActivity(packageManager) != null);
+        mPictureButton.setEnabled(canTakePicture);
+
+
+        //Get content URI of FileProvider for which picture file from camera is to be saved to
+        Uri uriFileProvider = FileProvider.getUriForFile(
+                getActivity(), //(Context): The activity
+                "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
+                mPictureFile //(File): The picture file
+        );
+
+        //Add content URI as extra to the intent
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
+
+        //Query PackageManager to obtain list of activities/apps that match conditions of captureImageIntent
+        List<ResolveInfo> cameraActivities = packageManager.queryIntentActivities(
+                takePictureIntent, //(Intent): The intent to open camera
+                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
+        );
+
+        //Sort through all activities resolved (in the list)
+        for (ResolveInfo resolvedActivity : cameraActivities){
+            //Grant permsision for the resolved activity to write to the URI of the FileProvider
+            getActivity().grantUriPermission(
+                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
+                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
+            );
+        }
+
+        //Start the activity, expecting results to be returned (via onAtcitivyResult(..))
+        startActivityForResult(takePictureIntent, REQUEST_CODE_PICTURE_CAMERA);
+    }
+
+
+
+
+
+    //Open gallery activity/app
+    private void galleryIntent(){
+
+
+        Intent choosePictureIntent = new Intent();
+
+        choosePictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+
+        choosePictureIntent.setType("image/*");
+
+        Uri uriFileProvider = FileProvider.getUriForFile(
+                getActivity(),
+                "com.petertieu.android.mepix.fileprovider",
+                mPictureFile
+        );
+
+
+        //Add content URI as extra to the intent
+        choosePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
+
+
+
+        //Create PackageManager (which has access to all aps installed in the device)
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        //Query PackageManager to obtain list of activities/apps that match conditions of choosePictureIntent
+        List<ResolveInfo> galleryActivities = packageManager.queryIntentActivities(
+                choosePictureIntent, //(Intent): The intent to open camera
+                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
+        );
+
+        //Sort through all activities resolved (in the list)
+        for (ResolveInfo resolvedActivity : galleryActivities){
+            //Grant permsision for the resolved activity to write to the URI of the FileProvider
+            getActivity().grantUriPermission(
+                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
+                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
+            );
+        }
+
+        startActivityForResult(Intent.createChooser(choosePictureIntent, "Select Picture"), REQUEST_CODE_PICTURE_GALLERY);
+    }
+
+
+
+
+
+
+
+
+
     //Update picture view
     private void updatePictureView(){
 
         //If picture file does NOT exist
         if (mPictureFile == null || !mPictureFile.exists()){
-            //Set
-//            mPictureView.setImageDrawable(null);
 
+            //Talkback accessibility: Associate textual description to 'empty' view
             mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
+
 //            Toast.makeText(getActivity(), "No mPictureFile", Toast.LENGTH_SHORT).show();
         }
 
+        //If picture file EXISTS
         else{
 
-            Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+            //Get picture in bitmap 'scaled' format
+            Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
-            mPictureView.setImageBitmap(bitmap);
+            //Set picture ImageView view to bitmap version
+            mPictureView.setImageBitmap(pictureBitmap);
 
+            //Talkback accessbility: Associate textual description to 'existing' view
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
-//            Toast.makeText(getActivity(), "mPictureFile exists", Toast.LENGTH_SHORT).show();
 
+//            Toast.makeText(getActivity(), "mPictureFile exists", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -684,9 +715,6 @@ public class PixDetailFragment extends Fragment {
 //        //Show dialog
 //        pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
 //    }
-
-
-
 
 
 
@@ -899,12 +927,12 @@ public class PixDetailFragment extends Fragment {
                 //If total Pix tag String is NOT empty
                 if (!mTotalTag.isEmpty()) {
                     //Append total Pix tag String to display name of contact
-                    mTotalTag = mTotalTag + ",\n" + displayName;
+                    mTotalTag = mTotalTag + ",\n- " + displayName;
                 }
-                //If total Pix tag String is empty initially (i.e. no tags made, i.e. EditText not filled)
+                //If total Pix tag String is EMPTY initially (i.e. no tags made, i.e. EditText not filled)
                 else {
                     //Let total Pix tag String equal display name of contact
-                    mTotalTag = displayName;
+                    mTotalTag = "-" + displayName;
                 }
 
 
@@ -925,69 +953,74 @@ public class PixDetailFragment extends Fragment {
         }
 
 
-        if (requestCode == REQUEST_CODE_PICTURE) {
-            Uri uri = FileProvider.getUriForFile(
-                    getActivity(),
-                    "com.petertieu.android.mepix.fileprovider",
-                    mPictureFile
+        //If resultCode matches camera activity
+        if (requestCode == REQUEST_CODE_PICTURE_CAMERA) {
+
+            //Get content URI of FileProvider for which picture file taken from camera has been saved
+            Uri uriFileProvider = FileProvider.getUriForFile(
+                    getActivity(), //
+                    "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
+                    mPictureFile //(File): The picture file
             );
 
-            getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            //Revoke persmission from camera from writing to FileProvider
+            getActivity().revokeUriPermission(uriFileProvider, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-
+            //Update picture view
             updatePictureView();
 
+            //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
             updatePix();
-
         }
 
 
-        if (requestCode == SELECT_FILE) {
+        if (requestCode == REQUEST_CODE_PICTURE_GALLERY) {
+
+            //Get content URI of FileProvider for which picture file taken from camera has been saved
+            Uri uriFileProvider = FileProvider.getUriForFile(
+                    getActivity(), //
+                    "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
+                    mPictureFile //(File): The picture file
+            );
 
 
 
-//            Uri uri = FileProvider.getUriForFile(
-//                    getActivity(),
-//                    "com.petertieu.android.mepix.fileprovider",
-//                    mPictureFile
-//            );
 
-//            Uri uri = intent.getData();
-//
-//            try {
-//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-//                // Log.d(TAG, String.valueOf(bitmap));
-//
-//                mPictureView.setImageBitmap(bitmap);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
+            Bitmap bm=null;
+
+            if (intent != null) {
+
+                try {
+                    bm = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), intent.getData());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+
+            mPictureView.setImageBitmap(bm);
+
+
+            //Revoke persmission from camera from writing to FileProvider
+            getActivity().revokeUriPermission(uriFileProvider, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+
+//            //Update picture view
 //            updatePictureView();
-//
-//            updatePix();
+
+            //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
+            updatePix();
 
 
-            //            Uri uri = FileProvider.getUriForFile(
-//                    getActivity(),
-//                    "com.petertieu.android.mepix.fileprovider",
-//                    mPictureFile
-//            );
 
-//            Uri uri = intent.getData();
-//
-//            try {
-//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-//                // Log.d(TAG, String.valueOf(bitmap));
-//
-//                mPictureView.setImageBitmap(bitmap);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            updatePictureView();
-//
-//            updatePix();
+
+
+
+
+
 
 
 

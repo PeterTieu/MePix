@@ -45,6 +45,14 @@
             android:authorities="com.petertieu.android.mepix.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
+            //android:authorities="com.petertieu.android.mepix.fileprovider": location of FileProvider
+                NOTE: FileProvider is a private storage in the CriminalIntent app
+                NOTE: The directory of FileProvider is adjacent to the SQLiteDatabase database
+                NOTE: We use the FileProvider as storage for images instead of the SQLiteDatabase database,
+                    as images are files (NOT variables). Also, they are too big for the SQLiteDatabase
+            //android:exported="false": only apps with permission could access FileProvider
+            //android:grantUriPermissions="true": Gives ability of app to grant other apps permission
+                to write to FileProvider
 
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

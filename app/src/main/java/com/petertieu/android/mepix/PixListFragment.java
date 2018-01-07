@@ -444,30 +444,41 @@ public class PixListFragment extends Fragment{
 
 
             //============ Set Picture view===================================
+            //If picture exists
             if (mPix.getPictureFilename() != null){
 
+                //Get picture of Pix
                 mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
+
+                //Update picture view
                 updatePictureView();
             }
 
         }
 
 
+
+        //Update picture view
         private void updatePictureView(){
 
+            //If picture file does NOT exist
             if (mPictureFile == null || !mPictureFile.exists()){
+                //Talkback accessibility: Associate textual description to 'empty' view
                 mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
             }
 
+            //If picture file EXISTS
             else{
+                //Get picture in bitmap 'scaled' format
                 Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+
+                //Set picture ImageView view to bitmap version
                 mPictureView.setImageBitmap(bitmap);
+
+                //Talkback accessbility: Associate textual description to 'existing' view
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));
             }
         }
-
-
-
     }
 
 
