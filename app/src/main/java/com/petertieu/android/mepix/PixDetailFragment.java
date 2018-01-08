@@ -1,6 +1,9 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,7 +40,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -77,8 +84,8 @@ public class PixDetailFragment extends Fragment {
     private DateFormat mDateFormat;
 
     //Declare identifiers for dialog fragments
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment of DatePicker
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture"; //Identifier of dialog fragment of picture ImageView
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE = "DialogDelete"; //Identifier of dialog fragment
 
     //Declare constants for tag requests
@@ -90,6 +97,11 @@ public class PixDetailFragment extends Fragment {
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
+
+
+
+    String mSelectedImagePath;
+
 
 
 
@@ -391,7 +403,7 @@ public class PixDetailFragment extends Fragment {
             public void onClick(View view){
 
                 //Set dialog prompt items
-                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery", "Cancel"};
+                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery"};
 
                 //Create AlertDialog.Builder object
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
@@ -425,17 +437,20 @@ public class PixDetailFragment extends Fragment {
                             galleryIntent();
                         }
 
-                        //If "Cancel" dialog item is pressed
-                        else if (dialogItems[item].equals("Cancel")) {
-
-                            //Log in Logcat
-                            Log.i(TAG, "*Cancel* pressed");
-
-                            //Close dialog
-                            dialog.dismiss();
-                        }
+//                        //If "Cancel" dialog item is pressed
+//                        else if (dialogItems[item].equals("Cancel")) {
+//
+//                            //Log in Logcat
+//                            Log.i(TAG, "*Cancel* pressed");
+//
+//                            //Close dialog
+//                            dialog.dismiss();
+//                        }
                     }
                 });
+
+                //Set dialog 'Cancel' button
+                alertDialogBuilder.setNegativeButton(android.R.string.cancel, null);
 
                 //Show dialog
                 alertDialogBuilder.show();
@@ -456,21 +471,27 @@ public class PixDetailFragment extends Fragment {
         mPictureView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                //Create FragmentManager (which has access to all fragments)
-                FragmentManager fragmentManager = getFragmentManager();
 
                 //Open picture view dialog
                 ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
 
-                //Set PixDetailFragment as target fragment for the dialog fragment
-                pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
+                //Check if picture File is empty. NOTE: A File exists for each Pix, but has length either >0 OR 0.
+                // If File is not empty (i.e. contains .jpg), it has length > 0. If File is empty (i.e. does not contain .jpg), it has length 0.
+                //NOTE: This check is important, as the app would crash when the ImageView is pressed on IF it has no .jpg (i.e. the Pix has an empty picture File)
+                if (mPictureFile.length() != 0) {
 
-                //Show the fragment
-                pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
+                    //Set PixDetailFragment as target fragment for the dialog fragment
+                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
+
+                    //Create FragmentManager (which has access to all fragments)
+                    FragmentManager fragmentManager = getFragmentManager();
+
+                    //Show the fragment
+                    pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
+
+                }
             }
         });
-
-
 
 
         //Return the View
@@ -535,7 +556,7 @@ public class PixDetailFragment extends Fragment {
             );
         }
 
-        //Start the activity, expecting results to be returned (via onAtcitivyResult(..))
+        //Start the activity, expecting results to be returned (via onActivityResult(..))
         startActivityForResult(takePictureIntent, REQUEST_CODE_PICTURE_CAMERA);
     }
 
@@ -546,13 +567,16 @@ public class PixDetailFragment extends Fragment {
     //Open gallery activity/app
     private void galleryIntent(){
 
-
+        //Create implicit intent (to open gallery actvity/app)
         Intent choosePictureIntent = new Intent();
 
+        //Set action to open gallery activity/app
         choosePictureIntent.setAction(Intent.ACTION_GET_CONTENT);
 
+        //Set type of media to open (i.e. images, instead of vides or both)
         choosePictureIntent.setType("image/*");
 
+        //Get content URI of FileProvider for which picture file from camera is to be saved to
         Uri uriFileProvider = FileProvider.getUriForFile(
                 getActivity(),
                 "com.petertieu.android.mepix.fileprovider",
@@ -562,8 +586,6 @@ public class PixDetailFragment extends Fragment {
 
         //Add content URI as extra to the intent
         choosePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
-
-
 
         //Create PackageManager (which has access to all aps installed in the device)
         PackageManager packageManager = getActivity().getPackageManager();
@@ -584,12 +606,9 @@ public class PixDetailFragment extends Fragment {
             );
         }
 
+        //Start the activity, expecting results to be returned (via onActivityResult(..))
         startActivityForResult(Intent.createChooser(choosePictureIntent, "Select Picture"), REQUEST_CODE_PICTURE_GALLERY);
     }
-
-
-
-
 
 
 
@@ -613,8 +632,14 @@ public class PixDetailFragment extends Fragment {
             //Get picture in bitmap 'scaled' format
             Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
+            //Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation
+            Matrix matrix = new Matrix(); //Create Matrix object for transforming co-ordinates
+            matrix.postRotate(90); //Set rotation for Matrix
+            Bitmap pictureBitmapCorrectOrientation = Bitmap.createBitmap(pictureBitmap , 0, 0, pictureBitmap .getWidth(), pictureBitmap.getHeight(), matrix, true); //Rotate picture Bitmap
+
+
             //Set picture ImageView view to bitmap version
-            mPictureView.setImageBitmap(pictureBitmap);
+            mPictureView.setImageBitmap(pictureBitmapCorrectOrientation);
 
             //Talkback accessbility: Associate textual description to 'existing' view
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
@@ -685,9 +710,8 @@ public class PixDetailFragment extends Fragment {
                 Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
             }
 
+            //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
             updatePix();
-
-
 
             return true;
 
@@ -932,7 +956,7 @@ public class PixDetailFragment extends Fragment {
                 //If total Pix tag String is EMPTY initially (i.e. no tags made, i.e. EditText not filled)
                 else {
                     //Let total Pix tag String equal display name of contact
-                    mTotalTag = "-" + displayName;
+                    mTotalTag = "- " + displayName;
                 }
 
 
@@ -985,20 +1009,14 @@ public class PixDetailFragment extends Fragment {
 
 
 
-
             Bitmap bm=null;
-
             if (intent != null) {
-
                 try {
                     bm = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), intent.getData());
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
-
 
 
             mPictureView.setImageBitmap(bm);
@@ -1013,26 +1031,11 @@ public class PixDetailFragment extends Fragment {
 
             //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
             updatePix();
-
-
-
-
-
-
-
-
-
-
-
-
-            
-
-
-
         }
 
-
     }
+
+
 
 
 }

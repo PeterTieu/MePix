@@ -20,6 +20,8 @@ import java.util.GregorianCalendar;
  * Created by Peter Tieu on 17/12/2017.
  */
 
+
+//DialogFragment for DatePicker dialog
 public class DatePickerFragment extends DialogFragment {
 
     //Declare 'key'
@@ -39,7 +41,7 @@ public class DatePickerFragment extends DialogFragment {
         //Create Bundle object (i.e. argument-bundle)
         Bundle argumentBundle = new Bundle();
 
-        //Set key-value pairs for the argument bundle
+        //Set key-value pairs for argument-bundle
         argumentBundle.putSerializable(ARG_PIX_DATE, pixDate);
 
         //Create DatePickerFragment
@@ -48,7 +50,7 @@ public class DatePickerFragment extends DialogFragment {
         //Set argument-bundle for the PixDetailFragment
         datePickerFragment.setArguments(argumentBundle);
 
-        //return DatePickerFragment
+        //Return DatePickerFragment object
         return datePickerFragment;
     }
 
@@ -60,13 +62,13 @@ public class DatePickerFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
-        //Get the 'value' from the argument-bundle
+        //Get 'value' from argument-bundle
         final Date pixDate = (Date) getArguments().getSerializable(ARG_PIX_DATE);
 
-        //Inflate DatePicker layout
+        //Inflate DatePicker dialog layout
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_date_picker, null);
 
-        //Assign DatePicker reference variable to the associated resource ID
+        //Assign DatePicker reference variable to associated resource ID
         mDatePicker = (DatePicker) view.findViewById(R.id.dialog_pix_date_picker);
 
         //Create Calendar object
@@ -83,11 +85,11 @@ public class DatePickerFragment extends DialogFragment {
         //Initialise DatePicker object
         mDatePicker.init(year, month, dayOfMonth, null);
 
-        //Return AlertDialog (a subclass of Dialog), which sets the dialog properties
+        //Return AlertDialog (subclass of Dialog), which sets the dialog properties
         return new AlertDialog
                 .Builder(getActivity()) //Create Builder
-                .setView(view) //Set View of the dialog
-                .setTitle(R.string.date_picker_title) //Set TITLE of the dialog
+                .setView(view) //Set View of dialog
+                .setTitle(R.string.date_picker_title) //Set TITLE of dialog
                 .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
                 .setPositiveButton(android.R.string.ok, //Set POSITIVE BUTTON of the dialog, and a listener for it
                         new DialogInterface.OnClickListener() {
@@ -131,11 +133,5 @@ public class DatePickerFragment extends DialogFragment {
         //Send resultCode and Intent to hosting fragment (PixDetailFragment)
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
-
-
-
-
-
-
 
 }

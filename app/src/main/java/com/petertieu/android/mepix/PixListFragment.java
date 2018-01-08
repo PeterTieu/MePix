@@ -2,9 +2,13 @@ package com.petertieu.android.mepix;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -19,10 +23,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -50,9 +56,14 @@ public class PixListFragment extends Fragment{
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
 
+    //Declare picture File
     private File mPictureFile;
 
+    //Declare picture ImageView
     private ImageView mPictureView;
+
+    //Identifier of dialog fragment of picture ImageView
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
 
 
 
@@ -368,6 +379,7 @@ public class PixListFragment extends Fragment{
 
 
 
+
         //Build constructor #1
         public PixViewHolder(View view){
             super(view);
@@ -387,7 +399,8 @@ public class PixListFragment extends Fragment{
             //Assign list item's picture instance variable to its associated resource ID
             mPictureView = (ImageView) view.findViewById(R.id.list_pix_picture);
 
-            //Set a listener for the list item
+
+            //Set listener for list item
             view.setOnClickListener(new View.OnClickListener(){
 
                 //Override method of the View.OnClickListener interface of View
@@ -398,6 +411,67 @@ public class PixListFragment extends Fragment{
                     mCallbacks.onPixSelected(mPix);
                 }
             });
+
+
+
+            //Set listener to open picture ImageView in list item view hierarchy
+            mPictureView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    //Get picture File of Pix
+                    mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
+
+                    //Check if picture File is empty. NOTE: A File exists for each Pix, but has length either >0 OR 0.
+                    // If File is not empty (i.e. contains .jpg), it has length > 0. If File is empty (i.e. does not contain .jpg), it has length 0.
+                    //NOTE: This check is important, as the app would crash when the ImageView is pressed on IF it has no .jpg (i.e. the Pix has an empty picture File)
+                    if (mPictureFile.length() != 0) {
+
+                        //Open picture view dialog
+                        ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
+
+                        //Create FragmentManager (which has access to all fragments)
+                        FragmentManager fragmentManager = getFragmentManager();
+
+                        //Show the fragment
+                        pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
+                    }
+
+                }
+            });
+
+
+
+            //Set listener for "favorite" star in the list item's view hierarchy, so the user could toggle the "favorite" status of the Pix in the list view
+            mPixFavorited.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view){
+
+                    //Get Pix's current boolean state of "favorite"
+                    boolean currentFavoritedState = mPix.isFavorited();
+
+                    //Reverse the "favorite" state
+                    mPix.setFavorited(!currentFavoritedState);
+
+                    //Update Pix's SQLiteDatabase to account for new "favorite" state
+                    updatePix();
+                }
+            });
+        }
+
+
+
+        //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
+        private void updatePix(){
+
+            //Update the SQLite database based on the Pix passed
+            PixManager.get(getActivity()).updatePixOnDatabase(mPix);
+
+            //Update list view
+            updateUI();
+
+            //Update PixListFragment() in 'real-time' for two-pane layout
+//        mCallbacks.onPixUpdated(mPix);
         }
 
 
@@ -447,7 +521,7 @@ public class PixListFragment extends Fragment{
             //If picture exists
             if (mPix.getPictureFilename() != null){
 
-                //Get picture of Pix
+                //Get picture File of Pix
                 mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
                 //Update picture view
@@ -470,10 +544,15 @@ public class PixListFragment extends Fragment{
             //If picture file EXISTS
             else{
                 //Get picture in bitmap 'scaled' format
-                Bitmap bitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+                Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
+
+                //Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation
+                Matrix matrix = new Matrix(); //Create Matrix object for transforming co-ordinates
+                matrix.postRotate(90); //Set rotation for Matrix
+                Bitmap pictureBitmapCorrectOrientation = Bitmap.createBitmap(pictureBitmap , 0, 0, pictureBitmap .getWidth(), pictureBitmap.getHeight(), matrix, true); //Rotate picture Bitmap
 
                 //Set picture ImageView view to bitmap version
-                mPictureView.setImageBitmap(bitmap);
+                mPictureView.setImageBitmap(pictureBitmapCorrectOrientation);
 
                 //Talkback accessbility: Associate textual description to 'existing' view
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));
