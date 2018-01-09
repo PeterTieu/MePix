@@ -1,7 +1,6 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
@@ -40,11 +39,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -76,7 +71,7 @@ public class PixDetailFragment extends Fragment {
     private String mTotalTag;
     private Button mLocationButton; //Location Button
     private EditText mDescription; //Description Button
-    private ImageButton mPictureButton; //Photo Button
+    private ImageButton mPictureAddButton; //Photo Button
     private File mPictureFile; //Picture File
     private ImageView mPictureView; //Picture ImageView
 
@@ -135,7 +130,7 @@ public class PixDetailFragment extends Fragment {
     interface Callbacks{
 
         //Callback method for when a Pix's instance variable is changed (for two-pane layout)
-        void onPixUpdated(Pix pix);
+        void onPixUpdatedFromDetailView(Pix pix);
 
         //Callback method for when a Pix is deleted (for two-pane layout)
         void onPixDeleted(Pix pix);
@@ -395,10 +390,10 @@ public class PixDetailFragment extends Fragment {
 
         //================ SET UP mPhotoButton ==================================================================
         //Assign picture instance variable to its associated resource ID
-        mPictureButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
+        mPictureAddButton = (ImageButton) view.findViewById(R.id.detail_pix_add_picture);
 
         //Set listener for mPhotoButton
-        mPictureButton.setOnClickListener(new View.OnClickListener(){
+        mPictureAddButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
 
@@ -472,13 +467,13 @@ public class PixDetailFragment extends Fragment {
             @Override
             public void onClick(View view){
 
-                //Open picture view dialog
-                ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
-
                 //Check if picture File is empty. NOTE: A File exists for each Pix, but has length either >0 OR 0.
                 // If File is not empty (i.e. contains .jpg), it has length > 0. If File is empty (i.e. does not contain .jpg), it has length 0.
                 //NOTE: This check is important, as the app would crash when the ImageView is pressed on IF it has no .jpg (i.e. the Pix has an empty picture File)
                 if (mPictureFile.length() != 0) {
+
+                    //Open picture view dialog
+                    ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
                     pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
@@ -509,7 +504,7 @@ public class PixDetailFragment extends Fragment {
         PixManager.get(getActivity()).updatePixOnDatabase(mPix);
 
         //Update PixListFragment() in 'real-time' for two-pane layout
-        mCallbacks.onPixUpdated(mPix);
+        mCallbacks.onPixUpdatedFromDetailView(mPix);
     }
 
 
@@ -527,7 +522,7 @@ public class PixDetailFragment extends Fragment {
 
         //Set boolean for condition: Picture file exists AND implicit intent can resolve camera activity via PackageManager
         boolean canTakePicture = (mPictureFile != null) && (takePictureIntent.resolveActivity(packageManager) != null);
-        mPictureButton.setEnabled(canTakePicture);
+        mPictureAddButton.setEnabled(canTakePicture);
 
 
         //Get content URI of FileProvider for which picture file from camera is to be saved to
@@ -645,7 +640,9 @@ public class PixDetailFragment extends Fragment {
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
 
 //            Toast.makeText(getActivity(), "mPictureFile exists", Toast.LENGTH_SHORT).show();
+
         }
+
     }
 
 
@@ -936,7 +933,6 @@ public class PixDetailFragment extends Fragment {
 
 
             try {
-
                 //Check if cursor contains results
                 if (cursorDisplayName.getCount() == 0) {
                     return;
@@ -998,6 +994,7 @@ public class PixDetailFragment extends Fragment {
         }
 
 
+        //If reqsultCode matches gallery activity
         if (requestCode == REQUEST_CODE_PICTURE_GALLERY) {
 
             //Get content URI of FileProvider for which picture file taken from camera has been saved

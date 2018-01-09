@@ -48,5 +48,8 @@
     <string name="pix_no_picture_description">There is no picture for this Pix</string>
     <string name="pix_picture_description">There is a picture for this Pix</string>
 
+    //ImageViewFragment dialog
+    <string name="save_to_gallery">Save to Gallery</string>
+
 
 </resources>

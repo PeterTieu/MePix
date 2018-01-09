@@ -4,11 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -23,12 +21,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -72,8 +68,11 @@ public class PixListFragment extends Fragment{
     //Declare callbacks interface
     interface Callbacks{
 
-        //Calback method for when a Pix is selected.. by either: New Pix created OR Pix selected in the list view
+        //Calback method for when a Pix is selected in list view.. by either: New Pix created OR Pix selected in the list view
         void onPixSelected(Pix pix);
+
+        //Callback method for when Pix is changed in list view... by: toggling of "favorite" status via pressing onto the 'star'
+        void onPixUpdatedFromListView(Pix pix);
     }
 
 
@@ -471,7 +470,7 @@ public class PixListFragment extends Fragment{
             updateUI();
 
             //Update PixListFragment() in 'real-time' for two-pane layout
-//        mCallbacks.onPixUpdated(mPix);
+            mCallbacks.onPixUpdatedFromListView(mPix);
         }
 
 

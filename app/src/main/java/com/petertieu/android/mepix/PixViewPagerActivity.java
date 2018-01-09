@@ -41,7 +41,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
     //Mandatory override of callback method from the 'PixDetailFragment.Callbacks' callback interface
     @Override
-    public void onPixUpdated(Pix pix){
+    public void onPixUpdatedFromDetailView(Pix pix){
         //Do nothing
     }
 
