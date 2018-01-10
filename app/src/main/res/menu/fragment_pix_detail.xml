@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--Layout for the Menu of the DETAIL VIEW (i.e. fragment_detail_list.xml)-->
+
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--Delete Pix-->
+    <item
+        android:id="@+id/delete_pix"
+        android:title="@string/delete_pix"
+        android:icon="@drawable/ic_menu_delete"
+        app:showAsAction="ifRoom|withText"/>
+    //ifRoom: Show ICON if there is room
+    //withText: Show TEXT if there is room
+
+
+</menu>

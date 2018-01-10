@@ -133,5 +133,4 @@ public class DatePickerFragment extends DialogFragment {
         //Send resultCode and Intent to hosting fragment (PixDetailFragment)
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
-
 }

@@ -1,0 +1,20 @@
+PROBLEMS SO FAR:
+
+1:
+When in the detail view in single-pane layout (i.e. sw < 600dp), when the delete Pic button on the toolbar is pressed, we could use getActivity().finish() to close PixViewPagerActivity and get back to the list view.
+However, when in the 2-pane layout (i.e. sw > 600dp), using getActivity().finish() would close the entire app, since we would actually be closing PixListActivity (the activity hosting the 2-pane layout).
+The problem becomes - to conserve the previous function (being able to return to the list view when the delete button is pressed in the detail view), but NOT close the app (i.e. close PixListActivity) when this happens in the 2-pane layout!
+
+
+2:
+Having trouble implementing a dialog to confirm the deletion of a Pix when the 'delete Pix' button is pressed on the toolbar (while on detail view). This is because when the "ok" button is pressed, the app crashes
+
+
+3:
+When a picture is chosen from the gallery, there is no problem displaying it on mPictureView ImageView view as a Bitmap while in the detail view. However, there is trouble saving this Gallery picture into the FileProvider, which is done when a picture is taken. This means that whenever the list view or detail view is refreshed, the Pix returns to displaying whatever was previously on the FileProvider (whether it be an empty File (no picture) OR a non-empty File (has picture)).
+Hours spent trying to solve this: ~4hr. Tried looking everywhere on StackOverflow!
+
+
+4:
+Quite the opposite of problem #3. A Bitmap picture (from mPictureView) could not be saved onto the internal or external storage, so as to later be viewed in Gallery.
+Hours spent trying to solve this: ~5hr. Tried looking everywhere on StackOverflow and tried 6-7 snippets of code, but to no avail.
