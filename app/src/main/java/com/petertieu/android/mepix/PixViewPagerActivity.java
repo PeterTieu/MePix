@@ -3,6 +3,7 @@ package com.petertieu.android.mepix;
 ;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,6 +11,10 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 import java.util.UUID;
@@ -140,6 +145,10 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
                 break;
             }
         }
+
+
+
+
 
     }
 

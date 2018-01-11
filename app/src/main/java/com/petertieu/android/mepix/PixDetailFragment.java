@@ -2,7 +2,10 @@ package com.petertieu.android.mepix;
 
 import android.app.Activity;
 import android.graphics.Matrix;
-import android.os.Environment;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,7 +18,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
 import android.text.Editable;
@@ -38,10 +40,17 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -51,7 +60,7 @@ import java.util.UUID;
 
 
 //Fragment for the DETAIL VIEW
-public class PixDetailFragment extends Fragment {
+public class PixDetailFragment extends SupportMapFragment {
 
     //Define 'key' for the argument-bundle
     private static final String ARGUMENT_PIX_ID = "pix_id";
@@ -95,7 +104,32 @@ public class PixDetailFragment extends Fragment {
 
 
 
-    String mSelectedImagePath;
+    //Declare FusedLocationProviderClient - the entry point for interactng with FusedLocationProvider (to get location fix)
+    private FusedLocationProviderClient mFusedLocationClient;
+
+
+    //List all the permissions that we need,
+    // Manifest.permission.ACCESS_FINE_LOCATION
+    //AND
+    // Manifest.permission.ACCESS_COARSE_LOCATION
+    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION};
+
+    //Define requestCode for the REQUEST of the LOCATION FIX.
+    //NOTE: This constant will be used in requestPermission(..) and onRequestPermissionResult(..)
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0;
+
+    //Declare LatLng objec to hold Latitute/Longitude data of Pix
+    LatLng latLngOfPix;
+    double latitudeOfPix;
+    double longitudeOfPix;
+
+    String address;
+    String city;
+    String state;
+    String country;
+    String postalCode;
+    String knownName;
 
 
 
@@ -176,10 +210,141 @@ public class PixDetailFragment extends Fragment {
         //Assign reference variable, mPictureFile, to picture file in FoleProvider
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
+
+        if (hasLocationPermission()) {
+            //At this point.. the permission has been granted, so we are ready to request for the location.
+            //Activate the LOCATION REQUEST (findImage()),
+
+            //Create FusedLocationProviderClient object
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+            //Try risky task - addSuccessListener could throw a SecurityException exception
+            try {
+
+                mFusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            latLngOfPix = new LatLng(location.getLatitude(), location.getLongitude());
+
+
+
+                            Log.i(TAG, Double.toString(latLngOfPix.latitude));
+                            Log.i(TAG, Double.toString(latLngOfPix.longitude));
+
+//                            latitudeOfPix = latLngOfPix.latitude;
+//                            longitudeOfPix = latLngOfPix.longitude;
+
+                            latitudeOfPix = -37.777500;
+                            longitudeOfPix = 144.872701;
+
+
+
+
+
+
+
+
+
+                            Geocoder geocoder;
+                            List<Address> addresses;
+                            geocoder = new Geocoder(getActivity(), Locale.getDefault());
+
+                            //Try risky task - getFromLocation(...) can throw IOException
+                            try{
+
+
+                                addresses = geocoder.getFromLocation(latitudeOfPix, longitudeOfPix, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+
+                                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+
+                                city = addresses.get(0).getLocality();
+
+                                state = addresses.get(0).getAdminArea();
+
+                                country = addresses.get(0).getCountryName();
+
+                                postalCode = addresses.get(0).getPostalCode();
+
+                                knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
+
+
+
+                                Log.i(TAG, Double.toString(latitudeOfPix));
+                                Log.i(TAG, Double.toString(longitudeOfPix));
+                            }
+                            catch (IOException ioException){
+                                Log.e(TAG, "Error obtaining latitude and longitude of Pix");
+                            }
+
+
+
+                        }
+                    }
+                });
+            }
+            catch (SecurityException securityException){
+                Log.e(TAG, "Error creating location service", securityException);
+            }
+
+
+        }
+        //At this point... the permission (requested in the Manifest) hasn't been granted..
+        else{
+            // Step 2 of 3 (Handling permissions at runtime):
+            // REQUEST...
+            // ...for the permission.
+            //requestPermission(String[] permissions, int requestCode) is from Fragment.
+            // It requests the permissions in the 'permissions' parameter.
+            //NOTE: These permissions will ALSO need to be in the Manifest (if they haven't already been added).
+            //NOTE: requestPermissions(..) will invoke OnRequestPermissionsResult(..)
+            requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+        }
+
+
+
+
         //Declare an options menu for the fragment
         setHasOptionsMenu(true);
 
     }
+
+
+
+
+
+
+    //CHECK whether the location permission requested in the Manifest has been granted or not
+    // first permission in the permission group (i.e. ACCESS_FINE_LOCATION permission)
+    private boolean hasLocationPermission(){
+
+        //checkSelfPermission(Context context, String permission) is a static method from ContextCompat.
+        // It checks whether the permission parameter, 'permission', is granted to the activity.
+        // If permission granted, it returns: PackageManager.PERMISSION_GRANTED (int value: 0).
+        // If permission NOT granted, it returns: PackageManager.PERMISSION_DENIED (int value: -1).
+        //NOTE: The permissions; ACCES_FINE_LOCATION and ACCESS_COARSE_LOCATION
+        // are in the same PERMISSION GROUP
+        // This PERMISSION GROUP is called: LOCATION.
+        //The special thing about PERMISSION GROUPS is:
+        // If a permission that is in a PERMISSION GROUP is granted,
+        // this means that ALL permissions in that PERMISSION GROUP are granted, too.
+        //NOTE: Other PERMISSION GROUPS include:
+        //  CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
+        //So in this situation, if the permission: Manifest.permission.ACCESS_FINE_LOCATION (i.e. LOCATION_PERMISSION[0])
+        // is granted, then we could assume that Manifest.permission.ACCESS_COARSE_LOCATION is also granted!
+        int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
+
+
+        //Return a boolean
+        //true: IF Manifest.permission.ACCESS_FINE_LOCATION permission has been granted
+        //false: IF Manifest.permission.ACCESS_FINE_LOCATION permission NOT granted
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+
+
+
 
 
 
@@ -260,6 +425,20 @@ public class PixDetailFragment extends Fragment {
             }
         });
 
+
+
+
+        //================ SET UP mLocationButton ==================================================================
+//        Log.i(TAG, city);
+//        Log.i(TAG, state);
+//        Log.i(TAG, country);
+//        Log.i(TAG, postalCode);
+//        Log.i(TAG, knownName);
+        mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
+
+        mLocationButton.setText(city + " " + state + " " + country + " " + postalCode + " " + knownName);
+        mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
+//        mLocationButton.setText(Double.toString(233.423));
 
 
 

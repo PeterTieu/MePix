@@ -50,6 +50,7 @@
 
     //ImageViewFragment dialog
     <string name="save_to_gallery">Save to Gallery</string>
+    <string name="title_activity_maps">Map</string>
 
 
 </resources>

@@ -2,17 +2,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.petertieu.android.mepix">
 
-    <uses-feature android:name="android.hardware.camera"
-                  android:required="false"/> //Tells Android that this app uses a camera feature (strongly recommended)
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false"/>
+    //Tells Android that this app uses a camera feature (strongly recommended)
     //So that Google Play Store *could* refuse to install the app if...
     //the user's device does not support this feature
-    //android:required="false": means that the app can work fine without the camera (i.e. doesn't need camera)
+    //android:required="false": means that the app can work fine without the camera (i.e. doesn't
+    need camera)
     // BUT some parts may be disabled as a result
 
+    <!-- REQUEST FOR PERMISSIONS -->
 
+
+    <!-- Permissions to write/read to/from external storage (SD card) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
+    <!-- Permissions to use two main permissions part of the LOCATIONS permissoin group -->
+    <!-- ACCESS_COURCE_LOCATION: Uses cell towers and Wifi access points to track location (less accurate) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- ACCESS_FINE LOCATION: Uses GPS radio to track locatiobn(most accurate) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <!-- Permission to access internet -->
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -21,50 +35,52 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity
-            android:name=".PixListActivity">
-
+        <activity android:name=".PixListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
         </activity>
-
-
         <activity
             android:name=".PixViewPagerActivity"
             android:label="@string/pix_details"
-            android:parentActivityName=".PixListActivity">  //Adds the Up button to PixViewPagerActivity
-                                                            //so when this is pressed, the user moves "up"
-                                                            //the hierarchy to: PixListActivity
+            android:parentActivityName=".PixListActivity">
+            //Adds the Up button to PixViewPagerActivity
+            //so when this is pressed, the user moves "up"
+            //the hierarchy to: PixListActivity
         </activity>
-
-
-
 
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.petertieu.android.mepix.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            //android:authorities="com.petertieu.android.mepix.fileprovider": location of FileProvider
-                NOTE: FileProvider is a private storage in the CriminalIntent app
-                NOTE: The directory of FileProvider is adjacent to the SQLiteDatabase database
-                NOTE: We use the FileProvider as storage for images instead of the SQLiteDatabase database,
-                    as images are files (NOT variables). Also, they are too big for the SQLiteDatabase
+            //android:authorities="com.petertieu.android.mepix.fileprovider": location of
+            FileProvider
+            NOTE: FileProvider is a private storage in the CriminalIntent app
+            NOTE: The directory of FileProvider is adjacent to the SQLiteDatabase database
+            NOTE: We use the FileProvider as storage for images instead of the SQLiteDatabase
+            database,
+            as images are files (NOT variables). Also, they are too big for the SQLiteDatabase
             //android:exported="false": only apps with permission could access FileProvider
-            //android:grantUriPermissions="true": Gives ability of app to grant other apps permission
-                to write to FileProvider
-
+            //android:grantUriPermissions="true": Gives ability of app to grant other apps
+            permission
+            to write to FileProvider
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/files"/> //Hook up the files.xml file to the FileProvider
-
+                android:resource="@xml/files"/>
+            //Hook up the files.xml file to the FileProvider
         </provider>
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
 
+        <activity
+            android:name=".MapsActivity"
+            android:label="@string/title_activity_maps">
+        </activity>
 
 
     </application>

@@ -1,9 +1,14 @@
 package com.petertieu.android.mepix;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 /**
  * Created by Peter Tieu on 7/12/2017.
@@ -16,6 +21,10 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
     //Declare tag for Logcat
     private static final String TAG = "PixListActivity";
+
+    //Declare instance variable.
+    // REQUEST_ERRORS is a requestCode given when calling startActivityForResult.
+    private static final int REQUEST_ERROR = 0;
 
 
     //Override the abstract method from SingleFragmentActivity
@@ -139,6 +148,64 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
             //Replace the 2nd pane with the PixDetailFragment
             getSupportFragmentManager().beginTransaction().replace(R.id.detail_fragment_container, newPixDetailFragment).commit();
+        }
+    }
+
+
+    @Override
+    protected void onResume(){
+
+        super.onResume();
+
+        //Check if the Google Play Services are available (every time the app is opened, i.e., when onResume() is called)
+        // This check is important, as the Play Services library is not always gauranteed to be working.
+        //Create an instance of GoogleApiAvailability.
+        // The GoogleApiAvailability class extends Object.
+        // It is a Helper class for verifying that the Google Play services APK is available and up-to-date on the device.
+        //getInstance() is static method from GoogleApiAvailability. Returns a GoogleApiAvailability object
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+
+
+        //Check if the Google Play Services installed and enabled.
+        //isGooglePlayServicesAvailable(Context) returns a status code (of type int).
+        // IF Google Play Services is installed and enabled,
+        // statusCode = SUCCESS.
+        // IF not
+        // statusCode = SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, or SERVICE INVALID.
+        int statusCode = apiAvailability.isGooglePlayServicesAvailable(this);
+
+
+        //If the Google Play Services is not available (i.e. not installed OR is disabled).
+        // IOW, the status code from isGooglePlayServicesAvailable(..) does not return SUCCESS,
+        // i.e., it returns" SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, or SERVICE INVALID.
+        if (statusCode != ConnectionResult.SUCCESS){
+
+            //getErrorDialog(Activity activity, int statusCode, int requestCode, DialogInterface.OnCancelListener cancelListener)
+            // is from GoogleApiAvaialbility class.
+            // Returns a dialog to inform of the provided statusCode.
+            // The returned dialog displays a localized message about the error and upon user confirmation (by tapping on dialog)
+            // will direct them to the Play Store if Google Play services is out of date or missing,
+            // or to system settings if Google Play services is disabled on the device.
+            //Argument 1 (Actiivty): The parent activity for creating the dialog
+            //Argument 2 (int): The status code of where Google Play Services is available. In this case, it would be !SUCCESS
+            // i.e. SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, or SERVICE INVALID.
+            //Argument 3 (int): The request code given when calling startActivityForResult()
+            //Argument 4 (DialogInterface.OnCancelListener): An inner class of DialogInterface that contains the onCancelListener
+            // (i.e what happens when the cancel button of the Dialog is pressed)
+            Dialog errorDialog = apiAvailability.getErrorDialog(this, statusCode, REQUEST_ERROR, new DialogInterface.OnCancelListener() {
+
+
+                //Override the onCancel(DialogInterface) method of the DialogInterface.OnCallListener interface.
+                //It is called when the dialog is canceled.
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+
+                    //finish() is from Activity class.
+                    //Leave app if services are unavailable
+                    finish();
+
+                }
+            });
         }
     }
 
