@@ -5,6 +5,8 @@ import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.content.Context;
@@ -124,6 +126,10 @@ public class PixDetailFragment extends SupportMapFragment {
     double latitudeOfPix;
     double longitudeOfPix;
 
+    protected Location mLocation;
+    private AddressResultReceiver mAddressResultReceiver;
+
+
     String address;
     String city;
     String state;
@@ -195,7 +201,7 @@ public class PixDetailFragment extends SupportMapFragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        //Log lifecycle callback
+        //Log in Logcat
         Log.i(TAG, "onCreate(..) called");
 
         //Get the 'value' of the argument-bundle
@@ -211,6 +217,8 @@ public class PixDetailFragment extends SupportMapFragment {
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
 
+        mAddressResultReceiver = new AddressResultReceiver(new Handler());
+
         if (hasLocationPermission()) {
             //At this point.. the permission has been granted, so we are ready to request for the location.
             //Activate the LOCATION REQUEST (findImage()),
@@ -224,65 +232,83 @@ public class PixDetailFragment extends SupportMapFragment {
                 mFusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
-                        if (location != null) {
-                            latLngOfPix = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        if (location == null) {
+
+                            Log.v(TAG, "Location does not exist");
+                        }
 
 
 
-                            Log.i(TAG, Double.toString(latLngOfPix.latitude));
-                            Log.i(TAG, Double.toString(latLngOfPix.longitude));
+                        mLocation = location;
 
+                        // In some rare cases the location returned can be null
+                        if (mLocation == null) {
+                            return;
+                        }
+
+                        if (!Geocoder.isPresent()) {
+                            Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        startIntentService();
+
+
+//                            latLngOfPix = new LatLng(location.getLatitude(), location.getLongitude());
+//
+//
+//
+//                            Log.i(TAG, Double.toString(latLngOfPix.latitude) + " 1");
+//                            Log.i(TAG, Double.toString(latLngOfPix.longitude) + " 2");
+//
 //                            latitudeOfPix = latLngOfPix.latitude;
 //                            longitudeOfPix = latLngOfPix.longitude;
-
-                            latitudeOfPix = -37.777500;
-                            longitudeOfPix = 144.872701;
-
-
-
-
-
-
-
-
-
-                            Geocoder geocoder;
-                            List<Address> addresses;
-                            geocoder = new Geocoder(getActivity(), Locale.getDefault());
-
-                            //Try risky task - getFromLocation(...) can throw IOException
-                            try{
-
-
-                                addresses = geocoder.getFromLocation(latitudeOfPix, longitudeOfPix, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-
-                                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-
-                                city = addresses.get(0).getLocality();
-
-                                state = addresses.get(0).getAdminArea();
-
-                                country = addresses.get(0).getCountryName();
-
-                                postalCode = addresses.get(0).getPostalCode();
-
-                                knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
-
-
-
-                                Log.i(TAG, Double.toString(latitudeOfPix));
-                                Log.i(TAG, Double.toString(longitudeOfPix));
-                            }
-                            catch (IOException ioException){
-                                Log.e(TAG, "Error obtaining latitude and longitude of Pix");
-                            }
+//
+////                            latitudeOfPix = -37.777500;
+////                            longitudeOfPix = 144.872701;
+//
+//
+//
+//
+//                            Geocoder geocoder;
+//                            List<Address> addresses;
+//                            geocoder = new Geocoder(getActivity(), Locale.getDefault());
+//
+//                            //Try risky task - getFromLocation(...) can throw IOException
+//                            try{
+//
+//
+//                                addresses = geocoder.getFromLocation(latitudeOfPix, longitudeOfPix, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+//
+//                                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+//
+//                                city = addresses.get(0).getLocality();
+//
+//                                state = addresses.get(0).getAdminArea();
+//
+//                                country = addresses.get(0).getCountryName();
+//
+//                                postalCode = addresses.get(0).getPostalCode();
+//
+//                                knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
+//
+//
+//
+//                                Log.i(TAG, Double.toString(latitudeOfPix) + " 3");
+//                                Log.i(TAG, Double.toString(longitudeOfPix) + " 4");
+//                            }
+//                            catch (IOException ioException){
+//                                Log.e(TAG, "Error obtaining latitude and longitude of Pix");
+//                            }
 
 
 
-                        }
+
                     }
                 });
             }
+
             catch (SecurityException securityException){
                 Log.e(TAG, "Error creating location service", securityException);
             }
@@ -354,6 +380,9 @@ public class PixDetailFragment extends SupportMapFragment {
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle){
         super.onCreateView(layoutInflater, viewGroup, bundle);
+
+        //Log in Logcat
+        Log.i(TAG, "onCreateView(..) called");
 
         //Inflate the View for the fragment
         View view = layoutInflater.inflate(R.layout.fragment_pix_detail, viewGroup, false);
@@ -436,9 +465,19 @@ public class PixDetailFragment extends SupportMapFragment {
 //        Log.i(TAG, knownName);
         mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
-        mLocationButton.setText(city + " " + state + " " + country + " " + postalCode + " " + knownName);
-        mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
-//        mLocationButton.setText(Double.toString(233.423));
+//        mLocationButton.setText(city + " " + state + " " + country + " " + postalCode + " " + knownName);
+//        mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
+//        mLocationButton.setText(address);
+
+//        mLocationButton.setOnClickListener(new View.OnClickListener(){
+//            @Override
+//            public void onClick(View view) {
+//                mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
+//
+//                mLocationButton.setText(address);
+//
+//            }
+//        });
 
 
 
@@ -685,6 +724,70 @@ public class PixDetailFragment extends SupportMapFragment {
         //Update PixListFragment() in 'real-time' for two-pane layout
         mCallbacks.onPixUpdatedFromDetailView(mPix);
     }
+
+
+
+
+
+    //Call IntenService to obtain address from lat/lon data
+    protected void startIntentService() {
+        Intent intent = new Intent(getActivity(), FetchAddressIntentService.class);
+
+        //Pass AddressResultReceiver as extra to handle results of the location fix
+        intent.putExtra(FetchAddressIntentService.Constants.RECEIVER, mAddressResultReceiver);
+
+        ////Pass Location as extra, which contains lat/lon data of location fix to convert to address
+        intent.putExtra(FetchAddressIntentService.Constants.LOCATION_DATA_EXTRA, mLocation);
+
+        //Start IntentService to perform reverse geocoding
+        getActivity().startService(intent);
+    }
+
+
+
+
+
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string
+            // or an error message sent from the intent service.
+            String mAddressOutput = resultData.getString(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
+
+
+            if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
+                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
+            }
+
+            // Show a toast message if an address was found.
+            if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
+                Toast.makeText(getActivity(), "Address found: " + mAddressOutput, Toast.LENGTH_SHORT).show();
+
+                mLocationButton.setText(mAddressOutput);
+
+//                if (locationSavedToDB){
+//                    mLocationButton.setText(mPix.getLocation());
+//                    locationSavedToDB = true;
+//                }
+//                else{
+//                    mPix.setLocation(mAddressOutput);
+//                }
+
+
+
+            }
+
+        }
+    }
+
+
+
+
 
 
 
@@ -1031,6 +1134,9 @@ public class PixDetailFragment extends SupportMapFragment {
     //Override onActivityResult(..) callback method
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
+        //Log in Logcat
+        Log.i(TAG, "onActivityResult(..) called");
 
         //If a result code DOES NOT exist
         if (resultCode != Activity.RESULT_OK) {

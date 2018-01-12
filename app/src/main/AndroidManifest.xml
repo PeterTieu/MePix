@@ -82,6 +82,11 @@
             android:label="@string/title_activity_maps">
         </activity>
 
+        //Define IntentServixe
+        <service
+            android:name=".FetchAddressIntentService"
+            android:exported="false"/>
+
 
     </application>
 
