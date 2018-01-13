@@ -15,12 +15,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -60,6 +62,7 @@ public class PixListFragment extends Fragment{
 
     //Identifier of dialog fragment of picture ImageView
     private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
+
 
 
 
@@ -413,6 +416,7 @@ public class PixListFragment extends Fragment{
 
 
 
+
             //Set listener to open picture ImageView in list item view hierarchy
             mPictureView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -456,6 +460,8 @@ public class PixListFragment extends Fragment{
                     updatePix();
                 }
             });
+
+
         }
 
 
@@ -469,8 +475,13 @@ public class PixListFragment extends Fragment{
             //Update list view
             updateUI();
 
-            //Update PixListFragment() in 'real-time' for two-pane layout
-            mCallbacks.onPixUpdatedFromListView(mPix);
+
+            //If the two-pane layout is active (i.e. sw > 600dp)
+            if (getActivity().findViewById(R.id.detail_fragment_container) != null) {
+
+                //Update PixListFragment() in 'real-time' for two-pane layout
+                mCallbacks.onPixUpdatedFromListView(mPix);
+            }
         }
 
 

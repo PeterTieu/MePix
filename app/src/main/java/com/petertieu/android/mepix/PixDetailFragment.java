@@ -877,6 +877,18 @@ public class PixDetailFragment extends SupportMapFragment {
             //Call callback method to delete Pix
             mCallbacks.onPixDeleted(mPix);
 
+
+
+            //Check if PixViewPagerActivity activity is running (i.e. we are in single-pane layout, i.e. sw < 600dp).
+            // This check is important, since we want to close this activity IF it is running... NOT PixListActivity (which also hosts PixDetailFragment) when in two-pane layout)
+            // We do not want to close the
+            if (PixViewPagerActivityLifecycleTracker.isActivityVisible()) {
+                //Finish the PixViewPagerActivity activity, so that the detail view woud pop off the stack, revewaling the list view
+                getActivity().finish();
+            }
+
+
+
             //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
             updatePix();
 

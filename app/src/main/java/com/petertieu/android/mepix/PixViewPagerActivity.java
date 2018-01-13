@@ -3,7 +3,6 @@ package com.petertieu.android.mepix;
 ;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,10 +10,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +36,8 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
     //Declare List of Pix objects
     private List<Pix> mPixes;
+
+
 
 
 
@@ -145,11 +142,32 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
                 break;
             }
         }
+    }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.i(TAG, "onResume() called");
+        PixViewPagerActivityLifecycleTracker.activityResumed();
+    }
 
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.i(TAG, "onPause() called");
+        PixViewPagerActivityLifecycleTracker.activityPaused();
+    }
 
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.i(TAG, "onStop() called");
+    }
 
-
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.i(TAG, "onDestroy() called");
     }
 
 
