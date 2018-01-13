@@ -100,35 +100,29 @@ public class PixDetailFragment extends SupportMapFragment {
     private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camer activity/app
     private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
 
-
-
     //Declare FusedLocationProviderClient - the entry point for interactng with FusedLocationProvider (to get location fix)
     private FusedLocationProviderClient mFusedLocationClient;
 
+    //List locations permissions required,
+    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
 
-    //List all the permissions that we need,
-    // Manifest.permission.ACCESS_FINE_LOCATION
-    //AND
-    // Manifest.permission.ACCESS_COARSE_LOCATION
-    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION};
+    //Declare Location object to contain location fix (i.e lat/lon values)
+    protected Location mLocation;
 
-    //Define requestCode for the REQUEST of the LOCATION FIX.
-    //NOTE: This constant will be used in requestPermission(..) and onRequestPermissionResult(..)
-    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0;
+    //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
+    private AddressResultReceiver mAddressResultReceiver;
+
+
 
     //Declare LatLng objec to hold Latitute/Longitude data of Pix
     LatLng latLngOfPix;
     double latitudeOfPix;
     double longitudeOfPix;
-
-    protected Location mLocation;
-    private AddressResultReceiver mAddressResultReceiver;
-
 
     String address;
     String city;
@@ -136,8 +130,6 @@ public class PixDetailFragment extends SupportMapFragment {
     String country;
     String postalCode;
     String knownName;
-
-
 
 
 
@@ -213,164 +205,148 @@ public class PixDetailFragment extends SupportMapFragment {
         //Assign Pix object to Pix object from PixManager singleton
         mPix = PixManager.get(getActivity()).getPix(pixId);
 
+        //Declare an options menu for the fragment
+        setHasOptionsMenu(true);
+
         //Assign reference variable, mPictureFile, to picture file in FoleProvider
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
 
+
+        //========== Configure location services ====================================================
+        //Create AddressResultReceiver object, passing a Handler to it
         mAddressResultReceiver = new AddressResultReceiver(new Handler());
 
+        //If location permissions requested in the Manifest have been granted
         if (hasLocationPermission()) {
-            //At this point.. the permission has been granted, so we are ready to request for the location.
-            //Activate the LOCATION REQUEST (findImage()),
 
-            //Create FusedLocationProviderClient object
+            //Create FusedLocationProviderClient object - to get location fix
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
             //Try risky task - addSuccessListener could throw a SecurityException exception
             try {
-
+                //Get most recent location avaiable via getLastLocation(). NOTE: getLastLocation() runs ASYNCHRONOUSLY, whereas .
                 mFusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+
+                    //Listen for when location has been obtained via FusedLocationClient
                     @Override
                     public void onSuccess(Location location) {
-
+                        //If location does not
                         if (location == null) {
-
                             Log.v(TAG, "Location does not exist");
                         }
 
-
-
+                        //Stash mLocation instance reference variable to local reference variable of location object
                         mLocation = location;
 
-                        // In some rare cases the location returned can be null
+                        //In some rare cases, location returned can be null
                         if (mLocation == null) {
                             return;
                         }
 
+                        //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address
                         if (!Geocoder.isPresent()) {
                             Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
                             return;
                         }
 
+                        //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
                         startIntentService();
-
-
-//                            latLngOfPix = new LatLng(location.getLatitude(), location.getLongitude());
-//
-//
-//
-//                            Log.i(TAG, Double.toString(latLngOfPix.latitude) + " 1");
-//                            Log.i(TAG, Double.toString(latLngOfPix.longitude) + " 2");
-//
-//                            latitudeOfPix = latLngOfPix.latitude;
-//                            longitudeOfPix = latLngOfPix.longitude;
-//
-////                            latitudeOfPix = -37.777500;
-////                            longitudeOfPix = 144.872701;
-//
-//
-//
-//
-//                            Geocoder geocoder;
-//                            List<Address> addresses;
-//                            geocoder = new Geocoder(getActivity(), Locale.getDefault());
-//
-//                            //Try risky task - getFromLocation(...) can throw IOException
-//                            try{
-//
-//
-//                                addresses = geocoder.getFromLocation(latitudeOfPix, longitudeOfPix, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-//
-//                                address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-//
-//                                city = addresses.get(0).getLocality();
-//
-//                                state = addresses.get(0).getAdminArea();
-//
-//                                country = addresses.get(0).getCountryName();
-//
-//                                postalCode = addresses.get(0).getPostalCode();
-//
-//                                knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
-//
-//
-//
-//                                Log.i(TAG, Double.toString(latitudeOfPix) + " 3");
-//                                Log.i(TAG, Double.toString(longitudeOfPix) + " 4");
-//                            }
-//                            catch (IOException ioException){
-//                                Log.e(TAG, "Error obtaining latitude and longitude of Pix");
-//                            }
-
-
-
-
                     }
                 });
             }
-
+            //Catch any SecurityException thrown by addSuccessListener(..)
             catch (SecurityException securityException){
                 Log.e(TAG, "Error creating location service", securityException);
             }
-
-
         }
-        //At this point... the permission (requested in the Manifest) hasn't been granted..
+
+        //If requested location permissions have NOT been granted
         else{
-            // Step 2 of 3 (Handling permissions at runtime):
-            // REQUEST...
-            // ...for the permission.
-            //requestPermission(String[] permissions, int requestCode) is from Fragment.
-            // It requests the permissions in the 'permissions' parameter.
-            //NOTE: These permissions will ALSO need to be in the Manifest (if they haven't already been added).
-            //NOTE: requestPermissions(..) will invoke OnRequestPermissionsResult(..)
+            //Request for location permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
 
-
-
-
-        //Declare an options menu for the fragment
-        setHasOptionsMenu(true);
-
     }
 
 
 
+    //======================== Define LOCATION services helper methods =============================================
 
-
-
-    //CHECK whether the location permission requested in the Manifest has been granted or not
-    // first permission in the permission group (i.e. ACCESS_FINE_LOCATION permission)
+    //Check if location permission requested in the Manifest has been granted
     private boolean hasLocationPermission(){
 
-        //checkSelfPermission(Context context, String permission) is a static method from ContextCompat.
-        // It checks whether the permission parameter, 'permission', is granted to the activity.
-        // If permission granted, it returns: PackageManager.PERMISSION_GRANTED (int value: 0).
-        // If permission NOT granted, it returns: PackageManager.PERMISSION_DENIED (int value: -1).
-        //NOTE: The permissions; ACCES_FINE_LOCATION and ACCESS_COARSE_LOCATION
-        // are in the same PERMISSION GROUP
-        // This PERMISSION GROUP is called: LOCATION.
-        //The special thing about PERMISSION GROUPS is:
-        // If a permission that is in a PERMISSION GROUP is granted,
-        // this means that ALL permissions in that PERMISSION GROUP are granted, too.
-        //NOTE: Other PERMISSION GROUPS include:
-        //  CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
-        //So in this situation, if the permission: Manifest.permission.ACCESS_FINE_LOCATION (i.e. LOCATION_PERMISSION[0])
-        // is granted, then we could assume that Manifest.permission.ACCESS_COARSE_LOCATION is also granted!
+        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSON_DENIED).
+        //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called LOCATION.
+            //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
+            // Other groups includej: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
-
-        //Return a boolean
-        //true: IF Manifest.permission.ACCESS_FINE_LOCATION permission has been granted
-        //false: IF Manifest.permission.ACCESS_FINE_LOCATION permission NOT granted
-        return result == PackageManager.PERMISSION_GRANTED;
+        //Return a boolean for state of location permission
+        return (result == PackageManager.PERMISSION_GRANTED);
     }
 
 
 
 
 
+    //Call IntenService to perform reverse geocoding (i.e. obtain address from location fix)
+    protected void startIntentService() {
+
+        //Create intent to FetchAddressIntentService
+        Intent intentFetchAddressIntentService = new Intent(getActivity(), FetchAddressIntentService.class);
+
+        //Pass Location which contains lat/lon data of location fix to convert to address
+        intentFetchAddressIntentService.putExtra(FetchAddressIntentService.Constants.LOCATION_DATA_EXTRA, mLocation);
+
+        //Pass AddressResultReceiver (ResultReceiver) to receive and handle address results from reverse geocoding
+        intentFetchAddressIntentService.putExtra(FetchAddressIntentService.Constants.RECEIVER, mAddressResultReceiver);
+
+        //Start IntentService to perform reverse geocoding
+        getActivity().startService(intentFetchAddressIntentService);
+    }
+
+
+
+
+
+    //Define AddressResultReceiver (RecultReceiver) inner class - to receive results from FetchAddressIntentService (IntentService)
+    class AddressResultReceiver extends ResultReceiver {
+
+        //Build constructor
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        //Listen for results from FetchAddressIntentService (IntentService)
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            //Define address string or error message sent from IntentService.
+            String mAddressOutput = resultData.getString(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
+
+            //If result code returned from IntentService yields 'negative' - address was not obtained from location fix
+            if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
+                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
+            }
+
+            //If result code returned from IntentService yields 'positive' - address successfully obtained from location fix
+            if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
+
+                //Display address on location button
+                mLocationButton.setText(mAddressOutput);
+
+//                if (locationSavedToDB){
+//                    mLocationButton.setText(mPix.getLocation());
+//                    locationSavedToDB = true;
+//                }
+//                else{
+//                    mPix.setLocation(mAddressOutput);
+//                }
+            }
+
+        }
+    }
 
 
 
@@ -463,11 +439,9 @@ public class PixDetailFragment extends SupportMapFragment {
 //        Log.i(TAG, country);
 //        Log.i(TAG, postalCode);
 //        Log.i(TAG, knownName);
-        mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
-//        mLocationButton.setText(city + " " + state + " " + country + " " + postalCode + " " + knownName);
-//        mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
-//        mLocationButton.setText(address);
+        //Assign location button instance variable to its associated resource ID
+        mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
 //        mLocationButton.setOnClickListener(new View.OnClickListener(){
 //            @Override
@@ -724,70 +698,6 @@ public class PixDetailFragment extends SupportMapFragment {
         //Update PixListFragment() in 'real-time' for two-pane layout
         mCallbacks.onPixUpdatedFromDetailView(mPix);
     }
-
-
-
-
-
-    //Call IntenService to obtain address from lat/lon data
-    protected void startIntentService() {
-        Intent intent = new Intent(getActivity(), FetchAddressIntentService.class);
-
-        //Pass AddressResultReceiver as extra to handle results of the location fix
-        intent.putExtra(FetchAddressIntentService.Constants.RECEIVER, mAddressResultReceiver);
-
-        ////Pass Location as extra, which contains lat/lon data of location fix to convert to address
-        intent.putExtra(FetchAddressIntentService.Constants.LOCATION_DATA_EXTRA, mLocation);
-
-        //Start IntentService to perform reverse geocoding
-        getActivity().startService(intent);
-    }
-
-
-
-
-
-    class AddressResultReceiver extends ResultReceiver {
-        public AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-
-            // Display the address string
-            // or an error message sent from the intent service.
-            String mAddressOutput = resultData.getString(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
-
-
-            if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
-                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
-            }
-
-            // Show a toast message if an address was found.
-            if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
-                Toast.makeText(getActivity(), "Address found: " + mAddressOutput, Toast.LENGTH_SHORT).show();
-
-                mLocationButton.setText(mAddressOutput);
-
-//                if (locationSavedToDB){
-//                    mLocationButton.setText(mPix.getLocation());
-//                    locationSavedToDB = true;
-//                }
-//                else{
-//                    mPix.setLocation(mAddressOutput);
-//                }
-
-
-
-            }
-
-        }
-    }
-
-
-
-
 
 
 
