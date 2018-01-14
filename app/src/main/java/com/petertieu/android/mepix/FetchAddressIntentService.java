@@ -1,23 +1,17 @@
 package com.petertieu.android.mepix;
 import android.app.IntentService;
-import android.app.IntentService;
-import android.app.IntentService;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.FAILURE_RESULT;
-import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.SUCCESS_RESULT;
 import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.TAG;
 
 
@@ -43,8 +37,8 @@ public class FetchAddressIntentService extends IntentService {
     //Define constants
     public final class Constants {
         public static final String TAG = "FetchAddressIntServ"; //Tag for Logcat
-        public static final int SUCCESS_RESULT = 102; //Indicate a success
-        public static final int FAILURE_RESULT = 101; //Indicate a failure
+        public static final int SUCCESS_RESULT = 102; //Indicate a success - send Address
+        public static final int FAILURE_RESULT = 104; //Indicate a failure
         public static final String PACKAGE_NAME = "com.petertieu.android.mepix"; //Package name
         public static final String RECEIVER = PACKAGE_NAME + ".RECEIVER"; //Receiver extra of Intent
         public static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY"; //'Key' for result data
@@ -102,13 +96,16 @@ public class FetchAddressIntentService extends IntentService {
         if (geocoder.isPresent()) {
 
             //Declare list to hold all representations of the address (e.g. address line, city, state, postal code, country, etc.) from reverse geocoding
-            List<Address> addressRepresentations = null;
+            List<Address> listOfAddresses = null;
+
+            Address address;
+
 
 
             //Try 'risky' task. getFromLocation(..) could throw IOException or IllegalArgumentException
             try {
                 //Get address from Geocoder
-                addressRepresentations = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                listOfAddresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             }
             //Catch network or other I/O problems
             catch (IOException ioException){
@@ -123,7 +120,7 @@ public class FetchAddressIntentService extends IntentService {
 
 
             //If Geocoder exists BUT address does NOT exist
-            if (addressRepresentations == null || addressRepresentations.size() == 0) {
+            if (listOfAddresses == null || listOfAddresses.size() == 0) {
 
                 //Update error message
                 errorMessage = "No address found at location.";
@@ -134,28 +131,42 @@ public class FetchAddressIntentService extends IntentService {
 
             //If Geocoder exists AND address line is found
             else{
-                //Get address
-                String addressLine = addressRepresentations.get(0).getAddressLine(0);
-                String featureName = addressRepresentations.get(0).getFeatureName();
-                String city = addressRepresentations.get(0).getLocality();
-                String state = addressRepresentations.get(0).getAdminArea();
-                String postalCode = addressRepresentations.get(0).getPostalCode();
 
-                //If address line exists
+                address = listOfAddresses.get(0);
+
+                //Get address representations
+                String addressLine = address.getAddressLine(0);
+                String featureName = address.getFeatureName();
+                String locality = address.getLocality();
+                String adminArea = address.getAdminArea();
+                String subAdminArea = address.getSubAdminArea();
+                String subLocality = address.getSubLocality();
+                String subThoroughFare = address.getSubThoroughfare();
+                String thoroughfare = address.getThoroughfare();
+                String postalCode = address.getPostalCode();
+
+                Log.i(TAG, "Address: " + addressLine);
+                Log.i(TAG, "Feature Name: " + featureName);
+                Log.i(TAG, "Locality: " + locality);
+                Log.i(TAG, "Administrative area: " + adminArea);
+                Log.i(TAG, "Sub-Administrative Area: " + subAdminArea);
+                Log.i(TAG, "Sub-Locality: " + subLocality);
+                Log.i(TAG, "Sub-Thorough Fare: " + subThoroughFare);
+                Log.i(TAG, "Thorough Fare: " + thoroughfare);
+                Log.i(TAG, "Postal code: " + postalCode);
+
+                //If address line (i.e. full address) exists
                 if (addressLine != null) {
-                    Log.i(TAG, "Address: " + addressLine);
-
-                    //Send 'positive' results back to PixDetailFragment
-                    deliverResultToReceiver(Constants.SUCCESS_RESULT, addressLine);
+                    //Send 'positive' result back to PixDetailFragment - attaching full address
+                    deliverResultToReceiver(Constants.SUCCESS_RESULT, address);
                 }
-
-                //If feature name does NOT exist
-                else{
-                    Log.i(TAG, "Get feature name: " + featureName);
-
-                    //Send 'positive' results back to PixDetailFragment
-                    deliverResultToReceiver(Constants.SUCCESS_RESULT, featureName);
-                }
+//                //If feature name does NOT exist
+//                else{
+//                    Log.i(TAG, "Get feature name: " + featureName);
+//
+//                    //Send 'positive' results back to PixDetailFragment
+//                    deliverResultToReceiver(Constants.SUCCESS_RESULT, address);
+//                }
 
             }
 
@@ -164,7 +175,7 @@ public class FetchAddressIntentService extends IntentService {
         //If Geocoder is NOT present
         else{
             //Update error message
-            errorMessage = "No geocoder present.";
+            errorMessage = "No geocoder present";
 
             //Send 'negatibe' results back to PixDetailFragment
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
@@ -185,4 +196,20 @@ public class FetchAddressIntentService extends IntentService {
         //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
         mReceiver.send(resultCode, bundle);
     }
+
+
+
+    //Send results back to PixDetailFragment
+    private void deliverResultToReceiver(int resultCode, Address address) {
+
+        //Create Bundle object to use as argument-bundle
+        Bundle bundle = new Bundle();
+
+        //Stash result key-value pair to argument-bundle
+        bundle.putParcelable(Constants.RESULT_DATA_KEY, address);
+
+        //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
+        mReceiver.send(resultCode, bundle);
+    }
+
 }

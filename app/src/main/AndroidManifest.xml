@@ -20,9 +20,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <!-- Permissions to use two main permissions part of the LOCATIONS permissoin group -->
-    <!-- ACCESS_COURCE_LOCATION: Uses cell towers and Wifi access points to track location (less accurate) -->
+    <!-- ACCESS_COURCE_LOCATION: Uses cell towers and Wifi access points to traddresstion (less accurate) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <!-- ACCESS_FINE LOCATION: Uses GPS radio to track locatiobn(most accurate) -->
+    <!-- ACCESS_FADDRESSTION: Uses GPS radio to track locatiobn(most accurate) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <!-- Permission to access internet -->
@@ -56,7 +56,7 @@
             android:authorities="com.petertieu.android.mepix.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            //android:authorities="com.petertieu.android.mepix.fileprovider": location of
+            //android:authorities="com.petertieu.android.mepix.fileprovider": address of
             FileProvider
             NOTE: FileProvider is a private storage in the CriminalIntent app
             NOTE: The directory of FileProvider is adjacent to the SQLiteDatabase database

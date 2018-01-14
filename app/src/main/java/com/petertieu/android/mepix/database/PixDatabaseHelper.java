@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.petertieu.android.mepix.Pix;
-
 /**
  * Created by Peter Tieu on 9/12/2017.
  */
@@ -40,6 +38,8 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
                         PixDatabaseSchema.PixTable.Columns.TITLE + ", " +
                         PixDatabaseSchema.PixTable.Columns.DATE + ", " +
                         PixDatabaseSchema.PixTable.Columns.FAVORITED + ", " +
+                        PixDatabaseSchema.PixTable.Columns.ADDRESS + ", " +
+                        PixDatabaseSchema.PixTable.Columns.LOCALITY + ", " +
                         PixDatabaseSchema.PixTable.Columns.TAG + ", " +
                         PixDatabaseSchema.PixTable.Columns.DESCRIPTION +
                         ")"

@@ -52,7 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -117,6 +116,8 @@ public class PixDetailFragment extends SupportMapFragment {
     //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
     private AddressResultReceiver mAddressResultReceiver;
 
+    private boolean locationSavedToDB = false;
+
 
 
     //Declare LatLng objec to hold Latitute/Longitude data of Pix
@@ -130,6 +131,8 @@ public class PixDetailFragment extends SupportMapFragment {
     String country;
     String postalCode;
     String knownName;
+
+    String mAddressOutput;
 
 
 
@@ -271,13 +274,13 @@ public class PixDetailFragment extends SupportMapFragment {
 
 
 
-    //======================== Define LOCATION services helper methods =============================================
+    //======================== Define ADDRESS services helper methods =============================================
 
     //Check if location permission requested in the Manifest has been granted
     private boolean hasLocationPermission(){
 
         //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSON_DENIED).
-        //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called LOCATION.
+        //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called ADDRESS.
             //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
             // Other groups includej: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
@@ -322,29 +325,42 @@ public class PixDetailFragment extends SupportMapFragment {
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
 
-            //Define address string or error message sent from IntentService.
-            String mAddressOutput = resultData.getString(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
+            //Define address string OR error message sent from FetchAddressIntentService (IntentService)
+            Address mAddressOutput = resultData.getParcelable(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
 
             //If result code returned from IntentService yields 'negative' - address was not obtained from location fix
             if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
                 Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
+
+                //Display error message sent from FetchAddressIntentService (IntentService)
+                    mLocationButton.setText(mPix.getAddress());
+
             }
 
             //If result code returned from IntentService yields 'positive' - address successfully obtained from location fix
             if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
 
-                //Display address on location button
-                mLocationButton.setText(mAddressOutput);
+                //If mLocation field of Pix object does NOT exist (i.e. no address set yet)
+                if (mPix.getAddress() == null){
+                    //Dsiplay address on location button
+                    mLocationButton.setText(mAddressOutput.getAddressLine(0));
 
-//                if (locationSavedToDB){
-//                    mLocationButton.setText(mPix.getLocation());
-//                    locationSavedToDB = true;
-//                }
-//                else{
-//                    mPix.setLocation(mAddressOutput);
-//                }
+                    //Set address to mAddress field of Pix object
+                    mPix.setAddress(mAddressOutput.getAddressLine(0));
+
+                    //Set locality component of the address to mLocality field of Pix object
+                    mPix.setLocality(mAddressOutput.getLocality() + ", " + mAddressOutput.getAdminArea());
+
+                    //Update SQLiteDatabase of Pix account for data added/updated for mLocation field (i.e. address)
+                    updatePix();
+                }
+                //If mLocation field of Pix object DOES exist (i.e. address has been set)
+                else{
+                    //Display address on location button
+                    mLocationButton.setText(mPix.getAddress());
+                }
+
             }
-
         }
     }
 

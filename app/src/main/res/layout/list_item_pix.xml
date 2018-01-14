@@ -29,39 +29,65 @@
     <!--Title of the Pix-->
     <TextView
         android:id="@+id/list_pix_title"
-
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="29dp"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="26dp"
         android:ellipsize="marquee"
+        android:maxWidth="145dp"
         android:singleLine="true"
         android:text="Pix Title"
         android:textColor="@android:color/black"
         android:textSize="22sp"
-        app:layout_constraintEnd_toEndOf="@+id/list_pix_description"
-        app:layout_constraintStart_toEndOf="@+id/list_pix_picture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+    <!--Location of the Pix-->
+    <TextView
+        android:id="@+id/list_pix_location"
+        android:layout_width="wrap_content"
+        android:layout_height="21dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="30dp"
+        android:ellipsize="marquee"
+        android:maxWidth="150dp"
+        android:singleLine="true"
+        android:text="Pix Location"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/list_pix_title"
         app:layout_constraintTop_toTopOf="parent"/>
 
 
     <!--Description of the Pix-->
     <TextView
         android:id="@+id/list_pix_description"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:layout_marginEnd="12dp"
-
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="85dp"
         android:ellipsize="end"
+        android:maxWidth="145dp"
         android:singleLine="true"
         android:text="Pix Description"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/list_pix_date"
-        app:layout_constraintStart_toEndOf="@+id/list_pix_picture"
-        />
+        app:layout_constraintStart_toStartOf="parent"/>
+
+
+    <TextView
+        android:id="@+id/list_pix_tagged"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="4dp"
+        android:maxWidth="150dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="Pix Tagged"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/list_pix_description"/>
 
 
     <!--Favorite star-->
@@ -69,7 +95,6 @@
         android:id="@+id/list_pix_favorited"
         app:srcCompat="@android:drawable/btn_star_big_off"
         android:text="Pix Favorited"
-
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginEnd="8dp"

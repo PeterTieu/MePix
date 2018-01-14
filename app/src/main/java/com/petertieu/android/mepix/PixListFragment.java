@@ -15,14 +15,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 import java.io.File;
@@ -377,6 +375,12 @@ public class PixListFragment extends Fragment{
         //Declare ImageView for "Picture" of Pix
         private ImageView mPictureView;
 
+        //Declare TextView for "Address" of Pix
+        private TextView mPixAddress;
+
+        //Declare TextView for "Tag" of Pix
+        private TextView mPixTagged;
+
 
 
 
@@ -400,6 +404,12 @@ public class PixListFragment extends Fragment{
 
             //Assign list item's picture instance variable to its associated resource ID
             mPictureView = (ImageView) view.findViewById(R.id.list_pix_picture);
+
+            //Assign list item's locatoin instance variable to its associated resource ID
+            mPixAddress = (TextView) view.findViewById(R.id.list_pix_location);
+
+            //Assign list item's tag instance variable to its associatred resource ID
+            mPixTagged = (TextView) view.findViewById(R.id.list_pix_tagged);
 
 
             //Set listener for list item
@@ -495,7 +505,6 @@ public class PixListFragment extends Fragment{
             //Set the text of the list item's title
             if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
                 mPixTitle.setText("* Untitled *");
-                mPixTitle.setTextSize(15f);
                 mPixTitle.setTypeface(null, Typeface.ITALIC);
             }
             else{
@@ -505,7 +514,6 @@ public class PixListFragment extends Fragment{
             //Set the text of the list item's description
             if (mPix.getDescription() == null || mPix.getDescription().isEmpty()){
                 mPixDescription.setText("* No description *");
-                mPixDescription.setTextSize(10f);
                 mPixDescription.setTypeface(null, Typeface.ITALIC);
             }
             else{
@@ -514,6 +522,34 @@ public class PixListFragment extends Fragment{
 
             //Set new date display for date button
             mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
+
+            //Set the text of the list item's location
+            if (mPix.getAddress() == null){
+                //Display nothing on location field
+                mPixAddress.setText("");
+            }
+            else{
+                //Display loality on location field (i.e. Footscray, Victoria)
+                mPixAddress.setText("- in " + mPix.getLocality());
+            }
+
+            //Set the text of the list item's tagged
+            if(mPix.getTag() == null || mPix.getTag().isEmpty()){
+                mPixTagged.setText("");
+            }
+            else{
+                //Define pix tagged String to cater for list view
+                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ").replaceAll("-", "");
+                mPixTagged.setText("- with " + pixTaggedStringForListView);
+            }
+
+
+            if (getActivity().findViewById(R.id.detail_fragment_container) != null){
+                mPixAddress.setText("");
+                mPixTagged.setText("");
+
+            }
+
 
 
             //============ Set Favorited 'star' view===================================
@@ -563,6 +599,9 @@ public class PixListFragment extends Fragment{
 
                 //Set picture ImageView view to bitmap version
                 mPictureView.setImageBitmap(pictureBitmapCorrectOrientation);
+
+                //Scale picture to fit allocated ImageView space
+                mPictureView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
                 //Talkback accessbility: Associate textual description to 'existing' view
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));

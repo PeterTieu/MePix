@@ -28,8 +28,8 @@
     <string name="details">Details</string>
     <string name="date">Date</string>
     <string name="add_date">Add Date</string>
-    <string name="location">Location</string>
-    <string name="add_location">Add Location</string>
+    <string name="address">Location</string>
+    <string name="location_button">Unable to fetch location</string>
     <string name="with">With</string>
     <string name="tag_people">Tag people</string>
     <string name="add_tag">+ Tag</string>

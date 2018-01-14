@@ -186,6 +186,28 @@ public class PixManager {
 
     //============= Define HELPER METHODS ==============================================================================================
 
+    public void updatePixOnDatabase(Pix pix){
+
+        //Get the specific Pix ID in String form
+        String pixId = pix.getId().toString();
+
+        //Create a ContentValue and store data from the specifc Pix
+        ContentValues contentValues = getContentValues(pix);
+
+        //UPDATE the database with data from the specific pix
+        mSQLiteDatabase.update(
+                PixDatabaseSchema.PixTable.NAME, //(String) Name of database to update
+                contentValues, //(ContentValues) Data to be added to the database
+                PixDatabaseSchema.PixTable.Columns.ID + " = ? ", //(String) whereClause - Which column to select
+                new String[]{pixId} //(String) whereArgs - Which value to add to the selected column
+        );
+
+    }
+
+
+
+
+
     //WRITE data from the Crime object to a ContentValues object. The ContentValues object acts as a 'buffer' data storage for data from the Pix object
     private static ContentValues getContentValues(Pix pix){
 
@@ -197,6 +219,8 @@ public class PixManager {
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TITLE, pix.getTitle());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DATE, pix.getDate().getTime());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.FAVORITED, pix.isFavorited() ? 1:0); //IF crime.isFavorited() == true, put 1. Else, put 0
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.ADDRESS, pix.getAddress());
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.LOCALITY, pix.getLocality());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TAG, pix.getTag());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DESCRIPTION, pix.getDescription());
 
@@ -229,23 +253,7 @@ public class PixManager {
 
 
 
-    public void updatePixOnDatabase(Pix pix){
 
-        //Get the specific Pix ID in String form
-        String pixId = pix.getId().toString();
-
-        //Create a ContentValue and store data from the specifc Pix
-        ContentValues contentValues = getContentValues(pix);
-
-        //UPDATE the database with data from the specific pix
-        mSQLiteDatabase.update(
-                PixDatabaseSchema.PixTable.NAME, //(String) Name of database to update
-                contentValues, //(ContentValues) Data to be added to the database
-                PixDatabaseSchema.PixTable.Columns.ID + " = ? ", //(String) whereClause - Which column to select
-                new String[]{pixId} //(String) whereArgs - Which value to add to the selected column
-        );
-
-    }
 
 
 

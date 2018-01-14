@@ -19,6 +19,8 @@ public class PixDatabaseSchema {
             public static final String TITLE = "title";
             public static final String DATE = "date";
             public static final String FAVORITED = "favorited";
+            public static final String ADDRESS = "location";
+            public static final String LOCALITY = "locality";
             public static final String TAG = "tag";
             public static final String DESCRIPTION = "description";
         }
