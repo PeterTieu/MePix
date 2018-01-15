@@ -3,6 +3,7 @@ package com.petertieu.android.mepix;
 ;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -51,6 +52,18 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
     public void onPixDeleted(Pix pix){
         //Do nothing
     }
+
+
+//    @Override
+//    public void onMapsActivityCalled(Location location){
+//        //Do nothing
+//    }
+//
+//
+//    @Override
+//    public void onMapFragmentCalled(Location location){
+//        //Do nothing
+//    }
 
 
 

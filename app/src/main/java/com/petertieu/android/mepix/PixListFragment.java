@@ -533,7 +533,7 @@ public class PixListFragment extends Fragment{
                 mPixAddress.setText("- in " + mPix.getLocality());
             }
 
-            //Set the text of the list item's tagged
+            //Set the text of the list items tagged field
             if(mPix.getTag() == null || mPix.getTag().isEmpty()){
                 mPixTagged.setText("");
             }
@@ -544,8 +544,11 @@ public class PixListFragment extends Fragment{
             }
 
 
+            //If layout is in two-pane (i.e. sw > 600dp)
             if (getActivity().findViewById(R.id.detail_fragment_container) != null){
+                //Remove text display of address
                 mPixAddress.setText("");
+                //Remove text display of tagged contacts
                 mPixTagged.setText("");
 
             }

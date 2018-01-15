@@ -17,9 +17,6 @@ public class Pix {
     private String mTitle;          //TITLE of the Pix
     private Date mDate;             //DATE of the Pix
     private boolean mFavorited;     //If Pix has been FAVORITED
-
-
-
     private String mAddress;       //ADDRESS of the Pix
     private String mLocality;       //LOCALITY of the Pix (i.e. region/suburb component of the address)
     private String mTag;            //TAG in the Pix

@@ -1,6 +1,7 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
@@ -42,16 +43,26 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -119,20 +130,19 @@ public class PixDetailFragment extends SupportMapFragment {
     private boolean locationSavedToDB = false;
 
 
+    //Declare a GoogleApiClient reference variable.
+    //NOTE: To use the Google Play Services, we must CREATE a CLIENT (GoogleApiClient).
+    private GoogleApiClient mGoogleApiClient;
 
-    //Declare LatLng objec to hold Latitute/Longitude data of Pix
-    LatLng latLngOfPix;
-    double latitudeOfPix;
-    double longitudeOfPix;
+    //Declare GoogleMap
+    // A GoogleMap is the main class for the Google Maps Android API.
+    // It is the ENTRY POINT for all methods related to the map.
+    //A GoogleMap is already instantiated in SupportMapFragment.
+    // It must be obtained from getMapAsync(OnMapReadyCallback) (a method from the SupportMapFragment class).
+    private GoogleMap mMap;
 
-    String address;
-    String city;
-    String state;
-    String country;
-    String postalCode;
-    String knownName;
+    private MapActivity mMapActivity;
 
-    String mAddressOutput;
 
 
 
@@ -169,6 +179,10 @@ public class PixDetailFragment extends SupportMapFragment {
 
         //Callback method for when a Pix is deleted (for two-pane layout)
         void onPixDeleted(Pix pix);
+
+//        void onMapsActivityCalled(Location location);
+//
+//        void onMapFragmentCalled(Location location);
     }
 
 
@@ -269,6 +283,65 @@ public class PixDetailFragment extends SupportMapFragment {
             //Request for location permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
+
+
+
+
+
+
+
+//        //At this point, the LocatrActivity would have already checked for the availability of the GoogleAPI
+//        // via the GoogleApiAvailability class..
+//        // ...BUT...
+//        //To use the Google Play Services, we must CREATE a CLIENT.
+//        // Create a GoogleApiClient object, referenced by 'mGoogleApiClient', to communiate with the Google APIs.
+//        // This is done via the Builder class, GoogleApiClient.Builder builder.
+//
+//
+//
+//        //Builder (Context): The context to use for the connection
+//
+//        mGoogleApiClient = new GoogleApiClient
+//
+//                .Builder(getActivity())
+//
+//                //addApi(Api): The API to add.
+//                //In this case, we have added the LocationServices.API API
+//                .addApi(LocationServices.API)
+//
+//                //Add a connection callback via addConnectionCallbacks(GoogleApiClient.ConnectionCallbacks).
+//                //NOTE: GoogleApiClient.ConnectionCallbacks is a callback interface of GoogleApiClient
+//                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+//
+//
+//                    //Override the onConnected(..) listener to listen for a connection event
+//                    // i.e. when the GoogleApiClient is connected to the Google Play Services
+//                    @Override
+//                    public void onConnected(Bundle bundle){
+//
+//                        //Update the options menu.
+//                        //IOW, getActivity().invalidateOptionsMenu() will call onCreateOptionsMenu(..)
+//                        // to update the options menu AGAIN.
+//                        // This is necessary so that the 'searchItem' MenuItem could be enabled/disabled appropriately,
+//                        // based on whether the GoogleApiClient is connected to the Google Play Services or not
+//                        getActivity().invalidateOptionsMenu();
+//                    }
+//
+//
+//                    //Override the onConnectionSuspended(..) listener to listen for a connection suspended event,
+//                    // i.e. when the GoogleApiClient is suspended from the Google Play Services
+//                    @Override
+//                    public void onConnectionSuspended(int i){
+//                        //Do nothing
+//
+//                    }
+//                })
+//
+//                //build: Instantiates the GoogleApiClient object
+//                .build();
+
+
+
 
     }
 
@@ -450,24 +523,23 @@ public class PixDetailFragment extends SupportMapFragment {
 
 
         //================ SET UP mLocationButton ==================================================================
-//        Log.i(TAG, city);
-//        Log.i(TAG, state);
-//        Log.i(TAG, country);
-//        Log.i(TAG, postalCode);
-//        Log.i(TAG, knownName);
+
 
         //Assign location button instance variable to its associated resource ID
         mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
-//        mLocationButton.setOnClickListener(new View.OnClickListener(){
-//            @Override
-//            public void onClick(View view) {
-//                mLocationButton.setText(Double.toString(latitudeOfPix).toString() + ", " + Double.toString(longitudeOfPix).toString());
-//
-//                mLocationButton.setText(address);
-//
-//            }
-//        });
+        mLocationButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+
+                //Begin intent
+                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mLocation, mPix.getAddress());
+                getActivity().startActivity(mapsActivityIntent);
+
+
+
+            }
+        });
 
 
 
@@ -1177,7 +1249,6 @@ public class PixDetailFragment extends SupportMapFragment {
                     //Let total Pix tag String equal display name of contact
                     mTotalTag = "- " + displayName;
                 }
-
 
                 //Set tag field of Pix to obtained data
                 mPix.setTag(mTotalTag);

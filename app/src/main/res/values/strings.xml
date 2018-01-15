@@ -53,4 +53,7 @@
     <string name="title_activity_maps">Map</string>
 
 
+    //MapsActivity
+    <string name="pix_location">Pix Location: </string>
+
 </resources>

@@ -3,6 +3,7 @@ package com.petertieu.android.mepix;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
@@ -122,7 +123,6 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-
     //Override method from PixListFragment.Callbacks interface to update PixDetailFragment in realtime (for two-pane view)
     @Override
     public void onPixUpdatedFromListView(Pix pix){
@@ -152,6 +152,40 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
     }
 
 
+
+
+
+//    //Override method from PixDetailFragment.Callbacks interface to call MapsActivity
+//    @Override
+//    public void onMapsActivityCalled(Location location){
+//
+//        Log.i(TAG, "PixDetailFragment.Callbacks onMapsActivityCalled(..) called");
+//
+//        Intent mapsActivityIntent = MapsActivity.newIntent(this, location);
+//
+//        startActivity(mapsActivityIntent);
+//
+//
+//    }
+
+
+
+
+
+//    @Override
+//    public void onMapFragmentCalled(Location location){
+//        Log.i(TAG, "PixDetailFragment.Callbacks onMapFragmentCalled(..) called");
+//
+//        Fragment mapFragment = MapFragment.newInstance(location);
+//
+//        getSupportFragmentManager().beginTransaction().replace(R.id.detail_fragment_container, mapFragment).commit();
+//    }
+
+
+
+
+
+    //Override activity lifecycle callback method
     @Override
     protected void onResume(){
 

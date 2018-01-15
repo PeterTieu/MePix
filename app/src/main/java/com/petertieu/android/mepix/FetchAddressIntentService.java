@@ -98,6 +98,7 @@ public class FetchAddressIntentService extends IntentService {
             //Declare list to hold all representations of the address (e.g. address line, city, state, postal code, country, etc.) from reverse geocoding
             List<Address> listOfAddresses = null;
 
+            //Declare Address object to hold different address representations of the location
             Address address;
 
 
@@ -132,9 +133,10 @@ public class FetchAddressIntentService extends IntentService {
             //If Geocoder exists AND address line is found
             else{
 
+                //Declare
                 address = listOfAddresses.get(0);
 
-                //Get address representations
+                //Define different address representation via the Address object (referenced by 'address')
                 String addressLine = address.getAddressLine(0);
                 String featureName = address.getFeatureName();
                 String locality = address.getLocality();
@@ -145,6 +147,7 @@ public class FetchAddressIntentService extends IntentService {
                 String thoroughfare = address.getThoroughfare();
                 String postalCode = address.getPostalCode();
 
+                //Log different address types to Logcat
                 Log.i(TAG, "Address: " + addressLine);
                 Log.i(TAG, "Feature Name: " + featureName);
                 Log.i(TAG, "Locality: " + locality);
@@ -160,16 +163,7 @@ public class FetchAddressIntentService extends IntentService {
                     //Send 'positive' result back to PixDetailFragment - attaching full address
                     deliverResultToReceiver(Constants.SUCCESS_RESULT, address);
                 }
-//                //If feature name does NOT exist
-//                else{
-//                    Log.i(TAG, "Get feature name: " + featureName);
-//
-//                    //Send 'positive' results back to PixDetailFragment
-//                    deliverResultToReceiver(Constants.SUCCESS_RESULT, address);
-//                }
-
             }
-
         }
 
         //If Geocoder is NOT present
