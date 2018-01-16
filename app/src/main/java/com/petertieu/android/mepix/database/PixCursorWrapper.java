@@ -36,6 +36,8 @@ public class PixCursorWrapper extends CursorWrapper{
         int favorited = getInt(getColumnIndex(PixDatabaseSchema.PixTable.Columns.FAVORITED));
         String address = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.ADDRESS));
         String locality = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.LOCALITY));
+        double latitude = getDouble(getColumnIndex(PixDatabaseSchema.PixTable.Columns.LATITUDE));
+        double longitude = getDouble(getColumnIndex(PixDatabaseSchema.PixTable.Columns.LONGITUDE));
         String tag = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.TAG));
         String description = getString(getColumnIndex(PixDatabaseSchema.PixTable.Columns.DESCRIPTION));
 
@@ -46,6 +48,8 @@ public class PixCursorWrapper extends CursorWrapper{
         pix.setFavorited(favorited != 0);
         pix.setAddress(address);
         pix.setLocality(locality);
+        pix.setLatitude(latitude);
+        pix.setLongitude(longitude);
         pix.setTag(tag);
         pix.setDescription(description);
 

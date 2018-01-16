@@ -21,6 +21,8 @@ public class PixDatabaseSchema {
             public static final String FAVORITED = "favorited";
             public static final String ADDRESS = "location";
             public static final String LOCALITY = "locality";
+            public static final String LATITUDE = "latitude";
+            public static final String LONGITUDE = "longitude";
             public static final String TAG = "tag";
             public static final String DESCRIPTION = "description";
         }

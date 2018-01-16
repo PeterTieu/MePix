@@ -1,12 +1,14 @@
 package com.petertieu.android.mepix;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -61,6 +63,10 @@ public class PixListFragment extends Fragment{
     //Identifier of dialog fragment of picture ImageView
     private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
 
+    //List locations permissions required,
+    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
+
 
 
 
@@ -106,6 +112,28 @@ public class PixListFragment extends Fragment{
 
         //Report that this fragment would like to participate in populate menus
         setHasOptionsMenu(true);
+
+        //Check if permission for location tracking has been granted (by user)
+        if (hasLocationPermission() == false){
+            //Request (user) for location permissions - as they are 'dangerous' permissions
+            requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+        }
+    }
+
+
+
+
+    //Check if location permission requested in the Manifest has been granted
+    private boolean hasLocationPermission(){
+
+        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSON_DENIED).
+        //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called ADDRESS.
+        //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
+        // Other groups includej: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
+        int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
+
+        //Return a boolean for state of location permission
+        return (result == PackageManager.PERMISSION_GRANTED);
     }
 
 

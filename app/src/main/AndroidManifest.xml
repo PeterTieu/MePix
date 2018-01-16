@@ -12,9 +12,11 @@
     need camera)
     // BUT some parts may be disabled as a result
 
+    <!--Declare OpenGL ES version 2 for devices that do not support this, as it is used by Google Maps Android API-->
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
+
     <!-- REQUEST FOR PERMISSIONS -->
-
-
     <!-- Permissions to write/read to/from external storage (SD card) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -28,8 +30,8 @@
     <!-- Permission to access internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!--Declare OpenGL ES version 2 for devices that do not support this, as it is used by Google Maps Android API-->
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
+
 
     <application
         android:allowBackup="true"
@@ -38,13 +40,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+
+        <!--Declare "list view" activity (as main activity)-->
         <activity android:name=".PixListActivity">
             <intent-filter>
+
+                <!--Declare ACTION-->
                 <action android:name="android.intent.action.MAIN"/>
 
+                <!--Declare CATEGORY-->
                 <category android:name="android.intent.category.LAUNCHER"/>
+
             </intent-filter>
         </activity>
+
+
+        <!--Declare "detail view" activity-->
         <activity
             android:name=".PixViewPagerActivity"
             android:label="@string/pix_details"
@@ -54,6 +66,8 @@
             //the hierarchy to: PixListActivity
         </activity>
 
+
+        <!--Declare File Provider-->
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.petertieu.android.mepix.fileprovider"
@@ -61,7 +75,7 @@
             android:grantUriPermissions="true">
             //android:authorities="com.petertieu.android.mepix.fileprovider": address of
             FileProvider
-            NOTE: FileProvider is a private storage in the CriminalIntent app
+            NOTE: FileProvider is a private storage in the MePix app
             NOTE: The directory of FileProvider is adjacent to the SQLiteDatabase database
             NOTE: We use the FileProvider as storage for images instead of the SQLiteDatabase
             database,
@@ -77,23 +91,30 @@
         </provider>
 
 
+        <!--Declare MapsActivity activity-->
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"
-            android:configChanges="orientation|screenSize">
+            android:parentActivityName=".PixViewPagerActivity"
+            android:screenOrientation="portrait">
         </activity>
+        //android:screenOrientation: locks the activity to portrait orientation
 
-        //Define IntentServixe
+
+
+        <!--Declare IntentService - asynchronous activity that fetches location data-->
         <service
             android:name=".FetchAddressIntentService"
             android:exported="false"/>
 
+
+        <!--Declare API key for Google Maps-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>
 
 
-        <!--Specify the version of Google Play Services used-->
+        <!--Declare version of Google Play Services used-->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

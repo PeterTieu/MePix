@@ -71,8 +71,10 @@ import java.util.UUID;
 
 
 
+
+
 //Fragment for the DETAIL VIEW
-public class PixDetailFragment extends SupportMapFragment {
+public class PixDetailFragment extends SupportMapFragment{
 
     //Define 'key' for the argument-bundle
     private static final String ARGUMENT_PIX_ID = "pix_id";
@@ -110,7 +112,8 @@ public class PixDetailFragment extends SupportMapFragment {
     private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camer activity/app
     private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
-    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
+    private static final int REQUEST_CODE_MAP = 5;
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
@@ -140,8 +143,6 @@ public class PixDetailFragment extends SupportMapFragment {
     //A GoogleMap is already instantiated in SupportMapFragment.
     // It must be obtained from getMapAsync(OnMapReadyCallback) (a method from the SupportMapFragment class).
     private GoogleMap mMap;
-
-    private MapActivity mMapActivity;
 
 
 
@@ -179,10 +180,6 @@ public class PixDetailFragment extends SupportMapFragment {
 
         //Callback method for when a Pix is deleted (for two-pane layout)
         void onPixDeleted(Pix pix);
-
-//        void onMapsActivityCalled(Location location);
-//
-//        void onMapFragmentCalled(Location location);
     }
 
 
@@ -237,6 +234,7 @@ public class PixDetailFragment extends SupportMapFragment {
         //If location permissions requested in the Manifest have been granted
         if (hasLocationPermission()) {
 
+
             //Create FusedLocationProviderClient object - to get location fix
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
@@ -280,7 +278,7 @@ public class PixDetailFragment extends SupportMapFragment {
 
         //If requested location permissions have NOT been granted
         else{
-            //Request for location permissions
+            //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
 
@@ -424,6 +422,12 @@ public class PixDetailFragment extends SupportMapFragment {
                     //Set locality component of the address to mLocality field of Pix object
                     mPix.setLocality(mAddressOutput.getLocality() + ", " + mAddressOutput.getAdminArea());
 
+                    //Set latitude component of the address to mLatitude field of Pix object
+                    mPix.setLatitude(mAddressOutput.getLatitude());
+
+                    //Set longitude component of the address to mLongitude field of Pix object
+                    mPix.setLongitude(mAddressOutput.getLongitude());
+
                     //Update SQLiteDatabase of Pix account for data added/updated for mLocation field (i.e. address)
                     updatePix();
                 }
@@ -532,12 +536,11 @@ public class PixDetailFragment extends SupportMapFragment {
             @Override
             public void onClick(View view) {
 
-                //Begin intent
-                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mLocation, mPix.getAddress());
-                getActivity().startActivity(mapsActivityIntent);
+                //Create Intent to open MapsActivity
+                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
 
-
-
+                //Start intent to open MapsActivity
+                getActivity().startActivityForResult(mapsActivityIntent, REQUEST_CODE_MAP);
             }
         });
 
@@ -1322,6 +1325,17 @@ public class PixDetailFragment extends SupportMapFragment {
 
             //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
             updatePix();
+        }
+
+
+
+
+        if(requestCode == REQUEST_CODE_MAP){
+            double newLatitude = intent.getDoubleExtra(MapsActivity.EXTRA_PIX_NEW_LATITUDE, 0);
+            double newLongitude = intent.getDoubleExtra(MapsActivity.EXTRA_PIX_NEW_LONGITUDE, 0);
+
+            Log.i(TAG, Double.toString(newLatitude) + Double.toString(newLongitude));
+
         }
 
     }

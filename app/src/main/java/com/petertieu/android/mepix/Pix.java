@@ -17,8 +17,10 @@ public class Pix {
     private String mTitle;          //TITLE of the Pix
     private Date mDate;             //DATE of the Pix
     private boolean mFavorited;     //If Pix has been FAVORITED
-    private String mAddress;       //ADDRESS of the Pix
+    private String mAddress;        //ADDRESS of the Pix
     private String mLocality;       //LOCALITY of the Pix (i.e. region/suburb component of the address)
+    private double mLatitude;       //LATITUDE of the Pix's location
+    private double mLongitude;      //LONGITUDE of the Pix's location
     private String mTag;            //TAG in the Pix
     private String mDescription;    //TEXT in the Pix
 
@@ -87,6 +89,22 @@ public class Pix {
 
     public void setLocality(String locality) {
         mLocality = locality;
+    }
+
+    public double getLatitude() {
+        return mLatitude;
+    }
+
+    public void setLatitude(double latitude) {
+        mLatitude = latitude;
+    }
+
+    public double getLongitude() {
+        return mLongitude;
+    }
+
+    public void setLongitude(double longitude) {
+        mLongitude = longitude;
     }
 
     public void setFavorited(boolean favorited) {

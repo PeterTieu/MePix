@@ -221,6 +221,8 @@ public class PixManager {
         contentValues.put(PixDatabaseSchema.PixTable.Columns.FAVORITED, pix.isFavorited() ? 1:0); //IF crime.isFavorited() == true, put 1. Else, put 0
         contentValues.put(PixDatabaseSchema.PixTable.Columns.ADDRESS, pix.getAddress());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.LOCALITY, pix.getLocality());
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.LATITUDE, pix.getLatitude());
+        contentValues.put(PixDatabaseSchema.PixTable.Columns.LONGITUDE, pix.getLongitude());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.TAG, pix.getTag());
         contentValues.put(PixDatabaseSchema.PixTable.Columns.DESCRIPTION, pix.getDescription());
 

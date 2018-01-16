@@ -178,6 +178,9 @@ public class FetchAddressIntentService extends IntentService {
     }
 
 
+
+
+
     //Send results back to PixDetailFragment
     private void deliverResultToReceiver(int resultCode, String message) {
 
@@ -190,6 +193,8 @@ public class FetchAddressIntentService extends IntentService {
         //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
         mReceiver.send(resultCode, bundle);
     }
+
+
 
 
 

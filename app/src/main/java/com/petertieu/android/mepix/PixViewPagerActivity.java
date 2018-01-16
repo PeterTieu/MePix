@@ -15,6 +15,8 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
+import static android.support.v4.view.PagerAdapter.POSITION_NONE;
+
 /**
  * Created by Peter Tieu on 13/12/2017.
  */
@@ -33,7 +35,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
     private static final int OFF_SCREEN_PAGE_LIMIT = 5;
 
     //Declare ViewPager
-    private static ViewPager mViewPager;
+    public static ViewPager mViewPager;
 
     //Declare List of Pix objects
     private List<Pix> mPixes;
@@ -54,16 +56,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
     }
 
 
-//    @Override
-//    public void onMapsActivityCalled(Location location){
-//        //Do nothing
-//    }
-//
-//
-//    @Override
-//    public void onMapFragmentCalled(Location location){
-//        //Do nothing
-//    }
+
 
 
 
@@ -135,6 +128,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
                 //Get the size of the List of Pix objects
                 return mPixes.size();
             }
+
         });
 
 
@@ -156,6 +150,9 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
             }
         }
     }
+
+
+
 
     @Override
     public void onResume(){

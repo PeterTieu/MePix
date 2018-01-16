@@ -1,11 +1,13 @@
 package com.petertieu.android.mepix;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
+
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -14,30 +16,45 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
 
     private static final String TAG = "MapsActivity";
-    private static final String EXTRA_PIX_LOCATION = "location";
+    private static final String EXTRA_PIX_LATITUDE = "latitude";
+    private static final String EXTRA_PIX_LONGITUDE = "longitude";
     private static final String EXTRA_PIX_ADDRESS = "address";
 
+    public static final String EXTRA_PIX_NEW_LATITUDE = "newLatitude";
+    public static final String EXTRA_PIX_NEW_LONGITUDE = "newLongitude";
+    private static final int REQUEST_CODE_MAP = 5;
+
+    //Declare GoogleMap object
     private GoogleMap mMap;
 
-    private Location mLocation;
+    //Declare double latitude of Pix location
+    private double mLatitude;
 
+    //Declare double longitude of Pix location
+    private double mLongitude;
+
+    //Declare String address of Pix location
     private String mAddress;
 
+    //Declare marker for Pix location
+    private MarkerOptions mPixLocationMarker;
 
 
 
 
 
-    //Method to call for
-    public static Intent newIntent(Context context, Location location, String address){
+    //Declare method to call in order to start this activity
+    public static Intent newIntent(Context context, double latitude, double longitude, String address){
 
         //Log to Logcat
         Log.i(TAG, "newIntent(..) called");
@@ -45,9 +62,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Create new intent to start PixViewPagerActivity
         Intent intent = new Intent(context, MapsActivity.class);
 
-        //Add extra to intent
-        intent.putExtra(EXTRA_PIX_LOCATION, location);
+        //Add lattitude as intent extra
+        intent.putExtra(EXTRA_PIX_LATITUDE, latitude);
 
+        //Add longitude as intent extra
+        intent.putExtra(EXTRA_PIX_LONGITUDE, longitude);
+
+        //Add address as intent extra
         intent.putExtra(EXTRA_PIX_ADDRESS, address);
 
         //Return the Intent
@@ -57,18 +78,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
+    //Ovrride activity lifecycle callback method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Set layout view of activity
         setContentView(R.layout.activity_maps);
 
-        onRetainCustomNonConfigurationInstance();
-        onRetainNonConfigurationInstance();
+        //Unpack intent extra then assign to latitude instance variable
+        mLatitude = getIntent().getDoubleExtra(EXTRA_PIX_LATITUDE, 0);
 
+        //Unpack intent extra then assign to longitude instance variable
+        mLongitude = getIntent().getDoubleExtra(EXTRA_PIX_LONGITUDE, 0);
 
-
-        mLocation = getIntent().getParcelableExtra(EXTRA_PIX_LOCATION);
-
+        //Unpack intent extra then assing to address instance variable
         mAddress = getIntent().getStringExtra(EXTRA_PIX_ADDRESS);
 
         //Obtain map from SupportMapFragment, and pass associated resource ID to display the map
@@ -79,15 +104,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
+
+
+     //Manipulate map once available. User will be prompted to download Google Play Services if not installed.
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
@@ -95,33 +115,114 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         //Add marker in Sydney and move the camera
-        LatLng locationLatLon = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+        LatLng pixLocationLatLon = new LatLng(mLatitude, mLongitude);
 
-        //Add marker
-        mMap.addMarker(new MarkerOptions().position(locationLatLon).title(getString(R.string.pix_location) + mAddress));
+        //Create marker for Pix location
+        mPixLocationMarker = new MarkerOptions();
 
-//        //Move camera to marker
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(locationLatLon));
+        //Set position of Pix marker
+        mPixLocationMarker.position(pixLocationLatLon);
+
+        //Set tite of Pix marker
+        mPixLocationMarker.title(getString(R.string.pix_location) + " " + mAddress);
+
+        //Allow Pix marker to be dragged
+        mPixLocationMarker.draggable(true);
+
+        //Add marker to map
+        mMap.addMarker(mPixLocationMarker);
 
 
-        //Define a rectangular lat-lon boundary perimeter, where the following TWO POINTS lie at the perimeter of this rectangle:
-        //1: The location point of the PHOTO (itemPoint)
-        //2: The location point of the CURRENT LOCATION (myPoint)
-        //NOTE: LatLngBounds extends Object
-        //NOTE: The LatLngBounds.include(..) methods actually include the location points in which the LatLngBounds should encompass.
-        // But if only 2 points are provided (as in this case), then these points will lie on the rectangular perimeter!
+
+        //Define magnitude of extra bounds to control camera zoom level
+        double offsetFromLocation = 0.00003f;
+        //Extra bound #1
+        LatLng northEastLatLon = new LatLng(mLatitude + offsetFromLocation, mLongitude + offsetFromLocation);
+        //Extra bound #2
+        LatLng southWestLatLon = new LatLng(mLatitude - offsetFromLocation, mLongitude - offsetFromLocation);
+
+
+        //Define a rectangular lat/lon boundary perimeter, where the to accommodate the bounds
         LatLngBounds latLngBounds = new LatLngBounds.Builder()
-                                                    .include(locationLatLon)
+                                                    .include(pixLocationLatLon)
+                                                    .include(northEastLatLon)
+                                                    .include(southWestLatLon)
                                                     .build();
 
         //Define the The padding of the 'bounds' perimeter.
         int margin = getResources().getDimensionPixelSize(R.dimen.map_inset_margin);
 
-
+        //Set camera to lat/lon bounds
         CameraUpdate updateCamera = CameraUpdateFactory.newLatLngBounds(latLngBounds, margin);
 
+        //Animate/move camera to display lat/lon bounds
         mMap.animateCamera(updateCamera);
 
 
+
+
+
+
+
+
+
+
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+
+
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+                Toast.makeText(MapsActivity.this, "Marker selected", Toast.LENGTH_SHORT).show();
+
+            }
+
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                LatLng location = marker.getPosition();
+
+
+                Toast.makeText(getBaseContext(), "Lat " + location.latitude + " " + "Long " + location.longitude, Toast.LENGTH_LONG).show();
+
+                Log.i(TAG, "Lat " + location.latitude + " " + "Long " + location.longitude);
+
+
+                mPixLocationMarker.title("Lat " + location.latitude + " " + "Long " + location.longitude);
+
+                sendResult(Activity.RESULT_OK, mLatitude, mLongitude);
+
+            }
+
+        });
+
     }
+
+
+    private void sendResult(int resultCode, double newLatitude, double newLongitude) {
+
+        Intent intent = new Intent();
+
+        intent.putExtra(EXTRA_PIX_NEW_LATITUDE, newLatitude);
+        intent.putExtra(EXTRA_PIX_NEW_LONGITUDE, newLongitude);
+
+        onActivityResult(REQUEST_CODE_MAP, resultCode, intent);
+
+
+
+
+    }
+
+
+
+
+
+
+
+
 }

@@ -25,7 +25,7 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            />
+            android:inputType="textCapSentences"/>
 
         <CheckBox
             android:id="@+id/detail_pix_favorited"
@@ -126,15 +126,14 @@
                     android:id="@+id/detail_edit_pix_tag"
                     android:hint="@string/tag_people"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"/>
 
                 <Button
                     android:id="@+id/detail_pix_tag"
                     android:text="@string/add_tag"
                     android:layout_width="wrap_content"
                     android:layout_height="50dp"/>
-
-
 
             </LinearLayout>
 
@@ -147,7 +146,8 @@
             android:id="@+id/detail_pix_description"
             android:hint="@string/description_hint"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:inputType="textCapSentences"/>
 
 
     </LinearLayout>
