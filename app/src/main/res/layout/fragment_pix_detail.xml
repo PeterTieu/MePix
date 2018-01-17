@@ -126,8 +126,7 @@
                     android:id="@+id/detail_edit_pix_tag"
                     android:hint="@string/tag_people"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:inputType="textCapSentences"/>
+                    android:layout_height="wrap_content"/>
 
                 <Button
                     android:id="@+id/detail_pix_tag"

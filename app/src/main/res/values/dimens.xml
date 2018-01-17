@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--Resource file defining the bounds for the map view-->
+
+<resources>
+    <!-- Default screen margins, as per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!--Add a margin around the area of interest on the map-->
+    <dimen name="map_inset_margin">200dp</dimen>
+
+
+</resources>

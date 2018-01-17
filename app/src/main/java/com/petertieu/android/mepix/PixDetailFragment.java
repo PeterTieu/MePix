@@ -1,7 +1,6 @@
 package com.petertieu.android.mepix;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
@@ -46,23 +45,14 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -113,7 +103,7 @@ public class PixDetailFragment extends SupportMapFragment{
     private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
-    private static final int REQUEST_CODE_MAP = 5;
+    private static final int REQUEST_CODE_NEW_MARKER_LOCATION = 5;
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
@@ -537,10 +527,12 @@ public class PixDetailFragment extends SupportMapFragment{
             public void onClick(View view) {
 
                 //Create Intent to open MapsActivity
-                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
+                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getId(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
 
                 //Start intent to open MapsActivity
-                getActivity().startActivityForResult(mapsActivityIntent, REQUEST_CODE_MAP);
+                getActivity().startActivity(mapsActivityIntent);
+
+
             }
         });
 
@@ -1326,18 +1318,6 @@ public class PixDetailFragment extends SupportMapFragment{
             //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
             updatePix();
         }
-
-
-
-
-        if(requestCode == REQUEST_CODE_MAP){
-            double newLatitude = intent.getDoubleExtra(MapsActivity.EXTRA_PIX_NEW_LATITUDE, 0);
-            double newLongitude = intent.getDoubleExtra(MapsActivity.EXTRA_PIX_NEW_LONGITUDE, 0);
-
-            Log.i(TAG, Double.toString(newLatitude) + Double.toString(newLongitude));
-
-        }
-
     }
 
 

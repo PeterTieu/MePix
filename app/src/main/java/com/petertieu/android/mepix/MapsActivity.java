@@ -19,23 +19,24 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-
+import java.util.UUID;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
 
     private static final String TAG = "MapsActivity";
+    private static final String EXTRA_PIX_ID = "pixId";
     private static final String EXTRA_PIX_LATITUDE = "latitude";
     private static final String EXTRA_PIX_LONGITUDE = "longitude";
     private static final String EXTRA_PIX_ADDRESS = "address";
 
-    public static final String EXTRA_PIX_NEW_LATITUDE = "newLatitude";
-    public static final String EXTRA_PIX_NEW_LONGITUDE = "newLongitude";
-    private static final int REQUEST_CODE_MAP = 5;
 
     //Declare GoogleMap object
     private GoogleMap mMap;
+
+    //Declare UUID of Pix
+    private UUID mPixId;
 
     //Declare double latitude of Pix location
     private double mLatitude;
@@ -49,18 +50,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //Declare marker for Pix location
     private MarkerOptions mPixLocationMarker;
 
+    private LatLng mMarkerLocation;
+
 
 
 
 
     //Declare method to call in order to start this activity
-    public static Intent newIntent(Context context, double latitude, double longitude, String address){
+    public static Intent newIntent(Context context, UUID pixId, double latitude, double longitude, String address){
 
         //Log to Logcat
         Log.i(TAG, "newIntent(..) called");
 
         //Create new intent to start PixViewPagerActivity
         Intent intent = new Intent(context, MapsActivity.class);
+
+        //Add UUID of Pix as intent extra
+        intent.putExtra(EXTRA_PIX_ID, pixId);
 
         //Add lattitude as intent extra
         intent.putExtra(EXTRA_PIX_LATITUDE, latitude);
@@ -86,6 +92,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Set layout view of activity
         setContentView(R.layout.activity_maps);
+
+        //Upack intent extra then assign to UUID instance variable
+        mPixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
 
         //Unpack intent extra then assign to latitude instance variable
         mLatitude = getIntent().getDoubleExtra(EXTRA_PIX_LATITUDE, 0);
@@ -157,69 +166,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Animate/move camera to display lat/lon bounds
         mMap.animateCamera(updateCamera);
-
-
-
-
-
-
-
-
-
-
-        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-
-
-            @Override
-            public void onMarkerDragStart(Marker marker) {
-                Toast.makeText(MapsActivity.this, "Marker selected", Toast.LENGTH_SHORT).show();
-
-            }
-
-
-            @Override
-            public void onMarkerDrag(Marker marker) {
-
-            }
-
-
-            @Override
-            public void onMarkerDragEnd(Marker marker) {
-                LatLng location = marker.getPosition();
-
-
-                Toast.makeText(getBaseContext(), "Lat " + location.latitude + " " + "Long " + location.longitude, Toast.LENGTH_LONG).show();
-
-                Log.i(TAG, "Lat " + location.latitude + " " + "Long " + location.longitude);
-
-
-                mPixLocationMarker.title("Lat " + location.latitude + " " + "Long " + location.longitude);
-
-                sendResult(Activity.RESULT_OK, mLatitude, mLongitude);
-
-            }
-
-        });
-
-    }
-
-
-    private void sendResult(int resultCode, double newLatitude, double newLongitude) {
-
-        Intent intent = new Intent();
-
-        intent.putExtra(EXTRA_PIX_NEW_LATITUDE, newLatitude);
-        intent.putExtra(EXTRA_PIX_NEW_LONGITUDE, newLongitude);
-
-        onActivityResult(REQUEST_CODE_MAP, resultCode, intent);
-
-
-
-
     }
 
 
 
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        Log.i(TAG, "onPause() called");
+    }
+
+
+
+    @Override
+    public void onStop(){
+        super.onStop();
+
+    }
 
 
 
