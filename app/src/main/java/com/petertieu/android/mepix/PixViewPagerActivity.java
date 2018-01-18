@@ -106,6 +106,9 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         //Log size of mPixes to Logcat
         Log.i(TAG, "mPixes.size() = " + mPixes.size());
 
+
+
+
         //Set the Adapter to the ViewPager
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
 
@@ -132,12 +135,16 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         });
 
 
+
+
+
         //Get the 'value' associated with the 'key' from the Intent that started this activity
         UUID pixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
 
         Log.i(TAG, "4");
 
-        //Display the detail view of the Pix that was clicked on in the list view
+        //Set the current number of the Pix so that the ViewPager knows which Pix number is being displayed
+        // Ultimately, there would be smooth transition between Pixes
         for(int i=0; i<mPixes.size(); i++){
 
             //If the current Pix object from the List of Pix objects has the same UUID as the one clicked on in the list iew

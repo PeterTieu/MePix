@@ -101,8 +101,15 @@ AND SO MUCH FOR ALL OF THIS (in MapsActivity)....
 
 
 
-	
 
+6:
+Attempted to create Tabs for "All Pixes" and "Favorites"
+but to no AVAIL!! App keeps crashing when doing this on all 3-4 samples of tab ViewPager classes:
+
+	@Override
+    	public Fragment getItem(int i) {
+        	return new PixListFragment();
+    	}
 
 
 
