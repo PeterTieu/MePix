@@ -42,47 +42,6 @@
         android:theme="@style/AppTheme">
 
 
-        <!--&lt;!&ndash;Declare "list view" activity (as main activity)&ndash;&gt;-->
-        <!--<activity android:name=".MainActivity">-->
-            <!--<intent-filter>-->
-
-                <!--&lt;!&ndash;Declare ACTION&ndash;&gt;-->
-                <!--<action android:name="android.intent.action.MAIN"/>-->
-
-                <!--&lt;!&ndash;Declare CATEGORY&ndash;&gt;-->
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
-
-            <!--</intent-filter>-->
-        <!--</activity>-->
-
-
-
-
-
-        <!--&lt;!&ndash;Declare "list view" activity (as main activity)&ndash;&gt;-->
-        <!--<activity android:name=".CollectionDemoActivity">-->
-            <!--<intent-filter>-->
-
-                <!--&lt;!&ndash;Declare ACTION&ndash;&gt;-->
-                <!--<action android:name="android.intent.action.MAIN"/>-->
-
-                <!--&lt;!&ndash;Declare CATEGORY&ndash;&gt;-->
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
-
-            <!--</intent-filter>-->
-        <!--</activity>-->
-
-
-
-        <!--<activity-->
-            <!--android:name=".PixListActivity"-->
-            <!--android:label="Pix Activity">-->
-        <!--</activity>-->
-
-
-
-
-
         <!--Declare "list view" activity (as main activity)-->
         <activity android:name=".PixListActivity">
             <intent-filter>

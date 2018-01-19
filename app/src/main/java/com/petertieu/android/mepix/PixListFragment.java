@@ -188,6 +188,7 @@ public class PixListFragment extends Fragment{
         //Set layout for the RecyclerView
         mPixRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        //Add decoration to list items (i.e. add dividers)
         mPixRecyclerView.addItemDecoration(new PixItemDecoration(getActivity()));
 
 
@@ -649,34 +650,53 @@ public class PixListFragment extends Fragment{
 
 
 
-
-    //
+    //Define ItemDecoration class - a class that allows manipulation of list item interface
+    //Purpose: To add divider (lines) to list items
     public class PixItemDecoration extends RecyclerView.ItemDecoration {
 
+        //Declare Drawable interface for dividers
         private Drawable mDivider;
 
-
+        //Build constructor
         public PixItemDecoration(Context context) {
+            //Get Drawable instance variable from Context
             mDivider = ContextCompat.getDrawable(context, R.drawable.line_divider);
         }
 
-        //
+        //Override callback method - Draw decorations into the Canvas supplied to the RecyclerView.
+        // Drawing will occur AFTER the item views are drawn and will thus appear OVER the views.
         @Override
-        public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
-            int left = parent.getPaddingLeft();
-            int right = parent.getWidth() - parent.getPaddingRight();
+        public void onDrawOver(Canvas canvas, RecyclerView recyclerView, RecyclerView.State state) {
+            //Get LEFT horizontal co-ordinate of list item
+            int leftCoordinate = recyclerView.getPaddingLeft();
 
-            int childCount = parent.getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                View child = parent.getChildAt(i);
+            //Get RIGHT horizontal co-ordinate of list item
+            int rightCoordinate = recyclerView.getWidth() - recyclerView.getPaddingRight();
 
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+            //Get number of View children in the RecyclerView. Views might be: Bitmap, TextView, etc.
+            int viewChildrenOfListItemCount = recyclerView.getChildCount();
 
-                int top = child.getBottom() + params.bottomMargin;
-                int bottom = top + mDivider.getIntrinsicHeight();
+            //Cycle over all View children in the RecyclerView
+            for (int i = 0; i < viewChildrenOfListItemCount; i++) {
 
-                mDivider.setBounds(left, top, right, bottom);
-                mDivider.draw(c);
+                //Get the View
+                View viewChildOfListItem = recyclerView.getChildAt(i);
+
+                //Get the LayoutParams associated with this view. All views should have layout parameters.
+                // Layout parameters supply parameters to the parent of this view specifying how it should be arranged.
+                RecyclerView.LayoutParams listItemLayoutParams = (RecyclerView.LayoutParams) viewChildOfListItem.getLayoutParams();
+
+                //Get TOP co-ordinate of list item
+                int topCoordinate = viewChildOfListItem.getBottom() + listItemLayoutParams.bottomMargin;
+
+                //Get BOTTOM co-ordinate of list item
+                int bottomCoordinate = topCoordinate + mDivider.getIntrinsicHeight();
+
+                //Set bounds for where the divider (lines) are to appaear
+                mDivider.setBounds(leftCoordinate, topCoordinate, rightCoordinate, bottomCoordinate);
+
+                //Draw the divider (lines) on set bounds
+                mDivider.draw(canvas);
             }
         }
     }
