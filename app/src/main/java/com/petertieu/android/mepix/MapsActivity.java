@@ -135,9 +135,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Set tite of Pix marker
         mPixLocationMarker.title(getString(R.string.pix_location) + " " + mAddress);
 
-        //Allow Pix marker to be dragged
-        mPixLocationMarker.draggable(true);
-
         //Add marker to map
         mMap.addMarker(mPixLocationMarker);
 

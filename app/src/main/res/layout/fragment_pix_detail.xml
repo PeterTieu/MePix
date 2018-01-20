@@ -59,7 +59,8 @@
                     android:src="@android:drawable/ic_menu_camera"
                     android:layout_gravity="center"
                     android:layout_width="92dp"
-                    android:layout_height="50dp"/>
+                    android:layout_height="50dp"
+                    android:textColor="@color/colorButtonText"/>
 
             </LinearLayout>
             <!--Picture of the Pix-->
@@ -111,14 +112,16 @@
                     android:id="@+id/detail_pix_date"
                     android:text="@string/add_date"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"/>
+                    android:layout_height="50dp"
+                    android:textColor="@color/colorButtonText"/>
 
                 <!--Location Button-->
                 <Button
                     android:id="@+id/detail_pix_location"
                     android:text="@string/location_button"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"/>
+                    android:layout_height="50dp"
+                    android:textColor="@color/colorButtonText"/>
 
 
 
@@ -132,7 +135,8 @@
                     android:id="@+id/detail_pix_tag"
                     android:text="@string/add_tag"
                     android:layout_width="wrap_content"
-                    android:layout_height="50dp"/>
+                    android:layout_height="50dp"
+                    android:textColor="@color/colorButtonText"/>
 
             </LinearLayout>
 
@@ -144,6 +148,7 @@
         <EditText
             android:id="@+id/detail_pix_description"
             android:hint="@string/description_hint"
+            android:textSize="18dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="textCapSentences"/>

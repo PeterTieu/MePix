@@ -28,6 +28,8 @@ import android.widget.TextView;
 
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -114,6 +116,8 @@ public class PixListFragment extends Fragment{
 
         //Report that this fragment would like to participate in populate menus
         setHasOptionsMenu(true);
+
+        getActivity().invalidateOptionsMenu();
 
         //Check if permission for location tracking has been granted (by user)
         if (hasLocationPermission() == false){
@@ -538,16 +542,19 @@ public class PixListFragment extends Fragment{
             //Set the text of the list item's title
             if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
                 mPixTitle.setText("* Untitled *");
+                mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.yellow));
                 mPixTitle.setTypeface(null, Typeface.ITALIC);
             }
             else{
                 mPixTitle.setText(mPix.getTitle());
+                mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_gray));
             }
 
             //Set the text of the list item's description
             if (mPix.getDescription() == null || mPix.getDescription().isEmpty()){
                 mPixDescription.setText("* No description *");
                 mPixDescription.setTypeface(null, Typeface.ITALIC);
+                mPixDescription.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_yellow));
             }
             else{
                 mPixDescription.setText(mPix.getDescription());
@@ -572,8 +579,39 @@ public class PixListFragment extends Fragment{
             }
             else{
                 //Define pix tagged String to cater for list view
-                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ").replaceAll("-", "");
-                mPixTagged.setText("- with " + pixTaggedStringForListView);
+//                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ");
+//                List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringForListView.split("-")));
+
+                String pixTaggedStringForListView = mPix.getTag();
+                List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringForListView.split("\n")));
+
+
+
+                if(pixTaggedList.size() > 2){
+                    pixTaggedList.add(pixTaggedList.size()-1, " and");
+                }
+
+
+                int pixTaggedListSize = pixTaggedList.size();
+
+//                mPixTagged.setText(Integer.toString(pixTaggedListSize));
+
+                pixTaggedList.remove(String.valueOf('-'));
+
+                String pixTaggedString = "- with";
+
+                if (pixTaggedListSize > 1){
+
+                    for (int i=0; i<pixTaggedListSize; i++){
+
+                        pixTaggedString += pixTaggedList.get(i);
+                    }
+                }
+
+                mPixTagged.setText(pixTaggedString);
+
+//                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ").replaceAll("-", "");
+//                mPixTagged.setText("- with " + pixTaggedStringForListView);
             }
 
 
