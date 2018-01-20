@@ -586,7 +586,6 @@ public class PixListFragment extends Fragment{
                 List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringForListView.split("\n")));
 
 
-
                 if(pixTaggedList.size() > 2){
                     pixTaggedList.add(pixTaggedList.size()-1, " and");
                 }
