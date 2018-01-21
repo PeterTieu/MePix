@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,7 +31,10 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import static android.support.v7.widget.helper.ItemTouchHelper.Callback.makeMovementFlags;
 
 
 /**
@@ -192,6 +196,7 @@ public class PixListFragment extends Fragment{
         //Set layout for the RecyclerView
         mPixRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+
         //Add decoration to list items (i.e. add dividers)
         mPixRecyclerView.addItemDecoration(new PixItemDecoration(getActivity()));
 
@@ -221,9 +226,9 @@ public class PixListFragment extends Fragment{
         });
 
 
-
         //Create/call the Adapter and link it with the RecyclerView
         updateUI();
+
 
         return view;
     }
@@ -236,7 +241,7 @@ public class PixListFragment extends Fragment{
     public void updateUI(){
 
         //Assign the mPixes reference variable to the List of Pix objects from the PixManager singleton
-        List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
+        final List<Pix> mPixes = PixManager.get(getActivity()).getPixes();
 
 
         //============ Set visibility of "no pix view" - if no Pixes exist ==============================
@@ -383,6 +388,7 @@ public class PixListFragment extends Fragment{
         public void setPixes(List<Pix> pixes){
             mPixes = pixes;
         }
+
     }
 
 
@@ -417,6 +423,7 @@ public class PixListFragment extends Fragment{
 
         //Declare TextView for "Tag" of Pix
         private TextView mPixTagged;
+
 
 
 
@@ -578,39 +585,50 @@ public class PixListFragment extends Fragment{
                 mPixTagged.setText("");
             }
             else{
-                //Define pix tagged String to cater for list view
-//                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ");
-//                List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringForListView.split("-")));
 
-                String pixTaggedStringForListView = mPix.getTag();
-                List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringForListView.split("\n")));
+                //Get tag String (which contains the newline character, "\n")
+                String pixTaggedStringFromDetailView= mPix.getTag();
 
+                //Create ArrayList from tag String, each being separated by the newline character and a hyphen ("\n-")
+                //NOTE: Each String in the ArrayList resembles a tagged contact
+                List<String> pixTaggedList = new ArrayList<String> (Arrays.asList(pixTaggedStringFromDetailView.split("\n-")));
 
-                if(pixTaggedList.size() > 2){
+                //If there were more than one tagged contact
+                if(pixTaggedList.size() > 1){
+                    //Add the " and" String into the ArrayList after the 2nd last contact and before the last contact
                     pixTaggedList.add(pixTaggedList.size()-1, " and");
                 }
 
 
-                int pixTaggedListSize = pixTaggedList.size();
+                //Declare String to contain all Strings from the pixTaggedStringForListView ArrayList
+                String pixTaggedString = "";
 
-//                mPixTagged.setText(Integer.toString(pixTaggedListSize));
+                //If more than one contact were tagged
+                if (pixTaggedList.size() > 1){
 
-                pixTaggedList.remove(String.valueOf('-'));
-
-                String pixTaggedString = "- with";
-
-                if (pixTaggedListSize > 1){
-
-                    for (int i=0; i<pixTaggedListSize; i++){
-
+                    //Cycle through all String objects in the pixTaggedList ArrayList
+                    for (int i=0; i<pixTaggedList.size(); i++){
+                        //Concatenate all String objects in the pixTaggedList ArrayList to pixTaggedString String
                         pixTaggedString += pixTaggedList.get(i);
                     }
                 }
+                //If only one contact was tagged
+                else{
+                    //Store that one contact from the pixTaggedList ArrayList to the pixTaggedString String
+                    pixTaggedString = pixTaggedList.get(0);
+                }
 
+
+                //Add "- with" before the pixTaggedString String
+                pixTaggedString = "- with" + pixTaggedString;
+                //Since there will be a "-" before the first contact, replace the "- with-" with "- with"
+                pixTaggedString = pixTaggedString.replaceAll("- with-", "- with");
+                //Replace the ", and" with "and" (effectively removing the comma before " and")
+                pixTaggedString = pixTaggedString.replaceAll(", and", " and");
+
+
+                //Display pixTaggedString in the mPixTagged Button
                 mPixTagged.setText(pixTaggedString);
-
-//                String pixTaggedStringForListView = mPix.getTag().replaceAll("\n", " ").replaceAll("-", "");
-//                mPixTagged.setText("- with " + pixTaggedStringForListView);
             }
 
 
@@ -680,6 +698,10 @@ public class PixListFragment extends Fragment{
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));
             }
         }
+
+
+
+
     }
 
 

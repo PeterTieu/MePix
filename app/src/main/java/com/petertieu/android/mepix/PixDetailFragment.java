@@ -391,7 +391,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
             //If result code returned from IntentService yields 'negative' - address was not obtained from location fix
             if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
-                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
 
                 //Display error message sent from FetchAddressIntentService (IntentService)
                     mLocationButton.setText(mPix.getAddress());
