@@ -51,7 +51,7 @@
         android:layout_marginStart="2dp"
         android:layout_marginTop="25dp"
         android:ellipsize="marquee"
-        android:maxWidth="150dp"
+        android:maxWidth="140dp"
         android:singleLine="true"
         android:text="Pix Location"
         android:textSize="15sp"
@@ -75,6 +75,7 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
 
+    <!--Tagged in Pix-->
     <TextView
         android:id="@+id/list_pix_tagged"
         android:layout_width="wrap_content"
@@ -85,6 +86,7 @@
         android:maxWidth="250dp"
         android:singleLine="true"
         android:text="Pix Tagged"
+        android:textColor="@color/dark_gray"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>

@@ -13,7 +13,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,10 +30,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-
-import static android.support.v7.widget.helper.ItemTouchHelper.Callback.makeMovementFlags;
 
 
 /**
@@ -555,6 +551,10 @@ public class PixListFragment extends Fragment{
             else{
                 mPixTitle.setText(mPix.getTitle());
                 mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_gray));
+
+                if(getActivity().findViewById(R.id.detail_fragment_container) != null){
+                    mPixTitle.setMaxWidth(440);
+                }
             }
 
             //Set the text of the list item's description
@@ -565,6 +565,10 @@ public class PixListFragment extends Fragment{
             }
             else{
                 mPixDescription.setText(mPix.getDescription());
+
+                if(getActivity().findViewById(R.id.detail_fragment_container) != null){
+                    mPixDescription.setMaxWidth(440);
+                }
             }
 
             //Set new date display for date button
@@ -716,21 +720,38 @@ public class PixListFragment extends Fragment{
         //Declare Drawable interface for dividers
         private Drawable mDivider;
 
+        //Declare Drawable interface for dividers
+        private Drawable mRightLine;
+
         //Build constructor
         public PixItemDecoration(Context context) {
             //Get Drawable instance variable from Context
-            mDivider = ContextCompat.getDrawable(context, R.drawable.line_divider);
+            mDivider = ContextCompat.getDrawable(context, R.drawable.recyclerview_divider);
+
+            //Get Drawable instance variable from Context
+            mRightLine = ContextCompat.getDrawable(context, R.drawable.two_pane_divider);
         }
 
-        //Override callback method - Draw decorations into the Canvas supplied to the RecyclerView.
+        //Override callback method.
+        // Draw decorations into the Canvas supplied to the RecyclerView.
         // Drawing will occur AFTER the item views are drawn and will thus appear OVER the views.
+        //Purpose: To add dividers to each RecyclerView list item
         @Override
         public void onDrawOver(Canvas canvas, RecyclerView recyclerView, RecyclerView.State state) {
-            //Get LEFT horizontal co-ordinate of list item
-            int leftCoordinate = recyclerView.getPaddingLeft();
 
-            //Get RIGHT horizontal co-ordinate of list item
-            int rightCoordinate = recyclerView.getWidth() - recyclerView.getPaddingRight();
+
+            //Get LEFT horizontal bound of recycler view divider (recyclerView.getPaddingLeft() will equal 0 if no padding were applied)
+            int dividerLeftBound = recyclerView.getPaddingLeft();
+            //Get RIGHT horizontal bound of divider
+            int dividerRightBound = recyclerView.getWidth() - recyclerView.getPaddingRight();
+
+
+            //Get LEFT horizontal bound of recycler view divider line
+            int twoPaneDividerLineLeftBound = recyclerView.getWidth()-7;
+            //Get RIGHT horizontaql bound of divider line
+            int twoPaneDividerLineRightBound = recyclerView.getWidth();
+
+
 
             //Get number of View children in the RecyclerView. Views might be: Bitmap, TextView, etc.
             int viewChildrenOfListItemCount = recyclerView.getChildCount();
@@ -745,17 +766,35 @@ public class PixListFragment extends Fragment{
                 // Layout parameters supply parameters to the parent of this view specifying how it should be arranged.
                 RecyclerView.LayoutParams listItemLayoutParams = (RecyclerView.LayoutParams) viewChildOfListItem.getLayoutParams();
 
-                //Get TOP co-ordinate of list item
-                int topCoordinate = viewChildOfListItem.getBottom() + listItemLayoutParams.bottomMargin;
 
-                //Get BOTTOM co-ordinate of list item
-                int bottomCoordinate = topCoordinate + mDivider.getIntrinsicHeight();
+                //Get TOP bound of recycler view divider
+                int dividerTopBound = viewChildOfListItem.getBottom() + listItemLayoutParams.bottomMargin;
+                //Get BOTTOM bound of recycler view  divider
+                int dividerBottomBound = dividerTopBound + mDivider.getIntrinsicHeight();
 
-                //Set bounds for where the divider (lines) are to appaear
-                mDivider.setBounds(leftCoordinate, topCoordinate, rightCoordinate, bottomCoordinate);
 
-                //Draw the divider (lines) on set bounds
+                //Get TOP horizontal bound of divider line
+                int twoPaneDividerLineTopBound = viewChildOfListItem.getTop();
+                //Get BOTTOM horizontal bound of divider line
+                int twoPaneDividerLineBottomBound = viewChildOfListItem.getBottom();
+
+
+                //Set bounds for where the recycler view divider (lines) are to appaear
+                mDivider.setBounds(dividerLeftBound, dividerTopBound, dividerRightBound, dividerBottomBound);
+
+                //Draw the recycler view divider (lines) inside set bounds
                 mDivider.draw(canvas);
+
+
+                //If the view is in two-pane mode (i.e. sw > 600dp)
+                if (getActivity().findViewById(R.id.detail_fragment_container) != null) {
+                    //Set bounds for where the two-pane divider (lines) are to appear
+                    mRightLine.setBounds(twoPaneDividerLineLeftBound, twoPaneDividerLineTopBound, twoPaneDividerLineRightBound, twoPaneDividerLineBottomBound);
+
+                    //Draw the two-pane divider (lines) inside set bounds
+                    mRightLine.draw(canvas);
+                }
+
             }
         }
     }

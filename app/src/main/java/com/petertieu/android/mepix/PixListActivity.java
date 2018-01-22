@@ -3,10 +3,8 @@ package com.petertieu.android.mepix;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -26,6 +24,11 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
     //Declare instance variable.
     // REQUEST_ERRORS is a requestCode given when calling startActivityForResult.
     private static final int REQUEST_ERROR = 0;
+
+    //Declare boolean flag to be triggered when the two-pane mode has been entered (i.e. when sw > 600dp).
+    //This is so that the menu items from PixDetailFragment ('delete' button) and PixListFragment ('New Pix' button) don't get combined
+    //in the same toolbar when the user rotates the screen from two-pane layout to one-pane layout!
+    public static boolean hasEnteredTwoPaneMode;
 
 
     //Override the abstract method from SingleFragmentActivity
@@ -66,6 +69,9 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         //If the 2nd pane doesn NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
+            //Declare boolean two-pane mode flag as FALSE
+            hasEnteredTwoPaneMode = false;
+
             //Create an Intent to start the PixViewPagerActivity activity
             Intent PixViewPagerIntent = PixViewPagerActivity.newIntent(this, pix.getId());
 
@@ -75,6 +81,9 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
         //If the two-pane view EXISTS... i.e. sw > 600dp
         else{
+
+            //Declare boolean two-pane mode flag as TRUE
+            hasEnteredTwoPaneMode = true;
 
             //Create the PixDetailFragment fragment for the 2nd pane
             Fragment newPixDetailFragment = PixDetailFragment.newInstance(pix.getId());
@@ -133,6 +142,8 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         //If the 2nd pane doesn NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
+            hasEnteredTwoPaneMode = false;
+
             //Create an Intent to start the PixViewPagerActivity activity
             Intent PixViewPagerIntent = PixViewPagerActivity.newIntent(this, pix.getId());
 
@@ -142,6 +153,8 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
         //If the two-pane view EXISTS... i.e. sw > 600dp
         else{
+
+            hasEnteredTwoPaneMode = true;
 
             //Create the PixDetailFragment fragment for the 2nd pane
             Fragment newPixDetailFragment = PixDetailFragment.newInstance(pix.getId());

@@ -55,6 +55,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
+
 /**
  * Created by Peter Tieu on 14/12/2017.
  */
@@ -211,6 +213,13 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //Declare an options menu for the fragment
         setHasOptionsMenu(true);
+
+        //If the user has previously entered two-pane mode (i.e. sw > 600dp), and it now no longer exists,
+        // since the user has rotated the screen, and is now back to one-pane mode (i.e. is now in the list view)...
+        if (PixListActivity.hasEnteredTwoPaneMode == true && getActivity().findViewById(R.id.detail_fragment_container) == null){
+            //Disable the options menu of this detail view, which effectively removes the 'Delete' button from the toolbar while in list view
+            setHasOptionsMenu(false);
+        }
 
         //Assign reference variable, mPictureFile, to picture file in FoleProvider
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
@@ -767,7 +776,6 @@ public class PixDetailFragment extends SupportMapFragment{
         //Return the View
         return view;
     }
-
 
 
 
