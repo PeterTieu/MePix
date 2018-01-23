@@ -19,6 +19,9 @@ public class PixDeleteFragment extends DialogFragment{
 
     private static final String ARG_PIX_TITLE = "pixTitle";
 
+    //Define identifier for dialog fragment extra
+    public static final String EXTRA_PIX_CONFIRMATION = "com.petertieu.android.mepix.PixDeleteFragment";
+
     AlertDialogLayout mAlertDialogLayout;
 
 
@@ -41,6 +44,7 @@ public class PixDeleteFragment extends DialogFragment{
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+
         final String pixTitle = (String) getArguments().getString(ARG_PIX_TITLE);
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_delete, null);
@@ -50,7 +54,7 @@ public class PixDeleteFragment extends DialogFragment{
         return new AlertDialog
                 .Builder(getActivity())
                 .setView(view)
-                .setTitle("Are you sure you want to delete Pix:\n\n" + pixTitle)
+                .setTitle("Are you sure you want to delete this Pix?" + "\n" + "Pix title: " + pixTitle)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok,
                         new DialogInterface.OnClickListener() {
@@ -77,6 +81,8 @@ public class PixDeleteFragment extends DialogFragment{
 
 
         Intent intent = new Intent();
+
+        intent.putExtra(EXTRA_PIX_CONFIRMATION, confirmDelete);
 
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
 

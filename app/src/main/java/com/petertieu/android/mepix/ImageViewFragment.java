@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 
 /**
@@ -108,52 +109,32 @@ public class ImageViewFragment extends DialogFragment{
                 .setNeutralButton(R.string.save_to_gallery, new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialog, int which){
-                        Toast.makeText(getActivity(), "save to gallery clicked", Toast.LENGTH_LONG).show();
+//
 
-                        String capturePhotoUtils;
+                        Random random = new Random();
 
-                        capturePhotoUtils = CapturePhotoUtils.insertImage(getContext().getContentResolver(), bitmapPictureCorrectOrientation, "helloTitle", "helloDescription");
+                        int randomNumber = 100000;
 
-                        CapturePhotoUtils.insertImage(getContext().getContentResolver(), bitmapPictureCorrectOrientation, "helloTitle", "helloDescription");
+                        randomNumber = random.nextInt();
 
-                        Toast.makeText(getActivity(), capturePhotoUtils, Toast.LENGTH_LONG).show();
+                        String fileeName = "Image" + randomNumber;
 
-                        MediaStore.Images.Media.insertImage(getContext().getContentResolver(), bitmapPictureCorrectOrientation ,"helloTitle" , "helloDescription");
+                        String savedImageUrl;
+                        savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation , fileeName , "");
 
-                        Toast.makeText(getActivity(), MediaStore.Images.Media.insertImage(getContext().getContentResolver(), bitmapPictureCorrectOrientation ,"helloTitle" , "helloDescription"), Toast.LENGTH_LONG).show();
-
-
-                        saveImage(bitmapPictureCorrectOrientation, "hello");
+                        if (savedImageUrl == null){
+                            Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "URL: " + savedImageUrl, Toast.LENGTH_LONG).show();
+                        }
 
 
 
                     }
                 })
                 .create();
-    }
-
-
-
-
-    //Helper method for adding picture File to library
-    private void saveImage(Bitmap finalBitmap, String image_name) {
-
-        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
-//        String root = getActivity().getFilesDir().getAbsolutePath();
-        File myDir = new File(root);
-        myDir.mkdirs();
-        String fname = "Image-" + image_name+ ".jpg";
-        File file = new File(myDir, fname);
-        if (file.exists()) file.delete();
-        Log.i("LOAD", root + fname);
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 10, out);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 

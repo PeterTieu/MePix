@@ -1,5 +1,7 @@
 package com.petertieu.android.mepix;
 
+import android.*;
+import android.Manifest;
 import android.app.Activity;
 import android.graphics.Matrix;
 import android.location.Address;
@@ -106,6 +108,7 @@ public class PixDetailFragment extends SupportMapFragment{
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
     private static final int REQUEST_CODE_NEW_MARKER_LOCATION = 5;
+    private static final int REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSION = 6;
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
@@ -226,14 +229,15 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-        //========== Configure location services ====================================================
+        //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
+
         //Create AddressResultReceiver object, passing a Handler to it
         mAddressResultReceiver = new AddressResultReceiver(new Handler());
 
         //If location permissions requested in the Manifest have been granted
         if (hasLocationPermission()) {
 
-
+            //========== Configure location services ====================================================
             //Create FusedLocationProviderClient object - to get location fix
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
@@ -284,62 +288,14 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
+        //========== Request for Write-to-external-storage (dangerous) permission ====================================================
 
-
-
-//        //At this point, the LocatrActivity would have already checked for the availability of the GoogleAPI
-//        // via the GoogleApiAvailability class..
-//        // ...BUT...
-//        //To use the Google Play Services, we must CREATE a CLIENT.
-//        // Create a GoogleApiClient object, referenced by 'mGoogleApiClient', to communiate with the Google APIs.
-//        // This is done via the Builder class, GoogleApiClient.Builder builder.
-//
-//
-//
-//        //Builder (Context): The context to use for the connection
-//
-//        mGoogleApiClient = new GoogleApiClient
-//
-//                .Builder(getActivity())
-//
-//                //addApi(Api): The API to add.
-//                //In this case, we have added the LocationServices.API API
-//                .addApi(LocationServices.API)
-//
-//                //Add a connection callback via addConnectionCallbacks(GoogleApiClient.ConnectionCallbacks).
-//                //NOTE: GoogleApiClient.ConnectionCallbacks is a callback interface of GoogleApiClient
-//                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-//
-//
-//                    //Override the onConnected(..) listener to listen for a connection event
-//                    // i.e. when the GoogleApiClient is connected to the Google Play Services
-//                    @Override
-//                    public void onConnected(Bundle bundle){
-//
-//                        //Update the options menu.
-//                        //IOW, getActivity().invalidateOptionsMenu() will call onCreateOptionsMenu(..)
-//                        // to update the options menu AGAIN.
-//                        // This is necessary so that the 'searchItem' MenuItem could be enabled/disabled appropriately,
-//                        // based on whether the GoogleApiClient is connected to the Google Play Services or not
-//                        getActivity().invalidateOptionsMenu();
-//                    }
-//
-//
-//                    //Override the onConnectionSuspended(..) listener to listen for a connection suspended event,
-//                    // i.e. when the GoogleApiClient is suspended from the Google Play Services
-//                    @Override
-//                    public void onConnectionSuspended(int i){
-//                        //Do nothing
-//
-//                    }
-//                })
-//
-//                //build: Instantiates the GoogleApiClient object
-//                .build();
-
-
-
-
+        if (hasWriteExternalStoragePermission()){
+            //do something
+        }
+        else{
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSION);
+        }
     }
 
 
@@ -356,6 +312,13 @@ public class PixDetailFragment extends SupportMapFragment{
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
         //Return a boolean for state of location permission
+        return (result == PackageManager.PERMISSION_GRANTED);
+    }
+
+
+
+    private boolean hasWriteExternalStoragePermission(){
+        int result = ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return (result == PackageManager.PERMISSION_GRANTED);
     }
 
@@ -955,57 +918,15 @@ public class PixDetailFragment extends SupportMapFragment{
         Log.i(TAG, "onOptionsItemSelected(..) called");
 
         //Get
-        switch(menuItem.getItemId()){
+        switch (menuItem.getItemId()) {
 
-            case(R.id.delete_pix):
+            case (R.id.delete_pix):
 
-//                //Display 'delete confirmation' dialog
-//                deleteConfirmationDialog();
-
-            //Delete Pix from SQLiteDatabase, "pixes"
-            PixManager.get(getActivity()).deletePix(mPix);
-
-            //Call callback method to delete Pix
-            mCallbacks.onPixDeleted(mPix);
+                //Display 'delete confirmation' dialog
+                deleteConfirmationDialog();
 
 
-
-            //Check if PixViewPagerActivity activity is running (i.e. we are in single-pane layout, i.e. sw < 600dp).
-            // This check is important, since we want to close this activity IF it is running... NOT PixListActivity (which also hosts PixDetailFragment) when in two-pane layout)
-            // We do not want to close the
-            if (PixViewPagerActivityLifecycleTracker.isActivityVisible()) {
-                //Finish the PixViewPagerActivity activity, so that the detail view woud pop off the stack, revewaling the list view
-                getActivity().finish();
-            }
-
-
-
-            //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
-            updatePix();
-
-
-            //======= Hide soft keyboard ========
-            //Get InputMethodManager object
-            InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-
-            //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
-            inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
-
-
-            //======= Display Toast on Pix delete ========
-            //If no Pix title exists or is empty
-            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
-                Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
-            }
-            //If Pix title exists or is not empty
-            else{
-                Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
-            }
-
-            //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
-            updatePix();
-
-            return true;
+                return true;
 
             default:
                 return super.onOptionsItemSelected(menuItem);
@@ -1017,20 +938,29 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-//    private void deleteConfirmationDialog(){
-//
-//        //Create FragmentManager
-//        FragmentManager fragmentManager = getFragmentManager();
-//
-//        //Create DatePickerFragment fragment
-//        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle());
-//
-//        //Start the dialog fragment
-//        pixDeleteDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE);
-//
-//        //Show dialog
-//        pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
-//    }
+    private void deleteConfirmationDialog(){
+
+        //Create FragmentManager
+        FragmentManager fragmentManager = getFragmentManager();
+
+        //Create DatePickerFragment fragment
+        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle());
+
+        //Start the dialog fragment
+        pixDeleteDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE);
+
+        //Show dialog
+        pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
+    }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1175,40 +1105,58 @@ public class PixDetailFragment extends SupportMapFragment{
         }
 
 
-//        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE){
-//
-//
-//            //Delete Pix from SQLiteDatabase, "pixes"
-//            PixManager.get(getActivity()).deletePix(mPix);
-//
-//            //Call callback method to delete Pix
-//            mCallbacks.onPixDeleted(mPix);
-//
-//            //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
-//            updatePix();
-//
-//
-//            //======= Hide soft keyboard ========
-//            //Get InputMethodManager object
-//            InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-//
-//            //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
-//            inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
-//
-//
-//            //======= Display Toast on Pix delete ========
-//            //If no Pix title exists or is empty
-//            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
-//                Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
-//            }
-//            //If Pix title exists or is not empty
-//            else{
-//                Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
-//            }
-//
-//            updatePix();
-//
-//        }
+        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE){
+
+            boolean confirmDelete = intent.getBooleanExtra(PixDeleteFragment.EXTRA_PIX_CONFIRMATION, false);
+
+
+
+            if (confirmDelete == true) {
+
+
+                //Delete Pix from SQLiteDatabase, "pixes"
+                PixManager.get(getActivity()).deletePix(mPix);
+
+                //Call callback method to delete Pix
+                mCallbacks.onPixDeleted(mPix);
+
+
+                //Check if PixViewPagerActivity activity is running (i.e. we are in single-pane layout, i.e. sw < 600dp).
+                // This check is important, since we want to close this activity IF it is running... NOT PixListActivity (which also hosts PixDetailFragment) when in two-pane layout)
+                // We do not want to close the
+                if (PixViewPagerActivityLifecycleTracker.isActivityVisible()) {
+                    //Finish the PixViewPagerActivity activity, so that the detail view woud pop off the stack, revewaling the list view
+                    getActivity().finish();
+                }
+
+
+                //Update the Pix SQLiteDatabase and two-pane UI (upon Pix delete)
+                updatePix();
+
+
+                //======= Hide soft keyboard ========
+                //Get InputMethodManager object
+                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+
+
+                //======= Display Toast on Pix delete ========
+                //If no Pix title exists or is empty
+                if (mPix.getTitle() == null || mPix.getTitle().isEmpty()) {
+                    Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
+                }
+                //If Pix title exists or is not empty
+                else {
+                    Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
+                }
+
+                //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
+                updatePix();
+            }
+
+        }
 
 
         //If resultCode matches the contact's activity and its intent exists

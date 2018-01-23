@@ -70,6 +70,7 @@ public class PixListFragment extends Fragment{
     //List locations permissions required,
     private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
+    private static final int REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSIO = 1; //Request code to write to external storage
 
 
 
@@ -124,6 +125,12 @@ public class PixListFragment extends Fragment{
             //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
+
+        if (hasWriteExternalStoragePermission() == false){
+            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSIO);
+        }
+
+
     }
 
 
@@ -139,6 +146,14 @@ public class PixListFragment extends Fragment{
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
         //Return a boolean for state of location permission
+        return (result == PackageManager.PERMISSION_GRANTED);
+    }
+
+
+
+
+    private boolean hasWriteExternalStoragePermission(){
+        int result = ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return (result == PackageManager.PERMISSION_GRANTED);
     }
 
