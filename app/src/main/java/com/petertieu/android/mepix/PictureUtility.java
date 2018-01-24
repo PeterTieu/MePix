@@ -41,7 +41,7 @@ public class PictureUtility {
         //Tell decoder there is no bitmap present
         bitmapFactoryOptions.inJustDecodeBounds = true;
 
-        //Extract Bitmap object from path of picture File, then assign it to BitmapFactory.Options refernce variable (bitmapFactoryOptions)
+        //Extract Bitmap object from path of picture File, then assign it to BitmapFactory.Options reference variable (bitmapFactoryOptions)
         BitmapFactory.decodeFile(path, bitmapFactoryOptions);
 
         //Get height and width of 'original'/'un-scaled' picture Bitmap
@@ -70,7 +70,7 @@ public class PictureUtility {
         //Assign instance variable of BitmapFactory.Options object to 'final' scale factor
         bitmapFactoryOptions.inSampleSize = scaleFactor;
 
-        //Extract Bitmap object from path of picture File, then assign it to BitmapFactory.Options refernce variable (bitmapFactoryOptions),
+        //Extract Bitmap object from path of picture File, then assign it to BitmapFactory.Options reference variable (bitmapFactoryOptions),
         // which may now have a NEW scale factor
         return BitmapFactory.decodeFile(path, bitmapFactoryOptions);
     }

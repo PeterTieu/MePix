@@ -11,13 +11,16 @@
     //fragment_pix_list.xml
     <string name="you_have_no_pixes">You have no Pixes</string>
     <string name="add_new_pix">Add New\nPix</string>
+    <string name="new_pix_added">New Pix Added</string>
 
 
     //Label of PixViewPagerActivity
     <string name="pix_details">Pix Details</string>
 
 
-    //menu/fragment_pix_list.xml
+
+    //menu items
+    <string name="share_pix">Share Pix</string>
     <string name="new_pix">New Pix</string>
     <string name="delete_pix">Delete Pix</string>
 
@@ -36,11 +39,12 @@
     <string name="description_hint">Description</string>
 
 
-    //Title of 'sate picker' dialog
+    //Title of 'state picker' dialog
     <string name="date_picker_title">Date of Pix</string>
 
     //Title of 'pix delete' dialog
     <string name="pix_delete_confirm">Are you sure you want to delete Pix:  </string>
+    <string name="confirm_delete_button">Yes, Delete</string>
 
 
     //Description for detail view ImageView

@@ -90,6 +90,12 @@ public class DatePickerFragment extends DialogFragment {
                 .Builder(getActivity()) //Create Builder
                 .setView(view) //Set View of dialog
                 .setTitle(R.string.date_picker_title) //Set TITLE of dialog
+                .setNeutralButton("Today", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        sendResult(Activity.RESULT_OK, pixDate);
+                    }
+                })
                 .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
                 .setPositiveButton(android.R.string.ok, //Set POSITIVE BUTTON of the dialog, and a listener for it
                         new DialogInterface.OnClickListener() {
@@ -117,7 +123,7 @@ public class DatePickerFragment extends DialogFragment {
 
 
     //Send result to the hosting activity
-    private void sendResult(int resultCode, Date newSetdate){
+    private void sendResult(int resultCode, Date newSetDate){
 
         //If hosting fragment (PixDetailFragment) DOES NOT exist
         if (getTargetFragment() == null){
@@ -128,7 +134,7 @@ public class DatePickerFragment extends DialogFragment {
         Intent intent = new Intent();
 
         //Add Date data as 'extra'
-        intent.putExtra(EXTRA_DATE, newSetdate);
+        intent.putExtra(EXTRA_DATE, newSetDate);
 
         //Send resultCode and Intent to hosting fragment (PixDetailFragment)
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);

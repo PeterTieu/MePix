@@ -29,7 +29,7 @@ public class Pix {
 
     //================= Define Constructors ================================
 
-    //Contructor #1
+    //Constructor #1
     public Pix(){
         this(UUID.randomUUID());
     }

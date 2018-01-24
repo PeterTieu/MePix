@@ -21,7 +21,7 @@ import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.TA
 
 
 
-//Address lookup service - uses REVERSE GEOCODING to conver geographic location (i.e. lat/lon points) to address
+//Address lookup service - uses REVERSE GEOCODING to convert geographic location (i.e. lat/lon points) to address
 //Worker thread - Operates ASYNCHRONOUSLY from Main UI thread
 
 //WHAT IS A SERVICE?
@@ -31,7 +31,7 @@ import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.TA
 
 //NOTE: Because Services respond to intents in the same way that activities do, they MUST also be DECLARED in the Manifest!
 
-//NOTE: IntenService will shut down after all intents are processed
+//NOTE: IntentService will shut down after all intents are processed
 public class FetchAddressIntentService extends IntentService {
 
     //Define constants
@@ -171,7 +171,7 @@ public class FetchAddressIntentService extends IntentService {
             //Update error message
             errorMessage = "No geocoder present";
 
-            //Send 'negatibe' results back to PixDetailFragment
+            //Send 'negative' results back to PixDetailFragment
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
         }
 

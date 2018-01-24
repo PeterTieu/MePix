@@ -59,15 +59,15 @@ public class PixManager {
         //getWritableDatable will:
             //IF: An SQLiteDatabase does NOT exist..
                 //Call the overriden onCreate(SQLiteDatabase) from PixDatabaseHelper to create the SQLiteDatabase
-            //IF: An SQliteDatabase EXISTS...
-                //Chekc the version number of the database and call the overriden onUpgrade(..) from PixDatabaseHelper to upgrade if necessary
+            //IF: An SQLiteDatabase EXISTS...
+                //Check the version number of the database and call the overriden onUpgrade(..) from PixDatabaseHelper to upgrade if necessary
         mSQLiteDatabase = new PixDatabaseHelper(mContext).getWritableDatabase();
     }
 
 
 
 
-    //Return the ENTIRE List of Pix objects from the SQliteDatabase, "pixes"
+    //Return the ENTIRE List of Pix objects from the SQLiteDatabase, "pixes"
     public List<Pix> getPixes(){
 
         //Declare the List of Pixes
@@ -107,7 +107,7 @@ public class PixManager {
     //Return a SPECIFIC Pix from the SQLiteDatabase, "pixes"
     public Pix getPix(UUID id){
 
-        //Create a PixCursorWrapper using the queryPixes(..) helper method, takig into accoutn both whereClause and whereArgs
+        //Create a PixCursorWrapper using the queryPixes(..) helper method, taking into account both whereClause and whereArgs
         PixCursorWrapper pixCursor = queryPixes(PixDatabaseSchema.PixTable.Columns.ID + " = ?", new String[]{id.toString()});
 
         //Use try-block, as pixCursor (CursorWrapper) may throw RuntimeException if database doesn't exist
@@ -137,7 +137,7 @@ public class PixManager {
         //Call the getContentValues(Pix) helper method to obtain a ContentValues object. The ContentValues object acts a 'buffer' data storage for data from the Pix object
         ContentValues contentValues = getContentValues(pix);
 
-        //Insert data... FOMR: the ContentValues object...  TO: the SQLiteDatabase, "pixes".
+        //Insert data... FROM: the ContentValues object...  TO: the SQLiteDatabase, "pixes".
         mSQLiteDatabase.insert(PixDatabaseSchema.PixTable.NAME, null, contentValues);
     }
 
@@ -191,7 +191,7 @@ public class PixManager {
         //Get the specific Pix ID in String form
         String pixId = pix.getId().toString();
 
-        //Create a ContentValue and store data from the specifc Pix
+        //Create a ContentValue and store data from the specific Pix
         ContentValues contentValues = getContentValues(pix);
 
         //UPDATE the database with data from the specific pix

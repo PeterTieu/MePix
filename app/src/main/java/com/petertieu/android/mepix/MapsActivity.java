@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Add UUID of Pix as intent extra
         intent.putExtra(EXTRA_PIX_ID, pixId);
 
-        //Add lattitude as intent extra
+        //Add latitude as intent extra
         intent.putExtra(EXTRA_PIX_LATITUDE, latitude);
 
         //Add longitude as intent extra
@@ -85,7 +85,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-    //Ovrride activity lifecycle callback method
+    //Override activity lifecycle callback method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Set layout view of activity
         setContentView(R.layout.activity_maps);
 
-        //Upack intent extra then assign to UUID instance variable
+        //Unpack intent extra then assign to UUID instance variable
         mPixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
 
         //Unpack intent extra then assign to latitude instance variable
@@ -102,7 +102,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Unpack intent extra then assign to longitude instance variable
         mLongitude = getIntent().getDoubleExtra(EXTRA_PIX_LONGITUDE, 0);
 
-        //Unpack intent extra then assing to address instance variable
+        //Unpack intent extra then passing to address instance variable
         mAddress = getIntent().getStringExtra(EXTRA_PIX_ADDRESS);
 
         //Obtain map from SupportMapFragment, and pass associated resource ID to display the map
@@ -132,11 +132,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Set position of Pix marker
         mPixLocationMarker.position(pixLocationLatLon);
 
-        //Set tite of Pix marker
+        //Set title of Pix marker
         mPixLocationMarker.title(getString(R.string.pix_location) + " " + mAddress);
 
         //Add marker to map
-        mMap.addMarker(mPixLocationMarker);
+        mMap.addMarker(mPixLocationMarker).showInfoWindow();
 
 
 

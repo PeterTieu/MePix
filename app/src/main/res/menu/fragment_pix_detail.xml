@@ -6,6 +6,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--Share Pix-->
+    <item
+        android:id="@+id/share_pix"
+        android:title="@string/share_pix"
+        android:icon="@drawable/ic_menu_share"
+        app:showAsAction="ifRoom|withText"/>
+
     <!--Delete Pix-->
     <item
         android:id="@+id/delete_pix"

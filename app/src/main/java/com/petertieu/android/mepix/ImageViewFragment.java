@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.graphics.Matrix;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
@@ -105,32 +106,29 @@ public class ImageViewFragment extends DialogFragment{
                 .setTitle(R.string.pix_picture_text) //Set TITLE of dialog
                 .setPositiveButton(android.R.string.ok, null) //Set "ok" button
 
+
                 //Set listener for adding picture to gallery
                 .setNeutralButton(R.string.save_to_gallery, new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialog, int which){
 //
 
-                        Random random = new Random();
+                        Random randomNumberGenerator = new Random();
 
-                        int randomNumber = 100000;
+                        int randomNumber = randomNumberGenerator.nextInt();
 
-                        randomNumber = random.nextInt();
-
-                        String fileeName = "Image" + randomNumber;
+                        String fileName = "Image_" + randomNumber;
 
                         String savedImageUrl;
-                        savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation , fileeName , "");
+                        savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation , fileName , "");
 
                         if (savedImageUrl == null){
                             Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "Please check Storage Permissions", Toast.LENGTH_LONG).show();
                         }
                         else{
                             Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
-                            Toast.makeText(getActivity(), "URL: " + savedImageUrl, Toast.LENGTH_LONG).show();
                         }
-
-
 
                     }
                 })

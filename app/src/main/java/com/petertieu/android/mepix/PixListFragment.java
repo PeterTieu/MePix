@@ -1,5 +1,6 @@
 package com.petertieu.android.mepix;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -69,8 +72,10 @@ public class PixListFragment extends Fragment{
 
     //List locations permissions required,
     private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
-    private static final int REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSIO = 1; //Request code to write to external storage
+    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
 
 
 
@@ -115,9 +120,11 @@ public class PixListFragment extends Fragment{
         //Log lifecycle callback
         Log.i(TAG, "onCreate(..) called");
 
-        //Report that this fragment would like to participate in populate menus
+
+        //Report that this fragment would like to participate in populating menus
         setHasOptionsMenu(true);
 
+        //Reset options menu
         getActivity().invalidateOptionsMenu();
 
         //Check if permission for location tracking has been granted (by user)
@@ -127,7 +134,7 @@ public class PixListFragment extends Fragment{
         }
 
         if (hasWriteExternalStoragePermission() == false){
-            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSIO);
+            requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
         }
 
 
@@ -139,10 +146,10 @@ public class PixListFragment extends Fragment{
     //Check if location permission requested in the Manifest has been granted
     private boolean hasLocationPermission(){
 
-        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSON_DENIED).
+        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
         //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called ADDRESS.
         //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
-        // Other groups includej: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
+        // Other groups include: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
         //Return a boolean for state of location permission
@@ -161,10 +168,20 @@ public class PixListFragment extends Fragment{
 
 
 
+
     //Override onStart() fragment lifecycle callback method
     @Override
     public void onStart(){
         super.onStart();
+
+        //
+        if (PixManager.get(getActivity()).getPixes().size() > 0) {
+            //Report that this fragment would like to participate in populate menus
+            setHasOptionsMenu(true);
+        }
+        else{
+            setHasOptionsMenu(false);
+        }
 
         //Log lifecycle callback
         Log.i(TAG, "onStart() called");
@@ -233,9 +250,12 @@ public class PixListFragment extends Fragment{
 
                 //Call callback method from PixListFragment.Callbacks
                 mCallbacks.onPixSelected(pix);
+
+                //Display toast to notify user a new pix has been added
+                Toast.makeText(getActivity(), R.string.new_pix_added, Toast.LENGTH_LONG).show();
+
             }
         });
-
 
         //Create/call the Adapter and link it with the RecyclerView
         updateUI();
@@ -299,7 +319,7 @@ public class PixListFragment extends Fragment{
         Log.i(TAG, "onCreateOptionsMenu(..) called");
 
         if (PixManager.get(getActivity()).getPixes().size() > 0) {
-            //Inflate a menu hiearchy from specified resource
+            //Inflate a menu hierarchy from specified resource
             menuInflater.inflate(R.menu.fragment_pix_list, menu);
         }
     }
@@ -329,6 +349,9 @@ public class PixListFragment extends Fragment{
 
                 //Open up the Pix (just created)
                 mCallbacks.onPixSelected(pix);
+
+                //Display toast to notify user a new pix has been added
+                Toast.makeText(getActivity(), R.string.new_pix_added, Toast.LENGTH_LONG).show();
 
                 return true;
 
@@ -370,7 +393,7 @@ public class PixListFragment extends Fragment{
         @Override
         public PixViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType){
 
-            //Create LayoutInfater from the given Context
+            //Create LayoutInflater from the given Context
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
 
             //Inflate the View
@@ -382,11 +405,11 @@ public class PixListFragment extends Fragment{
 
 
 
-        //Override method from the ReyclerView.Adapter inner class of Adapter
+        //Override method from the RecyclerView.Adapter inner class of Adapter
         @Override
         public void onBindViewHolder(PixViewHolder pixViewHolder, int position){
 
-            //Get a specific Pix obect, 'pix', from the List of Pix objects, 'mPixes'
+            //Get a specific Pix object, 'pix', from the List of Pix objects, 'mPixes'
             Pix pix = mPixes.get(position);
 
             //Pass the Pix object to the bind(Pix) method of the ViewHolder
@@ -460,10 +483,10 @@ public class PixListFragment extends Fragment{
             //Assign list item's picture instance variable to its associated resource ID
             mPictureView = (ImageView) view.findViewById(R.id.list_pix_picture);
 
-            //Assign list item's locatoin instance variable to its associated resource ID
+            //Assign list item's location instance variable to its associated resource ID
             mPixAddress = (TextView) view.findViewById(R.id.list_pix_location);
 
-            //Assign list item's tag instance variable to its associatred resource ID
+            //Assign list item's tag instance variable to its associated resource ID
             mPixTagged = (TextView) view.findViewById(R.id.list_pix_tagged);
 
 
@@ -558,7 +581,7 @@ public class PixListFragment extends Fragment{
             mPix = pix;
 
             //Set the text of the list item's title
-            if (mPix.getTitle() == null || mPix.getTitle().isEmpty()){
+            if (mPix.getTitle() == null || mPix.getTitle().isEmpty() || mPix.getTitle().trim().length()==0){
                 mPixTitle.setText("* Untitled *");
                 mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.yellow));
                 mPixTitle.setTypeface(null, Typeface.ITALIC);
@@ -573,7 +596,7 @@ public class PixListFragment extends Fragment{
             }
 
             //Set the text of the list item's description
-            if (mPix.getDescription() == null || mPix.getDescription().isEmpty()){
+            if (mPix.getDescription() == null || mPix.getDescription().isEmpty() || mPix.getDescription().trim().length()==0){
                 mPixDescription.setText("* No description *");
                 mPixDescription.setTypeface(null, Typeface.ITALIC);
                 mPixDescription.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_yellow));
@@ -595,7 +618,7 @@ public class PixListFragment extends Fragment{
                 mPixAddress.setText("");
             }
             else{
-                //Display loality on location field (i.e. Footscray, Victoria)
+                //Display locality on location field (i.e. Footscray, Victoria)
                 mPixAddress.setText("- in " + mPix.getLocality());
             }
 
@@ -713,7 +736,7 @@ public class PixListFragment extends Fragment{
                 //Scale picture to fit allocated ImageView space
                 mPictureView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                //Talkback accessbility: Associate textual description to 'existing' view
+                //Talkback accessibility: Associate textual description to 'existing' view
                 mPictureView.setContentDescription(getString(R.string.pix_picture_description));
             }
         }
@@ -763,7 +786,7 @@ public class PixListFragment extends Fragment{
 
             //Get LEFT horizontal bound of recycler view divider line
             int twoPaneDividerLineLeftBound = recyclerView.getWidth()-7;
-            //Get RIGHT horizontaql bound of divider line
+            //Get RIGHT horizontal bound of divider line
             int twoPaneDividerLineRightBound = recyclerView.getWidth();
 
 
@@ -791,10 +814,10 @@ public class PixListFragment extends Fragment{
                 //Get TOP horizontal bound of divider line
                 int twoPaneDividerLineTopBound = viewChildOfListItem.getTop();
                 //Get BOTTOM horizontal bound of divider line
-                int twoPaneDividerLineBottomBound = viewChildOfListItem.getBottom();
+                int twoPaneDividerLineBottomBound = getView().getBottom();
 
 
-                //Set bounds for where the recycler view divider (lines) are to appaear
+                //Set bounds for where the recycler view divider (lines) are to appaer
                 mDivider.setBounds(dividerLeftBound, dividerTopBound, dividerRightBound, dividerBottomBound);
 
                 //Draw the recycler view divider (lines) inside set bounds

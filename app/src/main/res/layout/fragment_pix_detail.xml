@@ -5,12 +5,14 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pix_detail_scrollview"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
 
     <LinearLayout
+        android:id="@+id/pix_detail_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="5dp"
@@ -20,12 +22,13 @@
         <EditText
             android:id="@+id/detail_pix_title"
             android:hint="@string/title_hint"
-            android:textSize="25dp"
+            android:textSize="22dp"
+            android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:inputType="textCapSentences"/>
+            android:inputType="textCapWords|textMultiLine"/>
 
         <CheckBox
             android:id="@+id/detail_pix_favorited"
@@ -154,7 +157,7 @@
             android:textSize="18dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="textCapSentences"/>
+            android:inputType="textCapSentences|textMultiLine"/>
 
 
     </LinearLayout>

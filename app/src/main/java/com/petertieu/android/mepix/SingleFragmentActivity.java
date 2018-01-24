@@ -25,7 +25,7 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
         //Return the FragmentManager for interacting with fragments associated with this activity
         FragmentManager fm = getSupportFragmentManager();
 
-        //Find a fragment that was indentified by the given ID
+        //Find a fragment that was identified by the given ID
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);
 
         //If the fragment doesn't exist yet

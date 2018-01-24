@@ -66,7 +66,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         //Log callback method
         Log.i(TAG, "PixListFragment.Callbacks onPixSelected(..) called");
 
-        //If the 2nd pane doesn NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
+        //If the 2nd pane does NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
             //Declare boolean two-pane mode flag as FALSE
@@ -96,7 +96,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override method from PixDetailFragment.Callbacks interface to update PixListFragment in realtime (for two-pane view)
+    //Override method from PixDetailFragment.Callbacks interface to update PixListFragment in real-time (for two-pane view)
     @Override
     public void onPixUpdatedFromDetailView(Pix pix){
 
@@ -114,7 +114,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override method from PixDetailFragment.Callbacks interface to delete Pix from PixDetailFragment in realtime (for two-pane view)
+    //Override method from PixDetailFragment.Callbacks interface to delete Pix from PixDetailFragment in real-time (for two-pane view)
     @Override
     public void onPixDeleted(Pix pix){
 
@@ -132,14 +132,14 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override method from PixListFragment.Callbacks interface to update PixDetailFragment in realtime (for two-pane view)
+    //Override method from PixListFragment.Callbacks interface to update PixDetailFragment in real-time (for two-pane view)
     @Override
     public void onPixUpdatedFromListView(Pix pix){
 
         //Log lifecycle callback method in Logcat
         Log.i(TAG, "PixListFragment.Callbacks onPixUpdatedFromListView(..) called");
 
-        //If the 2nd pane doesn NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
+        //If the 2nd pane does NOT exist.. in other words, if two-pane view does NOT exist... i.e. sw < 600dp
         if (findViewById(R.id.detail_fragment_container) == null){
 
             hasEnteredTwoPaneMode = false;
@@ -175,7 +175,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         super.onResume();
 
         //Check if the Google Play Services are available (every time the app is opened, i.e., when onResume() is called)
-        // This check is important, as the Play Services library is not always gauranteed to be working.
+        // This check is important, as the Play Services library is not always guaranteed to be working.
         //Create an instance of GoogleApiAvailability.
         // The GoogleApiAvailability class extends Object.
         // It is a Helper class for verifying that the Google Play services APK is available and up-to-date on the device.
@@ -198,12 +198,12 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
         if (statusCode != ConnectionResult.SUCCESS){
 
             //getErrorDialog(Activity activity, int statusCode, int requestCode, DialogInterface.OnCancelListener cancelListener)
-            // is from GoogleApiAvaialbility class.
+            // is from GoogleApiAvailbility class.
             // Returns a dialog to inform of the provided statusCode.
             // The returned dialog displays a localized message about the error and upon user confirmation (by tapping on dialog)
             // will direct them to the Play Store if Google Play services is out of date or missing,
             // or to system settings if Google Play services is disabled on the device.
-            //Argument 1 (Actiivty): The parent activity for creating the dialog
+            //Argument 1 (Activity): The parent activity for creating the dialog
             //Argument 2 (int): The status code of where Google Play Services is available. In this case, it would be !SUCCESS
             // i.e. SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, or SERVICE INVALID.
             //Argument 3 (int): The request code given when calling startActivityForResult()

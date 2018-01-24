@@ -21,10 +21,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
-    <!-- Permissions to use two main permissions part of the LOCATIONS permissoin group -->
-    <!-- ACCESS_COURCE_LOCATION: Uses cell towers and Wifi access points to traddresstion (less accurate) -->
+    <!-- Permissions to use two main permissions part of the LOCATIONS permission group -->
+    <!-- ACCESS_COURSE_LOCATION: Uses cell towers and Wifi access points to track address (less accurate) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <!-- ACCESS_FADDRESSTION: Uses GPS radio to track locatiobn(most accurate) -->
+    <!-- ACCESS_FINE_LOCATION: Uses GPS radio to track location (most accurate) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <!-- Permission to access internet -->

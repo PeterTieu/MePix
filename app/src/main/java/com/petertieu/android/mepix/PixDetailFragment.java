@@ -3,7 +3,10 @@ package com.petertieu.android.mepix;
 import android.*;
 import android.Manifest;
 import android.app.Activity;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -42,6 +45,8 @@ import android.widget.EditText;
 import android.text.format.DateFormat;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,6 +57,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -103,21 +109,25 @@ public class PixDetailFragment extends SupportMapFragment{
     //Declare constants for tag requests
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_CONTACT = 1; //Request code for results returned from contact activity/app
-    private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camer activity/app
+    private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camera activity/app
     private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
+    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
     private static final int REQUEST_CODE_NEW_MARKER_LOCATION = 5;
     private static final int REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSION = 6;
 
     //Declare Callbacks interface reference variable
     private Callbacks mCallbacks;
 
-    //Declare FusedLocationProviderClient - the entry point for interactng with FusedLocationProvider (to get location fix)
+    //Declare FusedLocationProviderClient - the entry point for interacting with FusedLocationProvider (to get location fix)
     private FusedLocationProviderClient mFusedLocationClient;
 
     //List locations permissions required,
     private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
+    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+
+
 
     //Declare Location object to contain location fix (i.e lat/lon values)
     protected Location mLocation;
@@ -199,7 +209,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
     //Override onCreate(..) fragment lifecycle callback method
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //Log in Logcat
@@ -219,14 +229,13 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //If the user has previously entered two-pane mode (i.e. sw > 600dp), and it now no longer exists,
         // since the user has rotated the screen, and is now back to one-pane mode (i.e. is now in the list view)...
-        if (PixListActivity.hasEnteredTwoPaneMode == true && getActivity().findViewById(R.id.detail_fragment_container) == null){
+        if (PixListActivity.hasEnteredTwoPaneMode == true && getActivity().findViewById(R.id.detail_fragment_container) == null) {
             //Disable the options menu of this detail view, which effectively removes the 'Delete' button from the toolbar while in list view
             setHasOptionsMenu(false);
         }
 
-        //Assign reference variable, mPictureFile, to picture file in FoleProvider
+        //Assign reference variable, mPictureFile, to picture file in FileProvider
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
-
 
 
         //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
@@ -234,16 +243,21 @@ public class PixDetailFragment extends SupportMapFragment{
         //Create AddressResultReceiver object, passing a Handler to it
         mAddressResultReceiver = new AddressResultReceiver(new Handler());
 
-        //If location permissions requested in the Manifest have been granted
-        if (hasLocationPermission()) {
+        //If location permissions requested in the Manifest have NOT been granted
+        if (hasLocationPermission() == false) {
 
+            //Request (user) for location permissions - as they are 'dangerous' permissions
+            requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+        }
+        //If location permissions requested in the Manifest HAVE been granted
+        else {
             //========== Configure location services ====================================================
             //Create FusedLocationProviderClient object - to get location fix
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
             //Try risky task - addSuccessListener could throw a SecurityException exception
             try {
-                //Get most recent location avaiable via getLastLocation(). NOTE: getLastLocation() runs ASYNCHRONOUSLY, whereas .
+                //Get most recent location available via getLastLocation(). NOTE: getLastLocation() runs ASYNCHRONOUSLY, whereas .
                 mFusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
 
                     //Listen for when location has been obtained via FusedLocationClient
@@ -274,27 +288,19 @@ public class PixDetailFragment extends SupportMapFragment{
                 });
             }
             //Catch any SecurityException thrown by addSuccessListener(..)
-            catch (SecurityException securityException){
+            catch (SecurityException securityException) {
                 Log.e(TAG, "Error creating location service", securityException);
             }
         }
 
-        //If requested location permissions have NOT been granted
-        else{
-            //Request (user) for location permissions - as they are 'dangerous' permissions
-            requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
-        }
 
 
 
 
         //========== Request for Write-to-external-storage (dangerous) permission ====================================================
 
-        if (hasWriteExternalStoragePermission()){
-            //do something
-        }
-        else{
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSION);
+        if (hasWriteExternalStoragePermission() == false){
+            requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
         }
     }
 
@@ -305,10 +311,10 @@ public class PixDetailFragment extends SupportMapFragment{
     //Check if location permission requested in the Manifest has been granted
     private boolean hasLocationPermission(){
 
-        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSON_DENIED).
+        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
         //NOTE: Permissions ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION are in the same PERMISSION GROUP, called ADDRESS.
             //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
-            // Other groups includej: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
+            // Other groups include: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
         //Return a boolean for state of location permission
@@ -326,7 +332,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-    //Call IntenService to perform reverse geocoding (i.e. obtain address from location fix)
+    //Call IntentService to perform reverse geocoding (i.e. obtain address from location fix)
     protected void startIntentService() {
 
         //Create intent to FetchAddressIntentService
@@ -346,7 +352,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-    //Define AddressResultReceiver (RecultReceiver) inner class - to receive results from FetchAddressIntentService (IntentService)
+    //Define AddressResultReceiver (ResultReceiver) inner class - to receive results from FetchAddressIntentService (IntentService)
     class AddressResultReceiver extends ResultReceiver {
 
         //Build constructor
@@ -375,7 +381,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
                 //If mLocation field of Pix object does NOT exist (i.e. no address set yet)
                 if (mPix.getAddress() == null){
-                    //Dsiplay address on location button
+                    //Display address on location button
                     mLocationButton.setText(mAddressOutput.getAddressLine(0));
 
                     //Set address to mAddress field of Pix object
@@ -458,7 +464,6 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //If a date exists for the Pix
         if (mPix.getDate() != null){
-
             //Set text of the date button to date of the Pix
             mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
@@ -470,7 +475,6 @@ public class PixDetailFragment extends SupportMapFragment{
             //Override onClick(..) from View.OnClickListener
             @Override
             public void onClick(View view){
-
                 //Create FragmentManager
                 FragmentManager fragmentManager = getFragmentManager();
 
@@ -520,7 +524,7 @@ public class PixDetailFragment extends SupportMapFragment{
         //Set listener for CheckBox
         mFavoritedButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-            //Override onCheckedChanged(..) from CompountButton.OnCheckedChangedListener
+            //Override onCheckedChanged(..) from CompoundButton.OnCheckedChangedListener
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 //Set favorited field of Pix to state of CheckBox
@@ -538,7 +542,7 @@ public class PixDetailFragment extends SupportMapFragment{
         //Assign description EditText instance variable to its associated resource ID
         mDescription = (EditText) view.findViewById(R.id.detail_pix_description);
 
-        //Set text of the title to descirption instance variable of the Pix
+        //Set text of the title to description instance variable of the Pix
         mDescription.setText(mPix.getDescription());
 
         //Add listener to description EditText
@@ -644,58 +648,60 @@ public class PixDetailFragment extends SupportMapFragment{
             @Override
             public void onClick(View view){
 
-                //Set dialog prompt items
-                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery"};
+                cameraIntent();
 
-                //Create AlertDialog.Builder object
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-
-                //Set title of dialog
-                alertDialogBuilder.setTitle("Add a Picture");
-
-                //Set items of dialog, and create listeners for them
-                alertDialogBuilder.setItems(dialogItems, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int item) {
-
-                        //If "Take Picture" dialog item is pressed
-                        if (dialogItems[item].equals("Take Picture")) {
-
-                            //Log in Logcat
-                            Log.i(TAG, "*Take Photo* pressed");
-
-                            //Open camera activity/app (as new task)
-                            cameraIntent();
-                        }
-
-                        //If "Choose from Gallery" dialog item is pressed
-                        else if (dialogItems[item].equals("Choose from Gallery")) {
-
-                            //Log in Logcat
-                            Log.i(TAG, "*Choose from Library* pressed");
-
-                            //Open gallery activity/app (as new task)
-                            galleryIntent();
-                        }
-
-//                        //If "Cancel" dialog item is pressed
-//                        else if (dialogItems[item].equals("Cancel")) {
+//                //Set dialog prompt items
+//                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery"};
+//
+//                //Create AlertDialog.Builder object
+//                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+//
+//                //Set title of dialog
+//                alertDialogBuilder.setTitle("Add a Picture");
+//
+//                //Set items of dialog, and create listeners for them
+//                alertDialogBuilder.setItems(dialogItems, new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int item) {
+//
+//                        //If "Take Picture" dialog item is pressed
+//                        if (dialogItems[item].equals("Take Picture")) {
 //
 //                            //Log in Logcat
-//                            Log.i(TAG, "*Cancel* pressed");
+//                            Log.i(TAG, "*Take Photo* pressed");
 //
-//                            //Close dialog
-//                            dialog.dismiss();
+//                            //Open camera activity/app (as new task)
+//                            cameraIntent();
 //                        }
-                    }
-                });
-
-                //Set dialog 'Cancel' button
-                alertDialogBuilder.setNegativeButton(android.R.string.cancel, null);
-
-                //Show dialog
-                alertDialogBuilder.show();
+//
+//                        //If "Choose from Gallery" dialog item is pressed
+//                        else if (dialogItems[item].equals("Choose from Gallery")) {
+//
+//                            //Log in Logcat
+//                            Log.i(TAG, "*Choose from Library* pressed");
+//
+//                            //Open gallery activity/app (as new task)
+//                            galleryIntent();
+//                        }
+//
+////                        //If "Cancel" dialog item is pressed
+////                        else if (dialogItems[item].equals("Cancel")) {
+////
+////                            //Log in Logcat
+////                            Log.i(TAG, "*Cancel* pressed");
+////
+////                            //Close dialog
+////                            dialog.dismiss();
+////                        }
+//                    }
+//                });
+//
+//                //Set dialog 'Cancel' button
+//                alertDialogBuilder.setNegativeButton(android.R.string.cancel, null);
+//
+//                //Show dialog
+//                alertDialogBuilder.show();
             }
         });
 
@@ -724,6 +730,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
                     pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
+//                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_GALLERY);
 
                     //Create FragmentManager (which has access to all fragments)
                     FragmentManager fragmentManager = getFragmentManager();
@@ -734,6 +741,10 @@ public class PixDetailFragment extends SupportMapFragment{
                 }
             }
         });
+
+
+
+        mViewToShare = (LinearLayout) view.findViewById(R.id.pix_detail_linear_layout);
 
 
         //Return the View
@@ -791,7 +802,7 @@ public class PixDetailFragment extends SupportMapFragment{
         for (ResolveInfo resolvedActivity : cameraActivities){
             //Grant permsision for the resolved activity to write to the URI of the FileProvider
             getActivity().grantUriPermission(
-                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
+                    resolvedActivity.activityInfo.packageName, //(String): The resolved activity
                     uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
             );
@@ -808,13 +819,13 @@ public class PixDetailFragment extends SupportMapFragment{
     //Open gallery activity/app
     private void galleryIntent(){
 
-        //Create implicit intent (to open gallery actvity/app)
+        //Create implicit intent (to open gallery activity/app)
         Intent choosePictureIntent = new Intent();
 
         //Set action to open gallery activity/app
         choosePictureIntent.setAction(Intent.ACTION_GET_CONTENT);
 
-        //Set type of media to open (i.e. images, instead of vides or both)
+        //Set type of media to open (i.e. images, instead of videos or both)
         choosePictureIntent.setType("image/*");
 
         //Get content URI of FileProvider for which picture file from camera is to be saved to
@@ -839,13 +850,15 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //Sort through all activities resolved (in the list)
         for (ResolveInfo resolvedActivity : galleryActivities){
-            //Grant permsision for the resolved activity to write to the URI of the FileProvider
+            //Grant permission for the resolved activity to write to the URI of the FileProvider
             getActivity().grantUriPermission(
-                    resolvedActivity.activityInfo.packageName, //(String): The resoleved activity
+                    resolvedActivity.activityInfo.packageName, //(String): The resolved activity
                     uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
             );
         }
+
+
 
         //Start the activity, expecting results to be returned (via onActivityResult(..))
         startActivityForResult(Intent.createChooser(choosePictureIntent, "Select Picture"), REQUEST_CODE_PICTURE_GALLERY);
@@ -899,10 +912,10 @@ public class PixDetailFragment extends SupportMapFragment{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater){
 
-        //Log lifcycle callback
+        //Log lifecycle callback
         Log.i(TAG, "onCreateOptionsMenu(..) called");
 
-        //Inflate a menu hiearchy from specified resource
+        //Inflate a menu hierarchy from specified resource
         menuInflater.inflate(R.menu.fragment_pix_detail, menu);
     }
 
@@ -924,9 +937,11 @@ public class PixDetailFragment extends SupportMapFragment{
 
                 //Display 'delete confirmation' dialog
                 deleteConfirmationDialog();
-
-
                 return true;
+
+            case(R.id.share_pix):
+                OnClickShare(mViewToShare);
+
 
             default:
                 return super.onOptionsItemSelected(menuItem);
@@ -944,7 +959,7 @@ public class PixDetailFragment extends SupportMapFragment{
         FragmentManager fragmentManager = getFragmentManager();
 
         //Create DatePickerFragment fragment
-        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle());
+        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle(), mPix.getDescription());
 
         //Start the dialog fragment
         pixDeleteDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE);
@@ -952,6 +967,80 @@ public class PixDetailFragment extends SupportMapFragment{
         //Show dialog
         pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
     }
+
+
+
+    LinearLayout mViewToShare;
+
+
+    public void OnClickShare(View view) {
+
+        //Eliminate "cursor" showing up prior to 'screenshot'
+        mTitle.setCursorVisible(false);
+        mTagEditText.setCursorVisible(false);
+        mDescription.setCursorVisible(false);
+
+
+        //Eliminate "text highlight" showing up prior to 'screenshot'
+        Editable editableTitle = mTitle.getText();
+        String titleString = editableTitle.toString();
+        mTitle.setText(titleString);
+
+        Editable editableTag = mTagEditText.getText();
+        String tagString = editableTag.toString();
+        mTagEditText.setText(tagString);
+
+        Editable editableDescription = mDescription.getText();
+        String descriptionString = editableDescription.toString();
+        mDescription.setText(descriptionString);
+
+
+
+        Bitmap bitmap = getBitmapFromView(mViewToShare);
+
+
+
+
+        mTitle.setCursorVisible(true);
+        mTagEditText.setCursorVisible(true);
+        mDescription.setCursorVisible(true);
+
+
+
+
+        try {
+            File file = new File(getActivity().getExternalCacheDir(), "logicchip.png");
+            FileOutputStream fOut = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+            file.setReadable(true, false);
+            final Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            intent.setType("image/png");
+            startActivity(Intent.createChooser(intent, "Share Picture via"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private Bitmap getBitmapFromView(View view) {
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        Drawable bgDrawable = view.getBackground();
+        if (bgDrawable != null) {
+            //has background drawable, then draw it on the canvas
+            bgDrawable.draw(canvas);
+        } else {
+            //does not have background drawable, then draw white background on the canvas
+            canvas.drawColor(Color.WHITE);
+        }
+        view.draw(canvas);
+        return returnedBitmap;
+    }
+
 
 
 
@@ -1058,7 +1147,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-    //Override onDettach() fragment lifecycle callback method
+    //Override onDetach() fragment lifecycle callback method
     @Override
     public void onDetach(){
         super.onDetach();
@@ -1091,10 +1180,10 @@ public class PixDetailFragment extends SupportMapFragment{
         if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE) {
 
             //Get Date object from date dialog fragment
-            Date newSetdate = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            Date setDate = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
 
             //Set new date for Pix
-            mPix.setDate(newSetdate);
+            mPix.setDate(setDate);
 
             //Set new date display for date button
             mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
@@ -1125,7 +1214,7 @@ public class PixDetailFragment extends SupportMapFragment{
                 // This check is important, since we want to close this activity IF it is running... NOT PixListActivity (which also hosts PixDetailFragment) when in two-pane layout)
                 // We do not want to close the
                 if (PixViewPagerActivityLifecycleTracker.isActivityVisible()) {
-                    //Finish the PixViewPagerActivity activity, so that the detail view woud pop off the stack, revewaling the list view
+                    //Finish the PixViewPagerActivity activity, so that the detail view would pop off the stack, revealing the list view
                     getActivity().finish();
                 }
 
@@ -1138,7 +1227,7 @@ public class PixDetailFragment extends SupportMapFragment{
                 //Get InputMethodManager object
                 InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 
-                //Request to hide softw keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
                 inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
 
 
@@ -1212,7 +1301,7 @@ public class PixDetailFragment extends SupportMapFragment{
                 //Update the Pix SQLiteDatabase and two-pane UI (upon change with Pix's tag field)
                 updatePix();
             } finally {
-                //Close curosr
+                //Close cursor
                 cursorDisplayName.close();
             }
         }
@@ -1264,7 +1353,7 @@ public class PixDetailFragment extends SupportMapFragment{
             mPictureView.setImageBitmap(bm);
 
 
-            //Revoke persmission from camera from writing to FileProvider
+            //Revoke permission from camera from writing to FileProvider
             getActivity().revokeUriPermission(uriFileProvider, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
 

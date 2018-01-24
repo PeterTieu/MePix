@@ -91,7 +91,7 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         //Set the activity content from the ViewPager layout resource
         setContentView(R.layout.activity_pix_view_pager);
 
-        //Assign the ViwePager to its associated resource ID
+        //Assign the ViewPager to its associated resource ID
         mViewPager = (ViewPager) findViewById(R.id.pix_view_pager);
 
         //Set total number of detail fragments to pre-load outside of the current fragment on screen
