@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.graphics.Matrix;
+import android.graphics.Typeface;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -100,10 +102,16 @@ public class ImageViewFragment extends DialogFragment{
         //Set 'scaled' picture Bitmap onto ImageView
         mImageView.setImageBitmap(bitmapPictureCorrectOrientation);
 
+        TextView dialogTitle = new TextView(getActivity());
+        dialogTitle.setText(R.string.pix_picture_text);
+        dialogTitle.setTypeface(null, Typeface.BOLD);
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
+        dialogTitle.setTextSize(25);
+
         //Return AlertDialog (subclass of Dialog), which sets the dialog properties
         return new AlertDialog.Builder(getActivity())
                 .setView(view) //Set View of dialog
-                .setTitle(R.string.pix_picture_text) //Set TITLE of dialog
+                .setCustomTitle(dialogTitle) //Set TITLE of dialog
                 .setPositiveButton(android.R.string.ok, null) //Set "ok" button
 
 

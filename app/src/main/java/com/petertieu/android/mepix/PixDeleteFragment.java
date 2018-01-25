@@ -66,10 +66,10 @@ public class PixDeleteFragment extends DialogFragment{
 
 
         if (pixTitle == null || pixTitle.isEmpty() || pixTitle.trim().length()==0){
-            pixTitle = "*Untitled*";
+            pixTitle = "<i>" + "*Untitled*"  + "</i>";
         }
         if (pixDescription == null || pixDescription.isEmpty() || pixDescription.trim().length()==0){
-            pixDescription = "*No description*";
+            pixDescription = "<i>" + "*No description*"  + "</i>";
         }
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_delete, null);
@@ -82,7 +82,7 @@ public class PixDeleteFragment extends DialogFragment{
                 .setCustomTitle(dialogTitle)
                 .setMessage(Html.fromHtml(
                         "<br>" + "</br>" +
-                        "<b>" + "Pix title:" + "</b>" + " " + pixTitle +
+                        "<b>" + "Title:" + "</b>" + " " + pixTitle +
                         "<br>" + "</br>" +
                         "<br>" + "</br>" +
                         "<b>" + "Description:" + "</b>" + " " + pixDescription))

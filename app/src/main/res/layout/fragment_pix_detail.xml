@@ -122,8 +122,8 @@
                 <!--Location Button-->
                 <Button
                     android:id="@+id/detail_pix_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="50dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="@string/location_button"
                     android:textColor="@color/colorButtonText"/>
 
@@ -131,8 +131,8 @@
                 <!--Tagged EditText-->
                 <EditText
                     android:id="@+id/detail_edit_pix_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
                     android:hint="@string/tag_people"/>
 
                 <!--Add Tag Button-->

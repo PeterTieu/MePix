@@ -51,6 +51,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -134,6 +137,14 @@ public class PixDetailFragment extends SupportMapFragment{
 
     //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
     private AddressResultReceiver mAddressResultReceiver;
+
+    private boolean updatePixLocationMenuItemPressed = false;
+
+
+    AddressResultReceiver mAddressResultReceiverr;
+
+    protected Location mNewLocation;
+    private AddressResultReceiver mNewAddressResultReceiver;
 
     private boolean locationSavedToDB = false;
 
@@ -238,6 +249,8 @@ public class PixDetailFragment extends SupportMapFragment{
         mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
 
+
+
         //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
 
         //Create AddressResultReceiver object, passing a Handler to it
@@ -294,15 +307,61 @@ public class PixDetailFragment extends SupportMapFragment{
         }
 
 
-
-
-
         //========== Request for Write-to-external-storage (dangerous) permission ====================================================
 
         if (hasWriteExternalStoragePermission() == false){
             requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
         }
+
+
+
+
+
+
+
+
+
+        mLocationCallback = new LocationCallback(){
+
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+
+                //If updated location does not
+                if (locationResult == null) {
+                    Log.v(TAG, "Updated location does not exist");
+                }
+
+                mLocation = locationResult.getLastLocation();
+                Toast.makeText(getActivity(), Double.toString(mLocation.getLatitude()) + " " + Double.toString(mLocation.getLongitude()), Toast.LENGTH_LONG).show();
+
+                //In some rare cases, location returned can be null
+                if (mLocation == null) {
+                    return;
+                }
+
+                //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address
+                if (!Geocoder.isPresent()) {
+                    Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+
+                mAddressResultReceiver = new AddressResultReceiver(new Handler());
+                Toast.makeText(getActivity(), "New ResultReceiver created", Toast.LENGTH_LONG).show();
+
+                //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
+                Toast.makeText(getActivity(), "Began IntentService to perform reverse geocoding for new Pix location", Toast.LENGTH_LONG).show();
+                startIntentService();
+
+            }
+        };
+
+
     }
+
+
+
+
 
 
 
@@ -332,7 +391,7 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
-    //Call IntentService to perform reverse geocoding (i.e. obtain address from location fix)
+    //Call IntentService to perform REVERSE GEOCODING (i.e. obtain address from location fix)
     protected void startIntentService() {
 
         //Create intent to FetchAddressIntentService
@@ -344,7 +403,7 @@ public class PixDetailFragment extends SupportMapFragment{
         //Pass AddressResultReceiver (ResultReceiver) to receive and handle address results from reverse geocoding
         intentFetchAddressIntentService.putExtra(FetchAddressIntentService.Constants.RECEIVER, mAddressResultReceiver);
 
-        //Start IntentService to perform reverse geocoding
+        //Start FetchAddressIntentService (IntentService) to perform reverse geocoding
         getActivity().startService(intentFetchAddressIntentService);
     }
 
@@ -380,7 +439,8 @@ public class PixDetailFragment extends SupportMapFragment{
             if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
 
                 //If mLocation field of Pix object does NOT exist (i.e. no address set yet)
-                if (mPix.getAddress() == null){
+                if ( (mPix.getAddress() == null) || (updatePixLocationMenuItemPressed == true) ){
+
                     //Display address on location button
                     mLocationButton.setText(mAddressOutput.getAddressLine(0));
 
@@ -398,7 +458,10 @@ public class PixDetailFragment extends SupportMapFragment{
 
                     //Update SQLiteDatabase of Pix account for data added/updated for mLocation field (i.e. address)
                     updatePix();
+
+                    updatePixLocationMenuItemPressed = false;
                 }
+
                 //If mLocation field of Pix object DOES exist (i.e. address has been set)
                 else{
                     //Display address on location button
@@ -941,9 +1004,13 @@ public class PixDetailFragment extends SupportMapFragment{
 
             case(R.id.share_pix):
                 OnClickShare(mViewToShare);
+                return true;
 
-//            case(R.id.update_pix_location):
-//                updatePixLocation();
+            case(R.id.update_pix_location):
+                updatePixLocationMenuItemPressed = true;
+
+                createLocationRequest();
+                updatePixLocation();
 
 
             default:
@@ -974,6 +1041,18 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
     LinearLayout mViewToShare;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     public void OnClickShare(View view) {
@@ -1043,6 +1122,42 @@ public class PixDetailFragment extends SupportMapFragment{
         view.draw(canvas);
         return returnedBitmap;
     }
+
+
+
+
+
+    LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void updatePixLocation(){
+
+        try{
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+        }
+        catch (SecurityException securityException){
+            Log.e(TAG, "Error requesting location updates", securityException);
+        }
+
+    }
+
+
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+    }
+
+
+
+
+
 
 
 
@@ -1118,6 +1233,8 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //Log in Logcat
         Log.i(TAG, "onStop() called");
+
+        stopLocationUpdates();
     }
 
 

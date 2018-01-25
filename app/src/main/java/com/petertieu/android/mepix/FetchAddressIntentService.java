@@ -182,23 +182,6 @@ public class FetchAddressIntentService extends IntentService {
 
 
     //Send results back to PixDetailFragment
-    private void deliverResultToReceiver(int resultCode, String message) {
-
-        //Create Bundle object to use as argument-bundle
-        Bundle bundle = new Bundle();
-
-        //Stash result key-value pair to argument-bundle
-        bundle.putString(Constants.RESULT_DATA_KEY, message);
-
-        //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
-        mReceiver.send(resultCode, bundle);
-    }
-
-
-
-
-
-    //Send results back to PixDetailFragment
     private void deliverResultToReceiver(int resultCode, Address address) {
 
         //Create Bundle object to use as argument-bundle
@@ -210,5 +193,28 @@ public class FetchAddressIntentService extends IntentService {
         //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
         mReceiver.send(resultCode, bundle);
     }
+
+
+
+
+
+    //Send results back to PixDetailFragment
+    private void deliverResultToReceiver(int resultCode, String errorMessage) {
+
+        //Create Bundle object to use as argument-bundle
+        Bundle bundle = new Bundle();
+
+        //Stash result key-value pair to argument-bundle
+        bundle.putString(Constants.RESULT_DATA_KEY, errorMessage);
+
+        //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
+        mReceiver.send(resultCode, bundle);
+    }
+
+
+
+
+
+
 
 }
