@@ -942,6 +942,9 @@ public class PixDetailFragment extends SupportMapFragment{
             case(R.id.share_pix):
                 OnClickShare(mViewToShare);
 
+//            case(R.id.update_pix_location):
+//                updatePixLocation();
+
 
             default:
                 return super.onOptionsItemSelected(menuItem);

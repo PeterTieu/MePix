@@ -6,6 +6,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/update_pix_location"
+        android:title="@string/update_pix_location"
+        android:icon="@drawable/ic_menu_update_location"
+        app:showAsAction="ifRoom|withText"/>
+
+
+
     <!--Share Pix-->
     <item
         android:id="@+id/share_pix"

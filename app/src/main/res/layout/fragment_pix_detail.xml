@@ -118,13 +118,15 @@
                     android:layout_height="50dp"
                     android:textColor="@color/colorButtonText"/>
 
+
                 <!--Location Button-->
                 <Button
                     android:id="@+id/detail_pix_location"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="50dp"
                     android:text="@string/location_button"
                     android:textColor="@color/colorButtonText"/>
+
 
                 <!--Tagged EditText-->
                 <EditText

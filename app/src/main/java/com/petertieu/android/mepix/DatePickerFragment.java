@@ -6,11 +6,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -85,18 +87,25 @@ public class DatePickerFragment extends DialogFragment {
         //Initialise DatePicker object
         mDatePicker.init(year, month, dayOfMonth, null);
 
+
+        TextView dialogTitle = new TextView(getActivity());
+        dialogTitle.setText(R.string.date_picker_title);
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
+        dialogTitle.setTextSize(25);
+        dialogTitle.setTypeface(null, Typeface.BOLD);
+
         //Return AlertDialog (subclass of Dialog), which sets the dialog properties
         return new AlertDialog
                 .Builder(getActivity()) //Create Builder
                 .setView(view) //Set View of dialog
-                .setTitle(R.string.date_picker_title) //Set TITLE of dialog
-                .setNeutralButton("Today", new DialogInterface.OnClickListener() {
+                .setCustomTitle(dialogTitle) //Set TITLE of dialog
+                .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
+                .setNeutralButton("Today", new DialogInterface.OnClickListener() { //Set NEUTRAL BUTTON of the dialog, and a listener to set Date to CURRENT date
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sendResult(Activity.RESULT_OK, pixDate);
+                        sendResult(Activity.RESULT_OK, new Date());
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
                 .setPositiveButton(android.R.string.ok, //Set POSITIVE BUTTON of the dialog, and a listener for it
                         new DialogInterface.OnClickListener() {
 
