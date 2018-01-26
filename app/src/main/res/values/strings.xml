@@ -43,9 +43,12 @@
     //Title of 'state picker' dialog
     <string name="date_picker_title">Pix Date</string>
 
-    //Title of 'pix delete' dialog
+    //'Pix delete' confirmation dialog
     <string name="pix_delete_confirm">Are you sure you want to delete Pix:  </string>
     <string name="confirm_delete_button">Yes, Delete</string>
+
+    //'Pix update location' confirmation dialog
+    <string name="confirm_update_location_button">Yes, Update Location</string>
 
 
     //Description for detail view ImageView

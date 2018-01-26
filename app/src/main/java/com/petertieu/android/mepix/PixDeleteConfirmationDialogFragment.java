@@ -3,7 +3,6 @@ package com.petertieu.android.mepix;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
@@ -20,31 +19,31 @@ import android.widget.TextView;
  * Created by Peter Tieu on 22/12/2017.
  */
 
-public class PixDeleteFragment extends DialogFragment{
+public class PixDeleteConfirmationDialogFragment extends DialogFragment{
 
     private static final String ARG_PIX_TITLE = "pixTitle";
     public static final String ARG_PIX_DESCRIPTION = "pixDescription";
 
     //Define identifier for dialog fragment extra
-    public static final String EXTRA_PIX_CONFIRMATION = "pixDeleteConfirmation";
+    public static final String EXTRA_PIX_DELETE_CONFIRMATION = "pixDeleteConfirmation";
 
 
     AlertDialogLayout mAlertDialogLayout;
 
 
 
-    public static PixDeleteFragment newInstance(String pixTitle, String pixDescription){
+    public static PixDeleteConfirmationDialogFragment newInstance(String pixTitle, String pixDescription){
 
         Bundle argumentBundle = new Bundle();
 
         argumentBundle.putString(ARG_PIX_TITLE, pixTitle);
         argumentBundle.putString(ARG_PIX_DESCRIPTION, pixDescription);
 
-        PixDeleteFragment pixDeleteFragment = new PixDeleteFragment();
+        PixDeleteConfirmationDialogFragment pixDeleteConfirmationDialogFragment = new PixDeleteConfirmationDialogFragment();
 
-        pixDeleteFragment.setArguments(argumentBundle);
+        pixDeleteConfirmationDialogFragment.setArguments(argumentBundle);
 
-        return pixDeleteFragment;
+        return pixDeleteConfirmationDialogFragment;
     }
 
 
@@ -57,7 +56,7 @@ public class PixDeleteFragment extends DialogFragment{
         String pixDescription = (String) getArguments().getString(ARG_PIX_DESCRIPTION);
 
         TextView dialogTitle = new TextView(getActivity());
-        dialogTitle.setText("\nAre you sure you want to delete this Pix?\n");
+        dialogTitle.setText("\nDelete this Pix\n");
         dialogTitle.setTextSize(22);
         dialogTitle.setGravity(Gravity.CENTER);
         dialogTitle.setTypeface(null, Typeface.BOLD);
@@ -82,10 +81,16 @@ public class PixDeleteFragment extends DialogFragment{
                 .setCustomTitle(dialogTitle)
                 .setMessage(Html.fromHtml(
                         "<br>" + "</br>" +
+                        "<br>" + "</br>" +
                         "<b>" + "Title:" + "</b>" + " " + pixTitle +
                         "<br>" + "</br>" +
                         "<br>" + "</br>" +
-                        "<b>" + "Description:" + "</b>" + " " + pixDescription))
+                        "<b>" + "Description:" + "</b>" + " " + pixDescription +
+                        "<br>" + "</br>" +
+                        "<br>" + "</br>" +
+                        "<br>" + "</br>" +
+                        "<br>" + "</br>" +
+                        "<b>" + "Do you wish to delete this Pix?" + "</b>"))
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.confirm_delete_button,
                         new DialogInterface.OnClickListener() {
@@ -97,7 +102,8 @@ public class PixDeleteFragment extends DialogFragment{
 
                                 sendResult(Activity.RESULT_OK, confirmDelete);
                             }
-                }).create();
+                })
+                .create();
     }
 
 
@@ -113,7 +119,7 @@ public class PixDeleteFragment extends DialogFragment{
 
         Intent intent = new Intent();
 
-        intent.putExtra(EXTRA_PIX_CONFIRMATION, confirmDelete);
+        intent.putExtra(EXTRA_PIX_DELETE_CONFIRMATION, confirmDelete);
 
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
 

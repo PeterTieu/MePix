@@ -519,7 +519,7 @@ public class PixListFragment extends Fragment{
                     if (mPictureFile.length() != 0) {
 
                         //Open picture view dialog
-                        ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
+                        ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                         //Create FragmentManager (which has access to all fragments)
                         FragmentManager fragmentManager = getFragmentManager();
@@ -604,10 +604,13 @@ public class PixListFragment extends Fragment{
             else{
                 mPixDescription.setText(mPix.getDescription());
 
+                //If the view is in one-pane mode
                 if(getActivity().findViewById(R.id.detail_fragment_container) != null){
                     mPixDescription.setMaxWidth(440);
                 }
             }
+
+
 
             //Set new date display for date button
             mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
@@ -662,9 +665,9 @@ public class PixListFragment extends Fragment{
 
 
                 //Add "- with" before the pixTaggedString String
-                pixTaggedString = "- with" + pixTaggedString;
+                pixTaggedString = "- with " + pixTaggedString;
                 //Since there will be a "-" before the first contact, replace the "- with-" with "- with"
-                pixTaggedString = pixTaggedString.replaceAll("- with-", "- with");
+                pixTaggedString = pixTaggedString.replaceAll("- with -", "- with");
                 //Replace the ", and" with "and" (effectively removing the comma before " and")
                 pixTaggedString = pixTaggedString.replaceAll(", and", " and");
 
@@ -706,6 +709,7 @@ public class PixListFragment extends Fragment{
                 //Update picture view
                 updatePictureView();
             }
+
 
         }
 

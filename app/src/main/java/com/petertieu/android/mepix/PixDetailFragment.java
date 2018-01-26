@@ -1,8 +1,8 @@
 package com.petertieu.android.mepix;
 
-import android.*;
 import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -10,12 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.provider.Settings;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -27,7 +28,9 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -46,7 +49,6 @@ import android.text.format.DateFormat;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -66,6 +68,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static android.content.Context.LOCATION_SERVICE;
 
 
 /**
@@ -77,7 +80,7 @@ import java.util.UUID;
 
 
 //Fragment for the DETAIL VIEW
-public class PixDetailFragment extends SupportMapFragment{
+public class PixDetailFragment extends Fragment{
 
     //Define 'key' for the argument-bundle
     private static final String ARGUMENT_PIX_ID = "pix_id";
@@ -107,14 +110,16 @@ public class PixDetailFragment extends SupportMapFragment{
     //Declare identifiers for dialog fragments
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment of DatePicker
     private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture"; //Identifier of dialog fragment of picture ImageView
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE = "DialogDelete"; //Identifier of dialog fragment
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE_CONFIRMATION = "DialogDeleteConfirmation"; //Identifier of dialog fragment
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION ="DialogUpdateLocationConfirmation";
 
     //Declare constants for tag requests
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
     private static final int REQUEST_CODE_CONTACT = 1; //Request code for results returned from contact activity/app
     private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camera activity/app
     private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE = 10; //Request code for receiving results from dialog fragment
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 10; //Request code for receiving results from dialog fragment
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 11;
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
     private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
     private static final int REQUEST_CODE_NEW_MARKER_LOCATION = 5;
@@ -134,6 +139,8 @@ public class PixDetailFragment extends SupportMapFragment{
 
     //Declare Location object to contain location fix (i.e lat/lon values)
     protected Location mLocation;
+
+    private Address mAddressOutput;
 
     //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
     private AddressResultReceiver mAddressResultReceiver;
@@ -250,6 +257,13 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
+        //========== Request for Write-to-external-storage (dangerous) permission ====================================================
+
+        if (hasWriteExternalStoragePermission() == false){
+            requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
+        }
+
+
 
         //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
 
@@ -262,6 +276,7 @@ public class PixDetailFragment extends SupportMapFragment{
             //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
+
         //If location permissions requested in the Manifest HAVE been granted
         else {
             //========== Configure location services ====================================================
@@ -307,21 +322,10 @@ public class PixDetailFragment extends SupportMapFragment{
         }
 
 
-        //========== Request for Write-to-external-storage (dangerous) permission ====================================================
-
-        if (hasWriteExternalStoragePermission() == false){
-            requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
-        }
 
 
 
-
-
-
-
-
-
-        mLocationCallback = new LocationCallback(){
+        mLocationCallback = new LocationCallback() {
 
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -332,7 +336,6 @@ public class PixDetailFragment extends SupportMapFragment{
                 }
 
                 mLocation = locationResult.getLastLocation();
-                Toast.makeText(getActivity(), Double.toString(mLocation.getLatitude()) + " " + Double.toString(mLocation.getLongitude()), Toast.LENGTH_LONG).show();
 
                 //In some rare cases, location returned can be null
                 if (mLocation == null) {
@@ -347,14 +350,13 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
                 mAddressResultReceiver = new AddressResultReceiver(new Handler());
-                Toast.makeText(getActivity(), "New ResultReceiver created", Toast.LENGTH_LONG).show();
 
                 //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
-                Toast.makeText(getActivity(), "Began IntentService to perform reverse geocoding for new Pix location", Toast.LENGTH_LONG).show();
                 startIntentService();
 
             }
         };
+
 
 
     }
@@ -379,6 +381,45 @@ public class PixDetailFragment extends SupportMapFragment{
         //Return a boolean for state of location permission
         return (result == PackageManager.PERMISSION_GRANTED);
     }
+
+
+    private boolean checkNetworkAndLocationServicesAvailability(){
+        LocationManager locationManager = (LocationManager) getContext().getSystemService(getContext().LOCATION_SERVICE);
+
+        boolean gpsEnabled = false;
+        boolean networkEnabled = false;
+
+        try{
+            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        }
+        catch(Exception ex){
+        }
+
+        try{
+            networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        }
+        catch(Exception ex){
+        }
+
+
+        if (!gpsEnabled && !networkEnabled){
+            Toast.makeText(getActivity(), "Location is not enabled", Toast.LENGTH_SHORT).show();
+        }
+
+        return gpsEnabled;
+    }
+
+
+
+    public boolean isGpsEnabled(){
+
+        LocationManager service = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        return service.isProviderEnabled(LocationManager.GPS_PROVIDER)&&service.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+
+
+
 
 
 
@@ -424,25 +465,22 @@ public class PixDetailFragment extends SupportMapFragment{
         protected void onReceiveResult(int resultCode, Bundle resultData) {
 
             //Define address string OR error message sent from FetchAddressIntentService (IntentService)
-            Address mAddressOutput = resultData.getParcelable(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
+            mAddressOutput = resultData.getParcelable(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
 
             //If result code returned from IntentService yields 'negative' - address was not obtained from location fix
             if (resultCode == FetchAddressIntentService.Constants.FAILURE_RESULT){
 //                Toast.makeText(getActivity(), "Address not found", Toast.LENGTH_SHORT).show();
 
                 //Display error message sent from FetchAddressIntentService (IntentService)
-                    mLocationButton.setText(mPix.getAddress());
+                mLocationButton.setText(mPix.getAddress());
 
             }
 
             //If result code returned from IntentService yields 'positive' - address successfully obtained from location fix
             if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
 
-                //If mLocation field of Pix object does NOT exist (i.e. no address set yet)
+                //If mLocation field of Pix object does NOT exist (i.e. no address set yet) OR updatePixLocation MenuItem was pressed
                 if ( (mPix.getAddress() == null) || (updatePixLocationMenuItemPressed == true) ){
-
-                    //Display address on location button
-                    mLocationButton.setText(mAddressOutput.getAddressLine(0));
 
                     //Set address to mAddress field of Pix object
                     mPix.setAddress(mAddressOutput.getAddressLine(0));
@@ -459,6 +497,11 @@ public class PixDetailFragment extends SupportMapFragment{
                     //Update SQLiteDatabase of Pix account for data added/updated for mLocation field (i.e. address)
                     updatePix();
 
+
+                    //Display address on location button
+                    mLocationButton.setText(mPix.getAddress());
+
+                    //Reset the updatePixLocationItemPressed variable back to 'false'
                     updatePixLocationMenuItemPressed = false;
                 }
 
@@ -561,15 +604,57 @@ public class PixDetailFragment extends SupportMapFragment{
         //Assign location button instance variable to its associated resource ID
         mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
+
+        if (mFusedLocationClient != null){
+
+            if (mPix.getAddress() != null){
+                mLocationButton.setText(mPix.getAddress());
+            }
+        }
+
+
+
         mLocationButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
 
-                //Create Intent to open MapsActivity
-                Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getId(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
 
-                //Start intent to open MapsActivity
-                getActivity().startActivity(mapsActivityIntent);
+                if(isGpsEnabled()) {
+                    //Create Intent to open MapsActivity
+                    Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getId(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
+
+                    //Start intent to open MapsActivity
+                    getActivity().startActivity(mapsActivityIntent);
+                }
+
+                else{
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+                    dialog.setMessage("You need to turn on Location Services");
+                    dialog.setPositiveButton(getContext().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            // TODO Auto-generated method stub
+                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            getContext().startActivity(myIntent);
+                            //get gps
+                        }
+                    });
+                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            // TODO Auto-generated method stub
+
+                        }
+                    });
+                    dialog.show();
+                }
+
+
+
+
+
+
 
 
             }
@@ -789,7 +874,7 @@ public class PixDetailFragment extends SupportMapFragment{
                 if (mPictureFile.length() != 0) {
 
                     //Open picture view dialog
-                    ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile);
+                    ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
                     pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
@@ -1007,10 +1092,41 @@ public class PixDetailFragment extends SupportMapFragment{
                 return true;
 
             case(R.id.update_pix_location):
-                updatePixLocationMenuItemPressed = true;
 
-                createLocationRequest();
-                updatePixLocation();
+                if(isGpsEnabled()) {
+                    Log.i(TAG, "CONNECTED to locations");
+                    createLocationRequest();
+                    updateLocationConfirmationDialog();
+//                updatePixLocationMenuItemPressed = true;
+//                createLocationRequest();
+//                updatePixLocation();
+                }
+
+                else{
+                    Log.i(TAG, "NOT connected to locations");
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+                    dialog.setMessage("You need to turn on Location Services");
+                    dialog.setPositiveButton(getContext().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            // TODO Auto-generated method stub
+                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            getContext().startActivity(myIntent);
+                            //get gps
+                        }
+                    });
+                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            // TODO Auto-generated method stub
+
+                        }
+                    });
+                    dialog.show();
+                }
+
+                return true;
 
 
             default:
@@ -1029,23 +1145,18 @@ public class PixDetailFragment extends SupportMapFragment{
         FragmentManager fragmentManager = getFragmentManager();
 
         //Create DatePickerFragment fragment
-        PixDeleteFragment pixDeleteDialog = PixDeleteFragment.newInstance(mPix.getTitle(), mPix.getDescription());
+        PixDeleteConfirmationDialogFragment pixDeleteConfirmationDialog = PixDeleteConfirmationDialogFragment.newInstance(mPix.getTitle(), mPix.getDescription());
 
         //Start the dialog fragment
-        pixDeleteDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE);
+        pixDeleteConfirmationDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION);
 
         //Show dialog
-        pixDeleteDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE);
+        pixDeleteConfirmationDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_DELETE_CONFIRMATION);
     }
 
 
 
     LinearLayout mViewToShare;
-
-
-
-
-
 
 
 
@@ -1126,6 +1237,29 @@ public class PixDetailFragment extends SupportMapFragment{
 
 
 
+    public void updateLocationConfirmationDialog(){
+        //Create FragmentManager
+        FragmentManager fragmentManager = getFragmentManager();
+
+        //Create DatePickerFragment fragment
+        //Argument 1: The STORED address line (i.e. the address line that is stored in the SQLiteDatabase)
+        //Argument 2: The CURRENT address line (i.e. the address line obtained from the location request, i.e. the address line of the CURRENT LOCATION)
+        PixUpdateLocationConfirmationDialogFragment pixUpdateLocationConfirmation = PixUpdateLocationConfirmationDialogFragment.newInstance(mPix.getAddress(), mAddressOutput.getAddressLine(0));
+
+        //Start the dialog fragment
+        pixUpdateLocationConfirmation.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION);
+
+        //Show dialog
+        pixUpdateLocationConfirmation.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION);
+
+        Log.i(TAG, "updateLocationConfirmationDialog() called");
+    }
+
+
+
+
+
+
 
     LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
@@ -1194,6 +1328,107 @@ public class PixDetailFragment extends SupportMapFragment{
 
         //Log in Logcat
         Log.i(TAG, "onStart() called");
+
+
+
+
+        //REPEATED AGAIN FOR onStart() so that when the user returns from enabling locations, the app returns to onStart() instead of onCreate()!!
+        //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
+
+        //Create AddressResultReceiver object, passing a Handler to it
+        mAddressResultReceiver = new AddressResultReceiver(new Handler());
+
+        //If location permissions requested in the Manifest have NOT been granted
+        if (hasLocationPermission() == false) {
+
+            //Request (user) for location permissions - as they are 'dangerous' permissions
+            requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+        }
+
+        //If location permissions requested in the Manifest HAVE been granted
+        else {
+
+            //========== Configure location services ====================================================
+            //Create FusedLocationProviderClient object - to get location fix
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+            //Try risky task - addSuccessListener could throw a SecurityException exception
+            try {
+                //Get most recent location available via getLastLocation(). NOTE: getLastLocation() runs ASYNCHRONOUSLY, whereas .
+                mFusedLocationClient.getLastLocation().addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+
+                    //Listen for when location has been obtained via FusedLocationClient
+                    @Override
+                    public void onSuccess(Location location) {
+                        //If location does not
+                        if (location == null) {
+                            Log.v(TAG, "Location does not exist");
+                        }
+
+                        //Stash mLocation instance reference variable to local reference variable of location object
+                        mLocation = location;
+
+                        //In some rare cases, location returned can be null
+                        if (mLocation == null) {
+                            return;
+                        }
+
+                        //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address
+                        if (!Geocoder.isPresent()) {
+                            Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
+                        startIntentService();
+                    }
+                });
+            }
+            //Catch any SecurityException thrown by addSuccessListener(..)
+            catch (SecurityException securityException) {
+                Log.e(TAG, "Error creating location service", securityException);
+            }
+        }
+
+
+
+
+
+        mLocationCallback = new LocationCallback() {
+
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+
+                //If updated location does not
+                if (locationResult == null) {
+                    Log.v(TAG, "Updated location does not exist");
+                }
+
+                mLocation = locationResult.getLastLocation();
+
+                //In some rare cases, location returned can be null
+                if (mLocation == null) {
+                    return;
+                }
+
+                //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address
+                if (!Geocoder.isPresent()) {
+                    Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+
+                mAddressResultReceiver = new AddressResultReceiver(new Handler());
+
+                //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
+                startIntentService();
+
+            }
+        };
+
+
+
+
     }
 
 
@@ -1314,9 +1549,9 @@ public class PixDetailFragment extends SupportMapFragment{
         }
 
 
-        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE){
+        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION){
 
-            boolean confirmDelete = intent.getBooleanExtra(PixDeleteFragment.EXTRA_PIX_CONFIRMATION, false);
+            boolean confirmDelete = intent.getBooleanExtra(PixDeleteConfirmationDialogFragment.EXTRA_PIX_DELETE_CONFIRMATION, false);
 
 
 
@@ -1354,11 +1589,11 @@ public class PixDetailFragment extends SupportMapFragment{
                 //======= Display Toast on Pix delete ========
                 //If no Pix title exists or is empty
                 if (mPix.getTitle() == null || mPix.getTitle().isEmpty()) {
-                    Toast.makeText(getContext(), "Untitled  Pix deleted", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), Html.fromHtml("<i>" + "*Untitled*" + "</i>" + " Pix Deleted"), Toast.LENGTH_LONG).show();
                 }
                 //If Pix title exists or is not empty
                 else {
-                    Toast.makeText(getContext(), "Pix deleted:  " + mPix.getTitle(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), Html.fromHtml("Pix Deleted: " + "<b>" + mPix.getTitle() + "</b>"), Toast.LENGTH_LONG).show();
                 }
 
                 //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
@@ -1483,6 +1718,56 @@ public class PixDetailFragment extends SupportMapFragment{
             //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
             updatePix();
         }
+
+
+
+
+
+
+
+
+
+        if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION){
+
+            boolean confirmUpdatePix = intent.getBooleanExtra(PixUpdateLocationConfirmationDialogFragment.EXTRA_PIX_UPDATE_LOCATION_CONFIRMATION, false);
+
+
+
+
+            if (confirmUpdatePix == true) {
+
+
+                updatePixLocationMenuItemPressed = true;
+                createLocationRequest();
+                updatePixLocation();
+
+
+
+
+
+                //======= Hide soft keyboard ========
+                //Get InputMethodManager object
+                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+
+
+
+                //======= Display Toast - wrap it in a conditional statement so that it only shows up once instead of as many times as there are Pix objects in the ViewPager ========
+                if (mPix.getAddress() != null || !mPix.getAddress().isEmpty()) {
+                    Toast.makeText(getContext(), Html.fromHtml("Pix Location Updated"), Toast.LENGTH_LONG).show();
+                }
+
+
+                //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
+//                updatePix();
+            }
+
+        }
+
+
+
     }
 
 

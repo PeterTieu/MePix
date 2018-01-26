@@ -1,35 +1,22 @@
 package com.petertieu.android.mepix;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 
 
 /**
@@ -44,21 +31,32 @@ public class ImageViewFragment extends DialogFragment{
 
     //Declare 'key' for argument bundle
     private static final String ARGUMENT_PICTURE = "image";
+    private static final String ARGUMENT_TITLE = "title";
+    private static final String ARGUMENT_DATE = "date";
 
     //Declare ImageView view
     private ImageView mImageView;
 
     private Bitmap bitmapPictureCorrectOrientation;
 
+    private File mPictureFile;
+    private String mPixTitle;
+    private Date mPixDate;
+
 
     //Build encapsulating 'constructor'
-    public static ImageViewFragment newInstance(File pictureFile){
+    public static ImageViewFragment newInstance(File pictureFile, String pixTitle, Date pixDate){
 
         //Create Bundle object (i.e. argument-bundle)
         Bundle argumentBundle = new Bundle();
 
-        //Set key-value pairs for argument-bundle
+        //Set key-value pairs for argument-bundle - picture File
         argumentBundle.putSerializable(ARGUMENT_PICTURE, pictureFile);
+
+        //Set key-value pairs for argument-bundle - title
+        argumentBundle.putString(ARGUMENT_TITLE, pixTitle);
+
+        argumentBundle.putSerializable(ARGUMENT_DATE, pixDate);
 
         //Create ImageViewFragment
         ImageViewFragment imageViewFragment = new ImageViewFragment();
@@ -82,11 +80,22 @@ public class ImageViewFragment extends DialogFragment{
 
         super.onCreateDialog(savedInstanceState);
 
-        //Get 'value' from argument-bundle
-        final File pictureFile = (File) getArguments().getSerializable(ARGUMENT_PICTURE);
+        //Get File 'value' from argument-bundle
+        mPictureFile = (File) getArguments().getSerializable(ARGUMENT_PICTURE);
+
+        //Get title 'value' from argument-bundle
+        mPixTitle = (String) getArguments().getString(ARGUMENT_TITLE);
+
+        //Get date 'value' from argument-bundle
+        mPixDate = (Date) getArguments().getSerializable(ARGUMENT_DATE);
+
+        //If pix title does not exist, is empty (i.e no characters), or contains only white-space
+        if (mPixTitle == null || mPixTitle.isEmpty() || mPixTitle.trim().length()==0){
+            mPixTitle = "Untitled";
+        }
 
         //Convert original picture from File to 'scaled' picture for use on dialog
-        Bitmap pictureBitmap = PictureUtility.getScaledBitmap(pictureFile.getPath(), getActivity());
+        Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
         //Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation
         Matrix matrix = new Matrix(); //Create Matrix object for transforming co-ordinates
@@ -121,11 +130,11 @@ public class ImageViewFragment extends DialogFragment{
                     public void onClick(DialogInterface dialog, int which){
 //
 
-                        Random randomNumberGenerator = new Random();
+//                        Random randomNumberGenerator = new Random();
+//
+//                        int randomNumber = randomNumberGenerator.nextInt();
 
-                        int randomNumber = randomNumberGenerator.nextInt();
-
-                        String fileName = "Image_" + randomNumber;
+                        String fileName = mPixTitle + "_" + mPixDate;
 
                         String savedImageUrl;
                         savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation , fileName , "");
