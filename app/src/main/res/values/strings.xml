@@ -50,6 +50,10 @@
     //'Pix update location' confirmation dialog
     <string name="confirm_update_location_button">Yes, Update Location</string>
 
+    //'Enable Location' dialog
+    <string name="prompt_enable_location">Enable Location</string>
+    <string name="settings">Settings</string>
+
 
     //Description for detail view ImageView
     <string name="pix_picture_text">Pix Picture</string>

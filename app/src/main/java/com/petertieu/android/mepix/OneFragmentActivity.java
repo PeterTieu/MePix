@@ -11,11 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 
 
 //Define abstract activity to be subclassed by other activities
-public abstract class SingleFragmentActivity extends AppCompatActivity {
+public abstract class OneFragmentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
         //Set the activity content to an explicit view
@@ -39,8 +38,13 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
     }
 
 
+
+
+
     //Declare the abstract method that is to be overriden in the subclass activity class
     protected abstract Fragment createFragment();
+
+
 
 
 

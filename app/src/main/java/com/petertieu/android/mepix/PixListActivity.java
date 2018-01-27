@@ -9,14 +9,11 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-/**
- * Created by Peter Tieu on 7/12/2017.
- */
 
 
 
 //Activity hosting PixListFragment
-public class PixListActivity extends SingleFragmentActivity implements PixListFragment.Callbacks, PixDetailFragment.Callbacks{
+public class PixListActivity extends OneFragmentActivity implements PixListFragment.Callbacks, PixDetailFragment.Callbacks{
 
     //Declare tag for Logcat
     private static final String TAG = "PixListActivity";
@@ -31,7 +28,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
     public static boolean hasEnteredTwoPaneMode;
 
 
-    //Override the abstract method from SingleFragmentActivity
+    //Override the abstract method from OneFragmentActivity
     @Override
     protected Fragment createFragment(){
         //Return the fragment, PixListFragment
@@ -41,7 +38,7 @@ public class PixListActivity extends SingleFragmentActivity implements PixListFr
 
 
 
-    //Override the abstract method from SingleFragmentActivity
+    //Override the abstract method from OneFragmentActivity
     @Override
     protected int getLayoutResId(){
 

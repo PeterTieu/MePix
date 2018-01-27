@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -33,6 +34,7 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +51,7 @@ import android.text.format.DateFormat;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -473,7 +476,6 @@ public class PixDetailFragment extends Fragment{
 
                 //Display error message sent from FetchAddressIntentService (IntentService)
                 mLocationButton.setText(mPix.getAddress());
-
             }
 
             //If result code returned from IntentService yields 'positive' - address successfully obtained from location fix
@@ -628,9 +630,20 @@ public class PixDetailFragment extends Fragment{
                 }
 
                 else{
+                    Log.i(TAG, "NOT connected to Locations");
                     AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
-                    dialog.setMessage("You need to turn on Location Services");
-                    dialog.setPositiveButton(getContext().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+
+                    TextView dialogTitle = new TextView(getActivity());
+                    dialogTitle.setText(R.string.prompt_enable_location);
+                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
+                    dialogTitle.setTextSize(22);
+                    dialogTitle.setGravity(Gravity.CENTER);
+                    dialogTitle.setTypeface(null, Typeface.BOLD);
+                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow));
+
+                    dialog.setCustomTitle(dialogTitle);
+                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings"));
+                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                             // TODO Auto-generated method stub
@@ -1103,10 +1116,20 @@ public class PixDetailFragment extends Fragment{
                 }
 
                 else{
-                    Log.i(TAG, "NOT connected to locations");
+                    Log.i(TAG, "NOT connected to Locations");
                     AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
-                    dialog.setMessage("You need to turn on Location Services");
-                    dialog.setPositiveButton(getContext().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+
+                    TextView dialogTitle = new TextView(getActivity());
+                    dialogTitle.setText(R.string.prompt_enable_location);
+                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
+                    dialogTitle.setTextSize(22);
+                    dialogTitle.setGravity(Gravity.CENTER);
+                    dialogTitle.setTypeface(null, Typeface.BOLD);
+                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow));
+
+                    dialog.setCustomTitle(dialogTitle);
+                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings"));
+                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                             // TODO Auto-generated method stub
