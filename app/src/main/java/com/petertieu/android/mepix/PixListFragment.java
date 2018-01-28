@@ -28,17 +28,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
-/**
- * Created by Peter Tieu on 7/12/2017.
- */
+
 
 //Fragment for the LIST VIEW
 public class PixListFragment extends Fragment{
@@ -58,14 +54,11 @@ public class PixListFragment extends Fragment{
     //Declare "add new pix" button
     private Button mAddNewPix;
 
-    //Declare Callbacks interface reference variable
-    private Callbacks mCallbacks;
-
     //Declare picture File
     private File mPictureFile;
 
-    //Declare picture ImageView
-    private ImageView mPictureView;
+    //Declare Callbacks interface reference variable
+    private Callbacks mCallbacks;
 
     //Identifier of dialog fragment of picture ImageView
     private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
@@ -80,15 +73,18 @@ public class PixListFragment extends Fragment{
 
 
 
-
-
     //Declare callbacks interface
     interface Callbacks{
 
-        //Calback method for when a Pix is selected in list view.. by either: New Pix created OR Pix selected in the list view
+        //Calback method for when a Pix is selected in list view by either:
+        // 1: NEW Pix created (via the "Add New Pix" button on the toolbar
+        //  OR
+        // 2: EXISTING Pix selected in the list view
         void onPixSelected(Pix pix);
 
-        //Callback method for when Pix is changed in list view... by: toggling of "favorite" status via pressing onto the 'star'
+        //Callback method for when Pix is CHANGED in list view..., i.e. by: toggling of "favorite" status via pressing onto the 'star'.
+        //This method is called whenever this changes happen - SO THAT when in the two-pane layout/mode, the detail-view would be changed
+        // simultaneously to a change in the list view
         void onPixUpdatedFromListView(Pix pix);
     }
 
@@ -120,7 +116,6 @@ public class PixListFragment extends Fragment{
         //Log lifecycle callback
         Log.i(TAG, "onCreate(..) called");
 
-
         //Report that this fragment would like to participate in populating menus
         setHasOptionsMenu(true);
 
@@ -129,16 +124,16 @@ public class PixListFragment extends Fragment{
 
         //Check if permission for location tracking has been granted (by user)
         if (hasLocationPermission() == false){
-            //Request (user) for location permissions - as they are 'dangerous' permissions
+            //Request (user) for location permissions - as they are 'dangerous' permissions (and therefore must be requested)
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
 
         if (hasWriteExternalStoragePermission() == false){
+            //Request (user) for storage permissions - as they are 'dangerous' permissions (and therefore must be requested)
             requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
         }
-
-
     }
+
 
 
 
@@ -160,10 +155,14 @@ public class PixListFragment extends Fragment{
 
 
     private boolean hasWriteExternalStoragePermission(){
+
+        //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
+        //NOTE: Permissions WRITE_EXTERNAL_STORAGE and READ_EXTERNAL_STORAGE are in the same PERMISSION GROUP, called STORAGE.
+        //If one permission is a permission group is granted/denied access, the same applies to all other permissions in that group.
+        // Other groups include: CALENDAR, CAMERA, CONTACTS, MICROPHONE, PHONE, SENSORS, SMS, STORAGE.
         int result = ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return (result == PackageManager.PERMISSION_GRANTED);
     }
-
 
 
 
@@ -174,11 +173,12 @@ public class PixListFragment extends Fragment{
     public void onStart(){
         super.onStart();
 
-        //
+        //If list items are present (i.e. if the screen is NOT blank, meaning the the mNoPixView is NOT visible)
         if (PixManager.get(getActivity()).getPixes().size() > 0) {
             //Report that this fragment would like to participate in populate menus
             setHasOptionsMenu(true);
         }
+        //If list items are NOT present (i.e. if the screen IS blank, whereby the mNoPixView IS visible)
         else{
             setHasOptionsMenu(false);
         }
@@ -229,7 +229,7 @@ public class PixListFragment extends Fragment{
         mPixRecyclerView.addItemDecoration(new PixItemDecoration(getActivity()));
 
 
-        //======= Add first pix layout =========================================
+        //======= Add layout for when the screen is blank (i.e. no list items are present) =========================================
         //Create view for "no pix view", i.e. view before any pix is added
         mNoPixView = (LinearLayout) view.findViewById(R.id.no_pixes_view);
 
@@ -253,7 +253,6 @@ public class PixListFragment extends Fragment{
 
                 //Display toast to notify user a new pix has been added
                 Toast.makeText(getActivity(), R.string.new_pix_added, Toast.LENGTH_LONG).show();
-
             }
         });
 
@@ -268,7 +267,7 @@ public class PixListFragment extends Fragment{
 
 
 
-    //Helper method for creating setting the list view, including setting "Add New Pix" button and set up Adapter and linking it with the RecyclerView
+    //Helper method for creating and setting the list view, including setting "Add New Pix" button and set up Adapter and linking it with the RecyclerView
     public void updateUI(){
 
         //Assign the mPixes reference variable to the List of Pix objects from the PixManager singleton
@@ -276,10 +275,14 @@ public class PixListFragment extends Fragment{
 
 
         //============ Set visibility of "no pix view" - if no Pixes exist ==============================
+        //If there are no Pixes present (i.e the list view is empty - no list items)
         if (mPixes.size() == 0){
+            //Set the mNoPixView to be visible
             mNoPixView.setVisibility(View.VISIBLE);
         }
+        //If there are Pixes present (i.e. the lsit view is populated by >1 list item)
         else{
+            //Set the mNoPixView to NOT be visible
             mNoPixView.setVisibility(View.GONE);
         }
 
@@ -287,17 +290,14 @@ public class PixListFragment extends Fragment{
         //============ Set up Adapter ==============================
         //If an Adapter does NOT exist...
         if (mPixAdapter == null){
-
             //Create new Adapter
             mPixAdapter = new PixAdapter(mPixes);
 
             //Set the Adapter to the RecyclerView
             mPixRecyclerView.setAdapter(mPixAdapter);
         }
-
         //If an Adapter EXISTS...
         else{
-
             //Update the Adapter with a new List of Pix objects (i.e. updated List for after a Pix has been created)
             mPixAdapter.setPixes(mPixes);
 
@@ -318,6 +318,7 @@ public class PixListFragment extends Fragment{
         //Log lifecycle callback
         Log.i(TAG, "onCreateOptionsMenu(..) called");
 
+        //If there are one or more Pixes (i.e. one or more list items)
         if (PixManager.get(getActivity()).getPixes().size() > 0) {
             //Inflate a menu hierarchy from specified resource
             menuInflater.inflate(R.menu.fragment_pix_list, menu);
@@ -332,19 +333,21 @@ public class PixListFragment extends Fragment{
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
 
+        //Log lifecycle callback
         Log.i(TAG, "onOptionsItemsSelected(..) called");
 
+        //Check through all menuItems
         switch(menuItem.getItemId()){
 
+            //Check the "New Pix" menu item
             case(R.id.new_pix):
-
                 //Create a Pix object
                 Pix pix = new Pix();
 
                 //Add the Pix object to the SQLiteDatabase, "pixes"
                 PixManager.get(getActivity()).addPix(pix);
 
-                //Create/call the Adapter and link it with the RecyclerView
+                //Create/call the Adapter and link it with the RecyclerView - i.e. create a new Pix item inb the list view
                 updateUI();
 
                 //Open up the Pix (just created)
@@ -370,6 +373,7 @@ public class PixListFragment extends Fragment{
 
         //Declare List of Pix objects
         private List<Pix> mPixes;
+
 
 
         //Build constructor
@@ -441,6 +445,7 @@ public class PixListFragment extends Fragment{
         //Declare the list item's description instance variable
         private TextView mPixDescription;
 
+        //Declare the list item's date instance variable
         private TextView mPixDate;
 
         //Declare DateFormat for formatting date display
@@ -460,11 +465,7 @@ public class PixListFragment extends Fragment{
 
 
 
-
-
-
-
-        //Build constructor #1
+        //Build constructor #1 - to be called by mPixAdapter's onCrateViewHolder(..) method
         public PixViewHolder(View view){
             super(view);
 
@@ -490,7 +491,7 @@ public class PixListFragment extends Fragment{
             mPixTagged = (TextView) view.findViewById(R.id.list_pix_tagged);
 
 
-            //Set listener for list item
+            //Set listener for click on the list item
             view.setOnClickListener(new View.OnClickListener(){
 
                 //Override method of the View.OnClickListener interface of View
@@ -501,8 +502,6 @@ public class PixListFragment extends Fragment{
                     mCallbacks.onPixSelected(mPix);
                 }
             });
-
-
 
 
             //Set listener to open picture ImageView in list item view hierarchy
@@ -516,6 +515,7 @@ public class PixListFragment extends Fragment{
                     //Check if picture File is empty. NOTE: A File exists for each Pix, but has length either >0 OR 0.
                     // If File is not empty (i.e. contains .jpg), it has length > 0. If File is empty (i.e. does not contain .jpg), it has length 0.
                     //NOTE: This check is important, as the app would crash when the ImageView is pressed on IF it has no .jpg (i.e. the Pix has an empty picture File)
+                    //NOTE: All ImageView objects that do NOT contain a picture, when pressed on, will DO NOTHING
                     if (mPictureFile.length() != 0) {
 
                         //Open picture view dialog
@@ -530,7 +530,6 @@ public class PixListFragment extends Fragment{
 
                 }
             });
-
 
 
             //Set listener for "favorite" star in the list item's view hierarchy, so the user could toggle the "favorite" status of the Pix in the list view
@@ -549,7 +548,6 @@ public class PixListFragment extends Fragment{
                 }
             });
 
-
         }
 
 
@@ -563,8 +561,7 @@ public class PixListFragment extends Fragment{
             //Update list view
             updateUI();
 
-
-            //If the two-pane layout is active (i.e. sw > 600dp)
+            //If the two-pane mode/layout is active (i.e. sw > 600dp)
             if (getActivity().findViewById(R.id.detail_fragment_container) != null) {
 
                 //Update PixListFragment() in 'real-time' for two-pane layout
@@ -574,38 +571,60 @@ public class PixListFragment extends Fragment{
 
 
 
-        //Stash the Pix object sent from the Adapter
+        //Stash the Pix object sent from the Adapter - to be called by mPixAdapter's onBineViewHolder(..) method
         public void bind(Pix pix){
 
             //Assign the Pix instance variable to that sent from the Adapter
             mPix = pix;
 
-            //Set the text of the list item's title
+            //If the title of the Pix does NOT exist or only has spaces
             if (mPix.getTitle() == null || mPix.getTitle().isEmpty() || mPix.getTitle().trim().length()==0){
+                //Set text of the list item's title
                 mPixTitle.setText("* Untitled *");
+
+                //Set colour of the list item's title
                 mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.yellow));
+
+                //Set type-face of the list item's title
                 mPixTitle.setTypeface(null, Typeface.ITALIC);
             }
+            //If the title of the Pix DOES exist
             else{
+                //Set text of the list item's title to title of the Pix
                 mPixTitle.setText(mPix.getTitle());
+
+                //Set color of the list item's title
                 mPixTitle.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_gray));
 
+                //If two-pane view/layout/mode is present (i.e. sw > 600dp)
                 if(getActivity().findViewById(R.id.detail_fragment_container) != null){
+                    //Set to the max-width of the title to a lower amount, since there would be less space for it to fit into the view
+                    // in two-pane view, as opposed to one-pane view
                     mPixTitle.setMaxWidth(440);
                 }
             }
 
-            //Set the text of the list item's description
+
+            //If the description of the Pix does NOT exist or only has spaces
             if (mPix.getDescription() == null || mPix.getDescription().isEmpty() || mPix.getDescription().trim().length()==0){
+                //Set text of the list item's description
                 mPixDescription.setText("* No description *");
+
+                //Set type-face of the list item's description
                 mPixDescription.setTypeface(null, Typeface.ITALIC);
+
+                //Set color of the list item's description
                 mPixDescription.setTextColor(ContextCompat.getColor(getActivity(), R.color.dark_yellow));
             }
+            //If the description of the Pix DOES exist
             else{
+                //Set text of the list item's description
                 mPixDescription.setText(mPix.getDescription());
 
                 //If the view is in one-pane mode
                 if(getActivity().findViewById(R.id.detail_fragment_container) != null){
+                    //Set to the max-width of the description to a lower amount, since there would be less space for it to fit into the view
+                    // in two-pane view, as opposed to one-pane view
                     mPixDescription.setMaxWidth(440);
                 }
             }
@@ -615,22 +634,26 @@ public class PixListFragment extends Fragment{
             //Set new date display for date button
             mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
 
-            //Set the text of the list item's location
+            //If the Pix's address does NOT exist
             if (mPix.getAddress() == null){
                 //Display nothing on location field
                 mPixAddress.setText("");
             }
+            //If the Pix's address DOES exist
             else{
                 //Display locality on location field (i.e. Footscray, Victoria)
                 mPixAddress.setText("- in " + mPix.getLocality());
             }
 
-            //Set the text of the list items tagged field
+
+
+            //If the Pix's tag field does NOT exist
             if(mPix.getTag() == null || mPix.getTag().isEmpty()){
+                //Set text for the Pix's tag field
                 mPixTagged.setText("");
             }
+            //If the Pix's tag field DOES exist
             else{
-
                 //Get tag String (which contains the newline character, "\n")
                 String pixTaggedStringFromDetailView= mPix.getTag();
 
@@ -650,7 +673,6 @@ public class PixListFragment extends Fragment{
 
                 //If more than one contact were tagged
                 if (pixTaggedList.size() > 1){
-
                     //Cycle through all String objects in the pixTaggedList ArrayList
                     for (int i=0; i<pixTaggedList.size(); i++){
                         //Concatenate all String objects in the pixTaggedList ArrayList to pixTaggedString String
@@ -677,13 +699,13 @@ public class PixListFragment extends Fragment{
             }
 
 
+
             //If layout is in two-pane (i.e. sw > 600dp)
             if (getActivity().findViewById(R.id.detail_fragment_container) != null){
                 //Remove text display of address
                 mPixAddress.setText("");
                 //Remove text display of tagged contacts
                 mPixTagged.setText("");
-
             }
 
 
@@ -709,8 +731,6 @@ public class PixListFragment extends Fragment{
                 //Update picture view
                 updatePictureView();
             }
-
-
         }
 
 
@@ -729,10 +749,17 @@ public class PixListFragment extends Fragment{
                 //Get picture in bitmap 'scaled' format
                 Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
-                //Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation
-                Matrix matrix = new Matrix(); //Create Matrix object for transforming co-ordinates
-                matrix.postRotate(90); //Set rotation for Matrix
-                Bitmap pictureBitmapCorrectOrientation = Bitmap.createBitmap(pictureBitmap , 0, 0, pictureBitmap .getWidth(), pictureBitmap.getHeight(), matrix, true); //Rotate picture Bitmap
+
+                //==========Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation============
+
+                //Create Matrix object for transforming co-ordinates
+                Matrix matrix = new Matrix();
+
+                //Set rotation for Matrix
+                matrix.postRotate(90);
+
+                //Rotate picture Bitmap
+                Bitmap pictureBitmapCorrectOrientation = Bitmap.createBitmap(pictureBitmap , 0, 0, pictureBitmap .getWidth(), pictureBitmap.getHeight(), matrix, true);
 
                 //Set picture ImageView view to bitmap version
                 mPictureView.setImageBitmap(pictureBitmapCorrectOrientation);
@@ -745,11 +772,7 @@ public class PixListFragment extends Fragment{
             }
         }
 
-
-
-
     }
-
 
 
 
@@ -757,6 +780,7 @@ public class PixListFragment extends Fragment{
 
     //Define ItemDecoration class - a class that allows manipulation of list item interface
     //Purpose: To add divider (lines) to list items
+    //NOTE: This class will be created in: mPixRecyclerView.addItemDecoration(new PixItemDecoration(getActivity()));
     public class PixItemDecoration extends RecyclerView.ItemDecoration {
 
         //Declare Drawable interface for dividers
@@ -781,7 +805,6 @@ public class PixListFragment extends Fragment{
         @Override
         public void onDrawOver(Canvas canvas, RecyclerView recyclerView, RecyclerView.State state) {
 
-
             //Get LEFT horizontal bound of recycler view divider (recyclerView.getPaddingLeft() will equal 0 if no padding were applied)
             int dividerLeftBound = recyclerView.getPaddingLeft();
             //Get RIGHT horizontal bound of divider
@@ -794,13 +817,12 @@ public class PixListFragment extends Fragment{
             int twoPaneDividerLineRightBound = recyclerView.getWidth();
 
 
-
             //Get number of View children in the RecyclerView. Views might be: Bitmap, TextView, etc.
             int viewChildrenOfListItemCount = recyclerView.getChildCount();
 
+
             //Cycle over all View children in the RecyclerView
             for (int i = 0; i < viewChildrenOfListItemCount; i++) {
-
                 //Get the View
                 View viewChildOfListItem = recyclerView.getChildAt(i);
 
@@ -839,6 +861,7 @@ public class PixListFragment extends Fragment{
 
             }
         }
+
     }
 
 

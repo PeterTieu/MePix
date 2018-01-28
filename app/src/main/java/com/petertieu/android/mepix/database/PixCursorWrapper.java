@@ -2,20 +2,19 @@ package com.petertieu.android.mepix.database;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
-
 import com.petertieu.android.mepix.Pix;
-
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * Created by Peter Tieu on 9/12/2017.
- */
 
 
+
+//Database class #3:
+//Class for QUERYING the SQLiteDatabase - it is called by the PixManager's methods: getPix(..) and getPixes(..)
 //Wrap the Cursor and add more methods on top of the Cursor.
-//The Cursor reads the data from the data table, "pixes"
+//The Cursor READS the data from the data table, "pixes", in "pixDatabase.db"
 public class PixCursorWrapper extends CursorWrapper{
+
 
 
     //Build constructor
@@ -26,7 +25,8 @@ public class PixCursorWrapper extends CursorWrapper{
 
 
 
-    //Read the columns from the "pixes" table, and return the Pix object using a Cursor
+
+    //READ data stored in the columns of the "pixes" table, and then set it to the Pix object (of a specific UUID)
     public Pix getPixFromDatabase(){
 
         //Pull the data from the column
@@ -53,6 +53,8 @@ public class PixCursorWrapper extends CursorWrapper{
         pix.setTag(tag);
         pix.setDescription(description);
 
+        //Return the pix
         return pix;
     }
+
 }

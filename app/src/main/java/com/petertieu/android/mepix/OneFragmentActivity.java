@@ -52,6 +52,4 @@ public abstract class OneFragmentActivity extends AppCompatActivity {
     @LayoutRes
     protected abstract int getLayoutResId();
 
-
-
 }

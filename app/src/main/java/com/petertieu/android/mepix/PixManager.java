@@ -4,11 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
 import com.petertieu.android.mepix.database.PixCursorWrapper;
 import com.petertieu.android.mepix.database.PixDatabaseHelper;
 import com.petertieu.android.mepix.database.PixDatabaseSchema;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,43 +17,49 @@ import java.util.UUID;
  */
 
 
-//The SINGLETON which manages Pixes
-    //1: ADDS Pixes to the list of Pixes
-    //2: REMOVES Pixes from the list of Pixes
-    //3:
+//The SINGLETON which manages Pixes.
+//Its functions are:
+    //1: ADDS Pixes to the list of Pixes (and stores their instance variable (state) values into SQLiteDatabase)
+    //2: REMOVES Pixes from the list of Pixes (and removes their instance variable (state) values from SQLiteDatabase)
+    //3: ALLOWS access of specific Pixes from the list of Pixes (and queries their instance variable (state) values from SQLiteDatabase)
 public class PixManager {
 
-    //Declare the PixManager SINGLETON
+    //Declare the PixManager SINGLETON - i.e. there is only ONE of this object for this entire class
     private static PixManager sPixManager;
+
+    //Declare a SQLiteDatabase SINGLETON = i.e. there is only ONE of this object for this entire class
+    private static SQLiteDatabase mSQLiteDatabase;
 
     //Declare a Context
     private Context mContext;
 
-    //Declare a SQLiteDatabase
-    private static SQLiteDatabase mSQLiteDatabase;
 
 
 
+    //================= Build static 'constructors' ================================
 
-    //Create the PixManager object
+    //Static 'constructor' #1
     public static PixManager get(Context context){
+
+        //If the PixManager object does NOT exist
         if (sPixManager == null){
+            //Create the PixManager (singleton) object
             return new PixManager(context);
         }
 
+        //Return the PixManager object (whether existing or newly created)
         return sPixManager;
     }
 
 
-
-
-    //Constructor called by get(..)
+    //Static 'constructor' #2
     private PixManager(Context context){
 
-        //Create a Context that is tied to the lifecycle of the entire application (instead of activity)
+        //Create a Context that is tied to the LIFECYCLE of the ENTIRE application (instead of activity)
+        // for the purpose of retaining the SQLiteDatabase
         mContext = context.getApplicationContext();
 
-        //Create a new database of type SQLiteDatabase
+        //Create/Retrieve the SINGLETON database (of type SQLiteDatabase)
         //getWritableDatable will:
             //IF: An SQLiteDatabase does NOT exist..
                 //Call the overriden onCreate(SQLiteDatabase) from PixDatabaseHelper to create the SQLiteDatabase
@@ -67,44 +71,11 @@ public class PixManager {
 
 
 
-    //Return the ENTIRE List of Pix objects from the SQLiteDatabase, "pixes"
-    public List<Pix> getPixes(){
 
-        //Declare the List of Pixes
-        List<Pix> pixes = new ArrayList<>();
+    //===================== All the following methods are accessed like so: PixManager.get(context).*method* ================================
+    //===================== Their puroses are to QUERY, WRITE and REMOVE to/from the SQLiteDatabase database ===============================
 
-        //Create a PixCursorWrapper using the queryPixes(..) helper method
-        PixCursorWrapper pixCursor = queryPixes(null, null);
-
-        //Use try-block, as pixCursor (CursorWrapper) may throw RuntimeException if database doesn't exist
-        try{
-
-            //Move cursor to first row
-            pixCursor.moveToFirst();
-
-            //While the cursor hasn't reached the last row yet
-            while(!pixCursor.isAfterLast()){
-
-                //Add all data from the row that the cursor is on.. to.. the "pixes" list
-                pixes.add(pixCursor.getPixFromDatabase());
-
-                //Move the cursor to the next row
-                pixCursor.moveToNext();
-            }
-        }
-        finally {
-            //Close the cursor, releasing all of its resources and making it invalid
-            pixCursor.close();
-        }
-
-        //Return the entire list of Pix objects
-        return pixes;
-    }
-
-
-
-
-    //Return a SPECIFIC Pix from the SQLiteDatabase, "pixes"
+    //QUERY method: Return a SPECIFIC Pix from the SQLiteDatabase, "pixes"
     public Pix getPix(UUID id){
 
         //Create a PixCursorWrapper using the queryPixes(..) helper method, taking into account both whereClause and whereArgs
@@ -131,7 +102,45 @@ public class PixManager {
 
 
 
-    //Add a Pix to the SQLiteDatabase, "pixes"
+
+    //QUERY method: Return the ENTIRE List of Pix objects from the SQLiteDatabase, "pixes"
+    public List<Pix> getPixes(){
+
+        //Declare the List of Pixes
+        List<Pix> pixes = new ArrayList<>();
+
+        //Create a PixCursorWrapper using the queryPixes(..) helper method
+        PixCursorWrapper pixCursor = queryPixes(null, null);
+
+        //Use try-block, as pixCursor (CursorWrapper) may throw RuntimeException if database doesn't exist
+        try{
+            //Move cursor to first row
+            pixCursor.moveToFirst();
+
+            //While the cursor hasn't reached the last row yet
+            while(!pixCursor.isAfterLast()){
+
+                //Add all data from the row that the cursor is on.. to.. the "pixes" list
+                pixes.add(pixCursor.getPixFromDatabase());
+
+                //Move the cursor to the next row
+                pixCursor.moveToNext();
+            }
+        }
+        finally {
+            //Close the cursor, releasing all of its resources and making it invalid
+            pixCursor.close();
+        }
+
+        //Return the entire list of Pix objects
+        return pixes;
+    }
+
+
+
+
+
+    //WRITE method: Add a Pix to the SQLiteDatabase, "pixes"
     public void addPix(Pix pix){
 
         //Call the getContentValues(Pix) helper method to obtain a ContentValues object. The ContentValues object acts a 'buffer' data storage for data from the Pix object
@@ -159,33 +168,10 @@ public class PixManager {
 
 
 
-    //Get picture file of the Pix via its file location
-    public File getPictureFile(Pix pix){
-
-        //Return absolute path to the directory on the filesystem
-        File filesDirectory = mContext.getFilesDir();
-
-        //Return File object
-        return new File(filesDirectory, pix.getPictureFilename());
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //============= Define HELPER METHODS ==============================================================================================
-
+    //Update Pix on the database.
+    // This method is called whenever a change occurs to a field in a Pix object,
+    // e.g. when these methods are called mPix.setTitle(..), mPix.setAddress(..), etc, the Pix object has been changed.
+    //This method MUST be called after a change occurs to a Pix, so that the new stored value/change could be added to the SQLiteDatabase!
     public void updatePixOnDatabase(Pix pix){
 
         //Get the specific Pix ID in String form
@@ -202,6 +188,30 @@ public class PixManager {
                 new String[]{pixId} //(String) whereArgs - Which value to add to the selected column
         );
 
+    }
+
+
+
+
+
+    //============= Define HELPER METHODS ==============================================================================================
+
+    //QUERY data from the SQLiteDatabase
+    private PixCursorWrapper queryPixes(String whereClause, String[] whereArgs){
+
+        //Return a cursor, using query(..) from SQLiteDatabase
+        Cursor pixCursor = mSQLiteDatabase.query(
+                PixDatabaseSchema.PixTable.NAME, //(String) Name of table to query from
+                null, //(String[]) List of columns to select. "null" selects all columns
+                whereClause, //(String) Which column to select. "null" returns all columns
+                whereArgs, //(String) Which value to return in the selected column
+                null, //(String) How rows are grouped. "null" causes the rows not to be grouped
+                null, //(String) Which rows groups are selected. "null" selects all row groups
+                null //(Sting) How to order the rows. "null" uses the default sort order
+        );
+
+        //Pass the Cursor into the PixCursorWrapper constructor
+        return new PixCursorWrapper(pixCursor);
     }
 
 
@@ -234,29 +244,19 @@ public class PixManager {
 
 
 
-    //READ data from the SQLiteDatabase
-    private PixCursorWrapper queryPixes(String whereClause, String[] whereArgs){
+    //======================== READ from the FileProvider ===========================================================================
+    //NOTE; Accessing picture files AND the FileProvider.. have got nothing to do with the SQLiteDatabase database!
 
-        //Return a cursor, using query(..) from SQLiteDatabase
-        Cursor pixCursor = mSQLiteDatabase.query(
-                PixDatabaseSchema.PixTable.NAME, //(String) Name of table to query from
-                null, //(String[]) List of columns to select. "null" selects all columns
-                whereClause, //(String) Which column to select. "null" returns all columns
-                whereArgs, //(String) Which value to return in the selected column
-                null, //(String) How rows are grouped. "null" causes the rows not to be grouped
-                null, //(String) Which rows groups are selected. "null" selects all row groups
-                null //(Sting) How to order the rows. "null" uses the default sort order
-        );
+    //Get picture file of the Pix via its file location
+    public File getPictureFile(Pix pix){
 
-        //Pass the Cursor into the PixCursorWrapper constructor
-        return new PixCursorWrapper(pixCursor);
+        //Return absolute path to the directory on the filesystem.
+        //Do this by accessing mContext, which is a Context object - it lasts for the ENTIRE lifecycle of the app, NOT the activity.
+        //Therefore, accessing the file directory via the Context object is the appropriate approach
+        File filesDirectory = mContext.getFilesDir();
+
+        //Return File object
+        return new File(filesDirectory, pix.getPictureFilename());
     }
-
-
-
-
-
-
-
 
 }

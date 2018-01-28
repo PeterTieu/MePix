@@ -61,7 +61,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
@@ -71,92 +70,70 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static android.content.Context.LOCATION_SERVICE;
-
-
-/**
- * Created by Peter Tieu on 14/12/2017.
- */
-
-
 
 
 
 //Fragment for the DETAIL VIEW
 public class PixDetailFragment extends Fragment{
 
-    //Define 'key' for the argument-bundle
+
+    //==================================== Declare INSTANCE VARIABLES ============================================================================
+    //UI instance variables
+    private Pix mPix;                       //Pix - the single Pix object that the detail view revolves around
+    private EditText mTitle;                //Title
+    private CheckBox mFavoritedButton;      //Favorited Button
+    private Button mDateButton;             //Date Button
+    private Button mTagButton;              //Tag Button
+    private EditText mTagEditText;          //Tag EditText
+    private String mTotalTag;               //Tag String - to be displayed in Tag EditText
+    private Button mLocationButton;         //Location Button
+    private EditText mDescription;          //Description Button
+    private ImageButton mPictureAddButton;  //Photo Button
+    private ImageView mPictureView;         //Picture ImageView to DISPLAY the Pix Picture
+
+
+    //OPERATIONS instance variables
+    private Callbacks mCallbacks;                               //Callback interface
+    private File mPictureFile;                                  //File to CONTAIN the Pix Picture
+    private DateFormat mDateFormat;                             //DateFormat object for formatting display of the Date
+
+
+    //MAPS instance variables
+    private FusedLocationProviderClient mFusedLocationClient;   //Entry point for interacting with FusedLocationProvider (to get location fix (i.e. lat/lon))
+    protected Location mLocation;                               //Declare Location object to contain location fix (i.e lat/lon values)
+    private Address mAddressOutput;                             //
+    private AddressResultReceiver mAddressResultReceiver;       //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
+    private boolean updatePixLocationMenuItemPressed = false;   //Flag to be triggered when the Locations Update menu item is pressed. This resets the mLocationButton's display display (of the location)
+
+
+
+
+    //==================================== Declare STRINGS ============================================================================    //Define TAG for Logcat
+    private static final String TAG = "PixDetailFragment";  //
+
+    //ARGUMENT BUNDLE KEY
     private static final String ARGUMENT_PIX_ID = "pix_id";
 
-    //Define TAG for Logcat
-    private static final String TAG = "PixDetailFragment";
+    //DIALOG FRAGMENT IDENTIFIERS
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate";                                                 //Identifier of dialog fragment of DatePicker
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";                         //Identifier of dialog fragment of Picture ImageView
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE_CONFIRMATION = "DialogDeleteConfirmation";                    //Identifier of dialog fragment of Pix Delete
+    private static final String IDENTIFIER_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION ="DialogUpdateLocationConfirmation";    //Identifier of dialog fragment of Location Confirmation
 
-    //Declare Pix instance variable
-    private Pix mPix;
+    //REQUEST CODES
+    private static final int REQUEST_CODE_CONTACT = 1;                                          //Request code for receiving results from contact activity/app
+    private static final int REQUEST_CODE_PICTURE_CAMERA = 2;                                   //Request code for receiving results from camera activity/app
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 3;                         //Request code for receiving results from system for Location Permissions
+    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 4;                          //Request code to WRITE to external storage (to save a Picture to Gallery)
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 5;                             //Request code for receiving results from dialog fragment to select Pix date
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 6;              //Request code for receiving results from dialog fragment to delete Pix
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm
+    //private static final int REQUEST_CODE_PICTURE_GALLERY = 8;                                //Request code for receiving results from phone's gallery
 
-    //Declare View instance variables
-    private EditText mTitle;    //Title
-    private CheckBox mFavoritedButton; //Favorited Button
-    private Button mDateButton; //Date Button
-    private Button mTagButton; //Tag Button
-    private EditText mTagEditText; //Tag EditText
-    private String mTotalTag;
-    private Button mLocationButton; //Location Button
-    private EditText mDescription; //Description Button
-    private ImageButton mPictureAddButton; //Photo Button
-    private File mPictureFile; //Picture File
-    private ImageView mPictureView; //Picture ImageView
+    //PERMISSION REQUESTS
+    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};    //Request for LOCATION permissions
+    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};                    //Request for STORAGE permissions
 
-    //Declare DateFormat object for formatting the date display
-    private DateFormat mDateFormat;
-
-    //Declare identifiers for dialog fragments
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_DATE = "DialogDate"; //Identifier of dialog fragment of DatePicker
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture"; //Identifier of dialog fragment of picture ImageView
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE_CONFIRMATION = "DialogDeleteConfirmation"; //Identifier of dialog fragment
-    private static final String IDENTIFIER_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION ="DialogUpdateLocationConfirmation";
-
-    //Declare constants for tag requests
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 0;  //Request code for receiving results from dialog fragment
-    private static final int REQUEST_CODE_CONTACT = 1; //Request code for results returned from contact activity/app
-    private static final int REQUEST_CODE_PICTURE_CAMERA = 2; //Request code for results returned from camera activity/app
-    private static final int REQUEST_CODE_PICTURE_GALLERY = 3;
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 10; //Request code for receiving results from dialog fragment
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 11;
-    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 4; //Request code for location fix
-    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
-    private static final int REQUEST_CODE_NEW_MARKER_LOCATION = 5;
-    private static final int REQUEST_CODE_FOR_WRITE_EXTERNAL_STORAGE_PERMISSION = 6;
-
-    //Declare Callbacks interface reference variable
-    private Callbacks mCallbacks;
-
-    //Declare FusedLocationProviderClient - the entry point for interacting with FusedLocationProvider (to get location fix)
-    private FusedLocationProviderClient mFusedLocationClient;
-
-    //List locations permissions required,
-    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
-    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-
-
-
-    //Declare Location object to contain location fix (i.e lat/lon values)
-    protected Location mLocation;
-
-    private Address mAddressOutput;
-
-    //Declare AddressResultReceiver object, which is a ResultReceiver - to receive results from reverse geocoding
-    private AddressResultReceiver mAddressResultReceiver;
-
-    private boolean updatePixLocationMenuItemPressed = false;
-
-
-    AddressResultReceiver mAddressResultReceiverr;
-
-    protected Location mNewLocation;
-    private AddressResultReceiver mNewAddressResultReceiver;
-
-    private boolean locationSavedToDB = false;
 
 
     //Declare a GoogleApiClient reference variable.
@@ -977,53 +954,53 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    //Open gallery activity/app
-    private void galleryIntent(){
-
-        //Create implicit intent (to open gallery activity/app)
-        Intent choosePictureIntent = new Intent();
-
-        //Set action to open gallery activity/app
-        choosePictureIntent.setAction(Intent.ACTION_GET_CONTENT);
-
-        //Set type of media to open (i.e. images, instead of videos or both)
-        choosePictureIntent.setType("image/*");
-
-        //Get content URI of FileProvider for which picture file from camera is to be saved to
-        Uri uriFileProvider = FileProvider.getUriForFile(
-                getActivity(),
-                "com.petertieu.android.mepix.fileprovider",
-                mPictureFile
-        );
-
-
-        //Add content URI as extra to the intent
-        choosePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
-
-        //Create PackageManager (which has access to all aps installed in the device)
-        PackageManager packageManager = getActivity().getPackageManager();
-
-        //Query PackageManager to obtain list of activities/apps that match conditions of choosePictureIntent
-        List<ResolveInfo> galleryActivities = packageManager.queryIntentActivities(
-                choosePictureIntent, //(Intent): The intent to open camera
-                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
-        );
-
-        //Sort through all activities resolved (in the list)
-        for (ResolveInfo resolvedActivity : galleryActivities){
-            //Grant permission for the resolved activity to write to the URI of the FileProvider
-            getActivity().grantUriPermission(
-                    resolvedActivity.activityInfo.packageName, //(String): The resolved activity
-                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
-                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
-            );
-        }
-
-
-
-        //Start the activity, expecting results to be returned (via onActivityResult(..))
-        startActivityForResult(Intent.createChooser(choosePictureIntent, "Select Picture"), REQUEST_CODE_PICTURE_GALLERY);
-    }
+//    //Open gallery activity/app
+//    private void galleryIntent(){
+//
+//        //Create implicit intent (to open gallery activity/app)
+//        Intent choosePictureIntent = new Intent();
+//
+//        //Set action to open gallery activity/app
+//        choosePictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+//
+//        //Set type of media to open (i.e. images, instead of videos or both)
+//        choosePictureIntent.setType("image/*");
+//
+//        //Get content URI of FileProvider for which picture file from camera is to be saved to
+//        Uri uriFileProvider = FileProvider.getUriForFile(
+//                getActivity(),
+//                "com.petertieu.android.mepix.fileprovider",
+//                mPictureFile
+//        );
+//
+//
+//        //Add content URI as extra to the intent
+//        choosePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriFileProvider);
+//
+//        //Create PackageManager (which has access to all aps installed in the device)
+//        PackageManager packageManager = getActivity().getPackageManager();
+//
+//        //Query PackageManager to obtain list of activities/apps that match conditions of choosePictureIntent
+//        List<ResolveInfo> galleryActivities = packageManager.queryIntentActivities(
+//                choosePictureIntent, //(Intent): The intent to open camera
+//                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
+//        );
+//
+//        //Sort through all activities resolved (in the list)
+//        for (ResolveInfo resolvedActivity : galleryActivities){
+//            //Grant permission for the resolved activity to write to the URI of the FileProvider
+//            getActivity().grantUriPermission(
+//                    resolvedActivity.activityInfo.packageName, //(String): The resolved activity
+//                    uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
+//                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION //(int): The access mode - allow writing to file
+//            );
+//        }
+//
+//
+//
+//        //Start the activity, expecting results to be returned (via onActivityResult(..))
+//        startActivityForResult(Intent.createChooser(choosePictureIntent, "Select Picture"), REQUEST_CODE_PICTURE_GALLERY);
+//    }
 
 
 
@@ -1706,41 +1683,41 @@ public class PixDetailFragment extends Fragment{
         }
 
 
-        //If reqsultCode matches gallery activity
-        if (requestCode == REQUEST_CODE_PICTURE_GALLERY) {
-
-            //Get content URI of FileProvider for which picture file taken from camera has been saved
-            Uri uriFileProvider = FileProvider.getUriForFile(
-                    getActivity(), //
-                    "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
-                    mPictureFile //(File): The picture file
-            );
-
-
-
-            Bitmap bm=null;
-            if (intent != null) {
-                try {
-                    bm = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), intent.getData());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-
-            mPictureView.setImageBitmap(bm);
-
-
-            //Revoke permission from camera from writing to FileProvider
-            getActivity().revokeUriPermission(uriFileProvider, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-
-//            //Update picture view
-//            updatePictureView();
-
-            //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
-            updatePix();
-        }
+//        //If reqsultCode matches gallery activity
+//        if (requestCode == REQUEST_CODE_PICTURE_GALLERY) {
+//
+//            //Get content URI of FileProvider for which picture file taken from camera has been saved
+//            Uri uriFileProvider = FileProvider.getUriForFile(
+//                    getActivity(), //
+//                    "com.petertieu.android.mepix.fileprovider", //(String): The authority of the FileProvider - defined in <provider> element in Manifest
+//                    mPictureFile //(File): The picture file
+//            );
+//
+//
+//
+//            Bitmap bm=null;
+//            if (intent != null) {
+//                try {
+//                    bm = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), intent.getData());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//
+//            mPictureView.setImageBitmap(bm);
+//
+//
+//            //Revoke permission from camera from writing to FileProvider
+//            getActivity().revokeUriPermission(uriFileProvider, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//
+//
+////            //Update picture view
+////            updatePictureView();
+//
+//            //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
+//            updatePix();
+//        }
 
 
 

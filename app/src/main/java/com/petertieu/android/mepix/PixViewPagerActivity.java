@@ -1,9 +1,7 @@
 package com.petertieu.android.mepix;
 
-;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -11,18 +9,15 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
 import java.util.List;
 import java.util.UUID;
 
-import static android.support.v4.view.PagerAdapter.POSITION_NONE;
 
-/**
- * Created by Peter Tieu on 13/12/2017.
- */
+
 
 //Activity hosting PixDetailFragment(s)
-//NOTE: PixDetailFragment.Callbacks interface is implemented because PixDetailFragment, i.e. the fragment class being hosted, declares this interface (mandatory)
+//NOTE: PixDetailFragment.Callbacks interface MUST be implemented because PixDetailFragment, i.e. the fragment class being hosted,
+// declares this callback interface in its class
 public class PixViewPagerActivity extends AppCompatActivity implements PixDetailFragment.Callbacks{
 
     //Define log identifier
@@ -34,12 +29,11 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
     //Define total number of fragments to pre-load outside of the fragment on screen
     private static final int OFF_SCREEN_PAGE_LIMIT = 5;
 
-    //Declare ViewPager
+    //Declare static ViewPager
     public static ViewPager mViewPager;
 
     //Declare List of Pix objects
     private List<Pix> mPixes;
-
 
 
 
@@ -50,6 +44,11 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         //Do nothing
     }
 
+
+
+
+
+    //Manadatory override of callback method from the 'PixDetailFragment.Callbacks' callbacks interface
     @Override
     public void onPixDeleted(Pix pix){
         //Do nothing
@@ -59,8 +58,9 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
 
 
-
-    //Method to call for
+    //Method to be called in order to begin this activity
+    //NOTE: This method can be called by these callback interfaces from PixListFragment: onPixSelected(Pix) and onPixUpdatedFromListView(Pix),
+    // which are defined in PixListActivity.
     public static Intent newIntent(Context context, UUID pixId){
 
         //Log to Logcat
@@ -107,8 +107,6 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
         Log.i(TAG, "mPixes.size() = " + mPixes.size());
 
 
-
-
         //Set the Adapter to the ViewPager
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
 
@@ -126,16 +124,10 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
             //Override method from the FragmentStatePagerAdapter
             @Override
             public int getCount() {
-
-                Log.i(TAG, "3");
                 //Get the size of the List of Pix objects
                 return mPixes.size();
             }
-
         });
-
-
-
 
 
         //Get the 'value' associated with the 'key' from the Intent that started this activity
@@ -143,11 +135,13 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
         Log.i(TAG, "4");
 
-        //Set the current number of the Pix so that the ViewPager knows which Pix number is being displayed
-        // Ultimately, there would be smooth transition between Pixes
+
+        //Set the current number of the Pix so that the ViewPager knows which Pix number is being displayed.
+        //Ultimately, there would be smooth transition between Pixes
         for(int i=0; i<mPixes.size(); i++){
 
             //If the current Pix object from the List of Pix objects has the same UUID as the one clicked on in the list iew
+            //NOTE: The get(..) here isn't the same as the get(..) from PixManager! It is from the List interface!
             if (mPixes.get(i).getId().equals(pixId)){
 
                 //Set detail view to display this Pix
@@ -161,31 +155,59 @@ public class PixViewPagerActivity extends AppCompatActivity implements PixDetail
 
 
 
+
+    //Override onResume() fragment lifecycle callback method
     @Override
     public void onResume(){
         super.onResume();
+
+        //Log fragment activity lifecycle event in Logcat
         Log.i(TAG, "onResume() called");
+
+        //Set the ViewPagerActivity tracker's visibility instance variable as TRUE
         PixViewPagerActivityLifecycleTracker.activityResumed();
     }
 
+
+
+
+
+    //Override onPause() fragment lifecycle callback method
     @Override
     public void onPause(){
         super.onPause();
+
+        //Log fragment activity lifecycle event in Logcat
         Log.i(TAG, "onPause() called");
+
+        //Set the ViewPagerActivity tracker's visibility instance variable as FALSE
         PixViewPagerActivityLifecycleTracker.activityPaused();
     }
 
+
+
+
+
+    //Override onStop() fragment lifecycle callback method
     @Override
     public void onStop(){
         super.onStop();
+
+        //Log fragment activity lifecycle event in Logcat
         Log.i(TAG, "onStop() called");
     }
 
+
+
+
+
+    //Override onDestroy() fragment lifecycle callback method
     @Override
     public void onDestroy(){
         super.onDestroy();
+
+        //Log fragment activity lifecycle event in Logcat
         Log.i(TAG, "onDestroy() called");
     }
-
 
 }

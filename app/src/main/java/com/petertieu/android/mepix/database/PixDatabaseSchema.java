@@ -1,9 +1,6 @@
 package com.petertieu.android.mepix.database;
 
-/**
- * Created by Peter Tieu on 9/12/2017.
- */
-
+//Database class #1:
 //Set the blueprint for the SQL database of the Pix
 public class PixDatabaseSchema {
 

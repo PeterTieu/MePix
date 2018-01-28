@@ -4,12 +4,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/**
- * Created by Peter Tieu on 9/12/2017.
- */
 
+
+
+//Database class #2:
 //Create the database by using methods from the SQLiteOpenHelper class (onCreate() and onUpgrade())
-
 public class PixDatabaseHelper extends SQLiteOpenHelper{
 
     //Define instance variables
@@ -25,10 +24,12 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
 
 
 
-    //Low-level method for creating the database
+    //Low-level method for creating the SQLiteDatabase database
     @Override
     public void onCreate(SQLiteDatabase sqlLiteDb){
-        //Create the database
+
+        //Create the database.
+        //Define the names of each column in the database. Each column corresponds to a field of the Pix (i.e. instance variable (state))
         sqlLiteDb.execSQL(
                 "create table " +
                         PixDatabaseSchema.PixTable.NAME +
@@ -45,16 +46,16 @@ public class PixDatabaseHelper extends SQLiteOpenHelper{
                         PixDatabaseSchema.PixTable.Columns.TAG + ", " +
                         PixDatabaseSchema.PixTable.Columns.DESCRIPTION +
                         ")"
-
         );
-
-
     }
+
+
 
 
     //Low-level method for upgrading the database's version
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion){
         //Do nothing
+
     }
 }
