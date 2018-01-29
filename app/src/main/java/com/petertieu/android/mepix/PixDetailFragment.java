@@ -54,18 +54,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -93,9 +90,10 @@ public class PixDetailFragment extends Fragment{
 
 
     //OPERATIONS instance variables
-    private Callbacks mCallbacks;                               //Callback interface
-    private File mPictureFile;                                  //File to CONTAIN the Pix Picture
-    private DateFormat mDateFormat;                             //DateFormat object for formatting display of the Date
+    private Callbacks mCallbacks;   //Callback interface
+    private File mPictureFile;      //File to CONTAIN the Pix Picture
+    private DateFormat mDateFormat; //DateFormat object for formatting display of the Date
+    LinearLayout mViewToShare;      //View of the Pix that is captured - for sharing
 
 
     //MAPS instance variables
@@ -108,8 +106,9 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    //==================================== Declare STRINGS ============================================================================    //Define TAG for Logcat
-    private static final String TAG = "PixDetailFragment";  //
+    //==================================== Declare STRINGS ============================================================================
+    //Define TAG for Logcat
+    private static final String TAG = "PixDetailFragment";
 
     //ARGUMENT BUNDLE KEY
     private static final String ARGUMENT_PIX_ID = "pix_id";
@@ -120,41 +119,46 @@ public class PixDetailFragment extends Fragment{
     private static final String IDENTIFIER_DIALOG_FRAGMENT_DELETE_CONFIRMATION = "DialogDeleteConfirmation";                    //Identifier of dialog fragment of Pix Delete
     private static final String IDENTIFIER_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION ="DialogUpdateLocationConfirmation";    //Identifier of dialog fragment of Location Confirmation
 
-    //REQUEST CODES
-    private static final int REQUEST_CODE_CONTACT = 1;                                          //Request code for receiving results from contact activity/app
-    private static final int REQUEST_CODE_PICTURE_CAMERA = 2;                                   //Request code for receiving results from camera activity/app
-    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 3;                         //Request code for receiving results from system for Location Permissions
-    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 4;                          //Request code to WRITE to external storage (to save a Picture to Gallery)
+    //PERMISSION REQUEST STRINGS
+    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};    //Request for LOCATION permissions
+    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};                    //Request for STORAGE permissions
+
+    //REQUEST CODES for PERMISSIONS
+    private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 1;                         //Request code for receiving results from system for Location Permissions
+    private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 2;                          //Request code to WRITE to external storage (to save a Picture to Gallery)
+
+    //REQUEST CODES for RESULTS
+    private static final int REQUEST_CODE_CONTACT = 3;                                          //Request code for receiving results from contact activity/app
+    private static final int REQUEST_CODE_PICTURE_CAMERA = 4;                                   //Request code for receiving results from camera activity/app
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 5;                             //Request code for receiving results from dialog fragment to select Pix date
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 6;              //Request code for receiving results from dialog fragment to delete Pix
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm
     //private static final int REQUEST_CODE_PICTURE_GALLERY = 8;                                //Request code for receiving results from phone's gallery
 
-    //PERMISSION REQUESTS
-    private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};    //Request for LOCATION permissions
-    private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};                    //Request for STORAGE permissions
-
-
-
-    //Declare a GoogleApiClient reference variable.
-    //NOTE: To use the Google Play Services, we must CREATE a CLIENT (GoogleApiClient).
-    private GoogleApiClient mGoogleApiClient;
-
-    //Declare GoogleMap
-    // A GoogleMap is the main class for the Google Maps Android API.
-    // It is the ENTRY POINT for all methods related to the map.
-    //A GoogleMap is already instantiated in SupportMapFragment.
-    // It must be obtained from getMapAsync(OnMapReadyCallback) (a method from the SupportMapFragment class).
-    private GoogleMap mMap;
 
 
 
 
+    //==================================== Define CALLBACK INTERFACE ============================================================================
+    //Declare callback interface
+    interface Callbacks{
+
+        //Callback method for when a Pix's instance variable is changed (for two-pane layout)
+        void onPixUpdatedFromDetailView(Pix pix);
+
+        //Callback method for when a Pix is deleted (for two-pane layout)
+        void onPixDeleted(Pix pix);
+    }
+
+
+
+
+    //==================================== Define METHODS ============================================================================
 
     //Build 'encapsulating' constructor
     public static PixDetailFragment newInstance(UUID pixId){
 
-        //Create Bundle object (i.e. argument-bundle)
+        //Create Bunble object (i.e. argument-bundle)
         Bundle argumentBundle = new Bundle();
 
         //Set key-value pairs for the argument bundle
@@ -175,20 +179,6 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    //Declare callback interface
-    interface Callbacks{
-
-        //Callback method for when a Pix's instance variable is changed (for two-pane layout)
-        void onPixUpdatedFromDetailView(Pix pix);
-
-        //Callback method for when a Pix is deleted (for two-pane layout)
-        void onPixDeleted(Pix pix);
-    }
-
-
-
-
-
     //Override onAttach() fragment lifecycle callback method
     @Override
     public void onAttach(Context context){
@@ -197,7 +187,7 @@ public class PixDetailFragment extends Fragment{
         //Log in Logcat
         Log.i(TAG, "onAttach() called");
 
-        //Declare mCallbacks ref. var. (to PixDetailFragment.Callbacks)
+        //Define the callback interface reference variable
         mCallbacks = (Callbacks) context;
     }
 
@@ -222,41 +212,41 @@ public class PixDetailFragment extends Fragment{
         //Assign Pix object to Pix object from PixManager singleton
         mPix = PixManager.get(getActivity()).getPix(pixId);
 
-        //Declare an options menu for the fragment
-        setHasOptionsMenu(true);
+        //Assign reference variable, mPictureFile, to picture file in FileProvider
+        mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
-        //If the user has previously entered two-pane mode (i.e. sw > 600dp), and it now no longer exists,
+
+        //If the user has JUST previously entered two-pane mode (i.e. sw > 600dp) AND two-pane mode now no longer exists,
         // since the user has rotated the screen, and is now back to one-pane mode (i.e. is now in the list view)...
         if (PixListActivity.hasEnteredTwoPaneMode == true && getActivity().findViewById(R.id.detail_fragment_container) == null) {
             //Disable the options menu of this detail view, which effectively removes the 'Delete' button from the toolbar while in list view
             setHasOptionsMenu(false);
         }
+        //..all other times
+        else{
+            //Declare an options menu for the fragment
+            setHasOptionsMenu(true);
+        }
 
-        //Assign reference variable, mPictureFile, to picture file in FileProvider
-        mPictureFile = PixManager.get(getActivity()).getPictureFile(mPix);
 
 
+        //_______ Request for (dangerous) PERMISSION: WRITE_TO_EXTERNAL (from permission group: Storage) _________
 
-        //========== Request for Write-to-external-storage (dangerous) permission ====================================================
-
+        //If the STORAGE permissions have not been granted
         if (hasWriteExternalStoragePermission() == false){
+            //Request for STORAGE permissions
             requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
         }
 
 
 
-        //========== Request for Location (dangerous) permissions (from Location permission group) ====================================================
-
-        //Create AddressResultReceiver object, passing a Handler to it
-        mAddressResultReceiver = new AddressResultReceiver(new Handler());
+        //_________ Request for (dangerous) PERMISSIONS from permission group: Location _________________
 
         //If location permissions requested in the Manifest have NOT been granted
         if (hasLocationPermission() == false) {
-
             //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
-
         //If location permissions requested in the Manifest HAVE been granted
         else {
             //========== Configure location services ====================================================
@@ -271,24 +261,34 @@ public class PixDetailFragment extends Fragment{
                     //Listen for when location has been obtained via FusedLocationClient
                     @Override
                     public void onSuccess(Location location) {
+
                         //If location does not
                         if (location == null) {
+                            //Log to Logcat
                             Log.v(TAG, "Location does not exist");
                         }
 
                         //Stash mLocation instance reference variable to local reference variable of location object
                         mLocation = location;
 
-                        //In some rare cases, location returned can be null
+                        //In some RARE cases, location returned can be null
                         if (mLocation == null) {
+                            //Exit from try-block
                             return;
                         }
 
-                        //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address
-                        if (!Geocoder.isPresent()) {
+                        //If Geocoder is NOT present (Geocoder: object to convert location fix (lat/lon values) to linguistic address - known as 'reverse geocoding')
+                        if (!Geocoder.isPresent()){
+                            //Toast to display that the Geocoder is NOT available
                             Toast.makeText(getActivity(), "No Geocoder available", Toast.LENGTH_LONG).show();
+
+                            //Exit from try-block
                             return;
                         }
+
+                        //Create ResultReceiver object, passing a Handler to it.
+                        //NOTE: A ResultReceiver's purpose is to receive results from IntentService!
+                        mAddressResultReceiver = new AddressResultReceiver(new Handler());
 
                         //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
                         startIntentService();
@@ -303,10 +303,11 @@ public class PixDetailFragment extends Fragment{
 
 
 
-
-
+        //Declare LocationCallback method for updating the location
+        //NOTE: Updating the location MUST be done AFTER a location has already been obtained (i.e. after reverse geocoding, as per above)
         mLocationCallback = new LocationCallback() {
 
+            //Set listener for the callback
             @Override
             public void onLocationResult(LocationResult locationResult) {
 
@@ -315,9 +316,10 @@ public class PixDetailFragment extends Fragment{
                     Log.v(TAG, "Updated location does not exist");
                 }
 
+                //Set mLocation instance variable to new Location object (i.e. the updated location)
                 mLocation = locationResult.getLastLocation();
 
-                //In some rare cases, location returned can be null
+                //In some RARE cases, location returned can be null
                 if (mLocation == null) {
                     return;
                 }
@@ -328,7 +330,7 @@ public class PixDetailFragment extends Fragment{
                     return;
                 }
 
-
+                //Set mAddressResultReceiver instance variable to new AddressResultReceiver object
                 mAddressResultReceiver = new AddressResultReceiver(new Handler());
 
                 //Start IntentService to perform reverse geocoding (i.e. obtaining address from location fix (i.e. lat/lon values))
@@ -337,19 +339,27 @@ public class PixDetailFragment extends Fragment{
             }
         };
 
-
-
     }
 
 
 
 
 
+    //======================== Define HELPER METHODS used in onCreate(..) =============================================
+
+    //Check if (dangerous) permissions from the STORAGE permission group have been granted (by the user)
+    private boolean hasWriteExternalStoragePermission(){
+
+        //Check if the permissions have been granted
+        //IF granted.. result = PakageManager.PERMISSION_GRANTED, else PackageManager.PERMISSON_DENIED
+        int result = ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        //Return the result
+        return (result == PackageManager.PERMISSION_GRANTED);
+    }
 
 
-    //======================== Define ADDRESS services helper methods =============================================
-
-    //Check if location permission requested in the Manifest has been granted
+    //Check if (dangerous) permissions from the STORAGE permission group have been granted (by the user)
     private boolean hasLocationPermission(){
 
         //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
@@ -359,52 +369,6 @@ public class PixDetailFragment extends Fragment{
         int result = ContextCompat.checkSelfPermission(getActivity(), LOCATION_PERMISSIONS[0]);
 
         //Return a boolean for state of location permission
-        return (result == PackageManager.PERMISSION_GRANTED);
-    }
-
-
-    private boolean checkNetworkAndLocationServicesAvailability(){
-        LocationManager locationManager = (LocationManager) getContext().getSystemService(getContext().LOCATION_SERVICE);
-
-        boolean gpsEnabled = false;
-        boolean networkEnabled = false;
-
-        try{
-            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        }
-        catch(Exception ex){
-        }
-
-        try{
-            networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        }
-        catch(Exception ex){
-        }
-
-
-        if (!gpsEnabled && !networkEnabled){
-            Toast.makeText(getActivity(), "Location is not enabled", Toast.LENGTH_SHORT).show();
-        }
-
-        return gpsEnabled;
-    }
-
-
-
-    public boolean isGpsEnabled(){
-
-        LocationManager service = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        return service.isProviderEnabled(LocationManager.GPS_PROVIDER)&&service.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }
-
-
-
-
-
-
-
-    private boolean hasWriteExternalStoragePermission(){
-        int result = ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return (result == PackageManager.PERMISSION_GRANTED);
     }
 
@@ -473,7 +437,7 @@ public class PixDetailFragment extends Fragment{
                     //Set longitude component of the address to mLongitude field of Pix object
                     mPix.setLongitude(mAddressOutput.getLongitude());
 
-                    //Update SQLiteDatabase of Pix account for data added/updated for mLocation field (i.e. address)
+                    //Update SQLiteDatabase of Pix to account for data added/updated for mLocation field (i.e. address)
                     updatePix();
 
 
@@ -483,7 +447,6 @@ public class PixDetailFragment extends Fragment{
                     //Reset the updatePixLocationItemPressed variable back to 'false'
                     updatePixLocationMenuItemPressed = false;
                 }
-
                 //If mLocation field of Pix object DOES exist (i.e. address has been set)
                 else{
                     //Display address on location button
@@ -520,6 +483,7 @@ public class PixDetailFragment extends Fragment{
 
         //Add listener to text EditText
         mTitle.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 //Do nothing
@@ -530,7 +494,7 @@ public class PixDetailFragment extends Fragment{
                 //Set title of the Pix to the current String in the EditText
                 mPix.setTitle(charSequence.toString());
 
-                //Update the Pix
+                //Update SQLiteDatabase of Pix to account for data added/updated for mLocation field (i.e. address)
                 updatePix();
             }
 
@@ -553,11 +517,9 @@ public class PixDetailFragment extends Fragment{
             mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
-
         //Set listener the Date button
         mDateButton.setOnClickListener(new View.OnClickListener(){
 
-            //Override onClick(..) from View.OnClickListener
             @Override
             public void onClick(View view){
                 //Create FragmentManager
@@ -578,26 +540,23 @@ public class PixDetailFragment extends Fragment{
 
 
         //================ SET UP mLocationButton ==================================================================
-
-
         //Assign location button instance variable to its associated resource ID
         mLocationButton = (Button) view.findViewById(R.id.detail_pix_location);
 
-
-        if (mFusedLocationClient != null){
-
-            if (mPix.getAddress() != null){
-                mLocationButton.setText(mPix.getAddress());
-            }
+        //If address stored in Pix EXISTS.
+        //Without this if-block: When the location is disabled, mLocationButton would not display the current/stored location.
+        // It would just display the default text of the mLocationButton, i.e. "Unable to fetch location"
+        if (mPix.getAddress() != null) {
+            //Display the stored address in mLoationButton
+            mLocationButton.setText(mPix.getAddress());
         }
 
-
-
+        //Set listener for location button
         mLocationButton.setOnClickListener(new View.OnClickListener(){
+
             @Override
             public void onClick(View view) {
-
-
+                //If location is enabled (by user)
                 if(isGpsEnabled()) {
                     //Create Intent to open MapsActivity
                     Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getId(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
@@ -605,50 +564,45 @@ public class PixDetailFragment extends Fragment{
                     //Start intent to open MapsActivity
                     getActivity().startActivity(mapsActivityIntent);
                 }
-
+                //If location is NOT enabled (by user)
                 else{
-                    Log.i(TAG, "NOT connected to Locations");
+                    //Log in Logcat
+                    Log.i(TAG, "Location not enabled");
+
+                    //Create AlertDialog object
                     AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
 
-                    TextView dialogTitle = new TextView(getActivity());
-                    dialogTitle.setText(R.string.prompt_enable_location);
-                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
-                    dialogTitle.setTextSize(22);
-                    dialogTitle.setGravity(Gravity.CENTER);
-                    dialogTitle.setTypeface(null, Typeface.BOLD);
-                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow));
+                    //Set-up custom title to display in the dialog
+                    TextView dialogTitle = new TextView(getActivity()); //Create TextView object
+                    dialogTitle.setText(R.string.prompt_enable_location); //Set text on TextView
+                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set color of text
+                    dialogTitle.setTextSize(22); //Set size of text
+                    dialogTitle.setGravity(Gravity.CENTER); //Set position of text in the title box of the dialog
+                    dialogTitle.setTypeface(null, Typeface.BOLD); //Set the text to be bold
+                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set background color title box of the dialog
 
-                    dialog.setCustomTitle(dialogTitle);
-                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings"));
-                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() {
+                    dialog.setCustomTitle(dialogTitle); //Set the dialog's title block to be the TextView defined (above)
+                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings")); //Set message
+                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() { //Set Positive button for dialog
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            // TODO Auto-generated method stub
-                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            getContext().startActivity(myIntent);
-                            //get gps
+                            //Create Intent to open Settings to disable location
+                            Intent loationSourceSettingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            //Start the Intent
+                            getContext().startActivity(loationSourceSettingsIntent);
                         }
                     });
-                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-
+                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() { //Set Negative button for dialog
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            // TODO Auto-generated method stub
-
+                            //Do nothing
                         }
                     });
-                    dialog.show();
+                    dialog.show(); //Show dialog
                 }
-
-
-
-
-
-
-
-
             }
         });
+
 
 
 
@@ -748,6 +702,7 @@ public class PixDetailFragment extends Fragment{
 
         //Set listener for tag EditText
         mTagEditText.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 //Do nothing
@@ -786,6 +741,7 @@ public class PixDetailFragment extends Fragment{
             @Override
             public void onClick(View view){
 
+                //Open device's camera activity/app
                 cameraIntent();
 
 //                //Set dialog prompt items
@@ -855,33 +811,33 @@ public class PixDetailFragment extends Fragment{
 
         //Set listener for picture view
         mPictureView.setOnClickListener(new View.OnClickListener(){
+
             @Override
             public void onClick(View view){
-
                 //Check if picture File is empty. NOTE: A File exists for each Pix, but has length either >0 OR 0.
                 // If File is not empty (i.e. contains .jpg), it has length > 0. If File is empty (i.e. does not contain .jpg), it has length 0.
                 //NOTE: This check is important, as the app would crash when the ImageView is pressed on IF it has no .jpg (i.e. the Pix has an empty picture File)
                 if (mPictureFile.length() != 0) {
 
-                    //Open picture view dialog
+                    //Open picture view DialogFragment
                     ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
                     pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
-//                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_GALLERY);
 
                     //Create FragmentManager (which has access to all fragments)
                     FragmentManager fragmentManager = getFragmentManager();
 
                     //Show the fragment
                     pictureViewDialog.show(fragmentManager, IDENTIFIER_DIALOG_FRAGMENT_PICTURE);
-
                 }
             }
         });
 
 
 
+        //Define the View to capture in order to share the Pix.
+        // In this case, it is the LinearLayout View
         mViewToShare = (LinearLayout) view.findViewById(R.id.pix_detail_linear_layout);
 
 
@@ -891,6 +847,9 @@ public class PixDetailFragment extends Fragment{
 
 
 
+
+
+    //======================== Define HELPER METHODS used in onCreateView(..) =============================================
 
     //Update Pix SQLiteDatabase and two-pane UI (upon any changes)
     private void updatePix(){
@@ -906,7 +865,21 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    //Open camera activity/app
+    //Check if the GPS on the phone is enabled
+    public boolean isGpsEnabled(){
+
+        //Create a LocationManager object
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        //Check if the GPS AND network provider are enabled
+        return ( locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) );
+    }
+
+
+
+
+
+    //Open device's camera activity/app
     private void cameraIntent(){
 
         //Create implicit intent with action to open camera activity/app
@@ -917,6 +890,8 @@ public class PixDetailFragment extends Fragment{
 
         //Set boolean for condition: Picture file exists AND implicit intent can resolve camera activity via PackageManager
         boolean canTakePicture = (mPictureFile != null) && (takePictureIntent.resolveActivity(packageManager) != null);
+
+        //Enable the mPictureAddButton, based on whether a suitable camera app is resolved, and the availability of the File to save the picture (in the FileProvider)
         mPictureAddButton.setEnabled(canTakePicture);
 
 
@@ -933,12 +908,12 @@ public class PixDetailFragment extends Fragment{
         //Query PackageManager to obtain list of activities/apps that match conditions of captureImageIntent
         List<ResolveInfo> cameraActivities = packageManager.queryIntentActivities(
                 takePictureIntent, //(Intent): The intent to open camera
-                PackageManager.MATCH_DEFAULT_ONLY //Filter the query to only intents of the DEFAULT category
+                PackageManager.MATCH_DEFAULT_ONLY //(int): Filter the query to only intents of the DEFAULT category
         );
 
         //Sort through all activities resolved (in the list)
         for (ResolveInfo resolvedActivity : cameraActivities){
-            //Grant permsision for the resolved activity to write to the URI of the FileProvider
+            //Grant permsision for the resolved camera activity to write to the URI of the FileProvider
             getActivity().grantUriPermission(
                     resolvedActivity.activityInfo.packageName, //(String): The resolved activity
                     uriFileProvider, //(Uri): URI of FileProvider for which to grant access to
@@ -1011,16 +986,11 @@ public class PixDetailFragment extends Fragment{
 
         //If picture file does NOT exist
         if (mPictureFile == null || !mPictureFile.exists()){
-
             //Talkback accessibility: Associate textual description to 'empty' view
             mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
-
-//            Toast.makeText(getActivity(), "No mPictureFile", Toast.LENGTH_SHORT).show();
         }
-
         //If picture file EXISTS
         else{
-
             //Get picture in bitmap 'scaled' format
             Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
@@ -1029,15 +999,11 @@ public class PixDetailFragment extends Fragment{
             matrix.postRotate(90); //Set rotation for Matrix
             Bitmap pictureBitmapCorrectOrientation = Bitmap.createBitmap(pictureBitmap , 0, 0, pictureBitmap .getWidth(), pictureBitmap.getHeight(), matrix, true); //Rotate picture Bitmap
 
-
-            //Set picture ImageView view to bitmap version
+            //Set picture ImageView view to the Bitmap
             mPictureView.setImageBitmap(pictureBitmapCorrectOrientation);
 
             //Talkback accessbility: Associate textual description to 'existing' view
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
-
-//            Toast.makeText(getActivity(), "mPictureFile exists", Toast.LENGTH_SHORT).show();
-
         }
 
     }
@@ -1068,77 +1034,82 @@ public class PixDetailFragment extends Fragment{
         //Log lifecycle callback
         Log.i(TAG, "onOptionsItemSelected(..) called");
 
-        //Get
+        //Scan through the MenuItem IDs
         switch (menuItem.getItemId()) {
 
-            case (R.id.delete_pix):
 
-                //Display 'delete confirmation' dialog
+            //"Delete Pix" MenuItem
+            case (R.id.delete_pix):
+                //Open 'Delete Confirmation' dialog
                 deleteConfirmationDialog();
                 return true;
 
+
+            //"Share Pix" MenuItem
             case(R.id.share_pix):
-                OnClickShare(mViewToShare);
+                //Share the Pix
+                sharePix(mViewToShare);
                 return true;
 
+
+            //"Update Pix" MenuItem
             case(R.id.update_pix_location):
-
+                //If location is enabled
                 if(isGpsEnabled()) {
-                    Log.i(TAG, "CONNECTED to locations");
-                    createLocationRequest();
-                    updateLocationConfirmationDialog();
-//                updatePixLocationMenuItemPressed = true;
-//                createLocationRequest();
-//                updatePixLocation();
+                    Log.i(TAG, "CONNECTED to locations"); //Log to Logcat
+                    createLocationRequest(); //Request for NEW location. This assumes a location already exists via the reverse geocoding procedure
+                    updateLocationConfirmationDialog(); //Open 'Update Location Confirmation' dialog
                 }
-
+                //If location is NOT enabled
                 else{
-                    Log.i(TAG, "NOT connected to Locations");
+                    //Log in Logcat
+                    Log.i(TAG, "Location not enabled");
+
+                    //Create AlertDialog object
                     AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
 
-                    TextView dialogTitle = new TextView(getActivity());
-                    dialogTitle.setText(R.string.prompt_enable_location);
-                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
-                    dialogTitle.setTextSize(22);
-                    dialogTitle.setGravity(Gravity.CENTER);
-                    dialogTitle.setTypeface(null, Typeface.BOLD);
-                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow));
+                    //Set-up custom title to display in the dialog
+                    TextView dialogTitle = new TextView(getActivity()); //Create TextView object
+                    dialogTitle.setText(R.string.prompt_enable_location); //Set text on TextView
+                    dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set color of text
+                    dialogTitle.setTextSize(22); //Set size of text
+                    dialogTitle.setGravity(Gravity.CENTER); //Set position of text in the title box of the dialog
+                    dialogTitle.setTypeface(null, Typeface.BOLD); //Set the text to be bold
+                    dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set background color title box of the dialog
 
-                    dialog.setCustomTitle(dialogTitle);
-                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings"));
-                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() {
+                    dialog.setCustomTitle(dialogTitle); //Set the dialog's title block to be the TextView defined (above)
+                    dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings")); //Set message
+                    dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() { //Set Positive button for dialog
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            // TODO Auto-generated method stub
-                            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            getContext().startActivity(myIntent);
-                            //get gps
+                            //Create Intent to open Settings to disable location
+                            Intent locationSourceSettingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            //Start the Intent
+                            getContext().startActivity(locationSourceSettingsIntent);
                         }
                     });
-                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-
+                    dialog.setNegativeButton(getContext().getString(android.R.string.cancel), new DialogInterface.OnClickListener() { //Set Negative button for dialog
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            // TODO Auto-generated method stub
-
+                            //Do nothing
                         }
                     });
-                    dialog.show();
+                    dialog.show(); //Show dialog
                 }
-
                 return true;
 
 
+            //Set default values
             default:
                 return super.onOptionsItemSelected(menuItem);
         }
-
     }
 
 
 
 
 
+    //Open 'Delete Confirmation' dialog
     private void deleteConfirmationDialog(){
 
         //Create FragmentManager
@@ -1156,25 +1127,18 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    LinearLayout mViewToShare;
 
 
+    //Share the Pix
+    public void sharePix(View view) {
 
-
-
-
-
-
-
-    public void OnClickShare(View view) {
-
-        //Eliminate "cursor" showing up prior to 'screenshot'
+        //Unable the EditText views from showing any cursors - prior to the 'screenshot'
         mTitle.setCursorVisible(false);
         mTagEditText.setCursorVisible(false);
         mDescription.setCursorVisible(false);
 
 
-        //Eliminate "text highlight" showing up prior to 'screenshot'
+        //Unable the EditText view from showing 'highlighted text' - prior to the 'screenshot'
         Editable editableTitle = mTitle.getText();
         String titleString = editableTitle.toString();
         mTitle.setText(titleString);
@@ -1188,55 +1152,98 @@ public class PixDetailFragment extends Fragment{
         mDescription.setText(descriptionString);
 
 
-
-        Bitmap bitmap = getBitmapFromView(mViewToShare);
-
-
+        //'Screenshot' the View to share, and store it in a Bitmap object
+        Bitmap viewToShareBitmap = getBitmapFromView(mViewToShare);
 
 
+        //Re-enable the EditText views to show cursors
         mTitle.setCursorVisible(true);
         mTagEditText.setCursorVisible(true);
         mDescription.setCursorVisible(true);
 
 
-
-
+        //Try 'risky' task - getExternalCatcheDir() can throw an Exception
         try {
-            File file = new File(getActivity().getExternalCacheDir(), "logicchip.png");
-            FileOutputStream fOut = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-            fOut.flush();
-            fOut.close();
+            //Get absolute path to application-specific directory on the primary shared/external storage device to store cache files
+            //NOTE: These files are internal to the application, and not typically visible to the user as media
+            File file = new File(getActivity().getExternalCacheDir(), "pixViewToShare.png");
+
+            //Create the FileOutputStream to write data to the File
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+            //Compress the bitmap into the FileOutputStream
+            viewToShareBitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+
+            //Force the buffered output bytes to be written out
+            fileOutputStream.flush();
+
+            //Closes the output stream and releases any system resources associated with the stream
+            fileOutputStream.close();
+
+            //Set the owner's read permission for the abstract pathname
             file.setReadable(true, false);
-            final Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-            intent.setType("image/png");
-            startActivity(Intent.createChooser(intent, "Share Picture via"));
-        } catch (Exception e) {
+
+            //Set Intent to send file
+            final Intent sendIntent = new Intent(android.content.Intent.ACTION_SEND);
+
+            //Set the special flag controlling how this intent is handled
+            sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            //Add the file to URI of the file as extra in the intent
+            sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+
+            //Set image type as png
+            sendIntent.setType("image/png");
+
+            //Start chooser activity
+            startActivity(Intent.createChooser(sendIntent, "Share Picture via"));
+        }
+        //Catch potential Exception thrown by getExternalCacheDir()
+        catch (Exception e) {
+            //Prince the stacktrace containing the exception
             e.printStackTrace();
         }
     }
 
 
+
+
+
+    //'Screenshot' the View to share, and store it in a Bitmap object
     private Bitmap getBitmapFromView(View view) {
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(returnedBitmap);
-        Drawable bgDrawable = view.getBackground();
-        if (bgDrawable != null) {
-            //has background drawable, then draw it on the canvas
-            bgDrawable.draw(canvas);
-        } else {
-            //does not have background drawable, then draw white background on the canvas
+
+        //Create drawable
+        Bitmap viewToShareBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+
+        //Create a Canvas object, passing in the Bitmap version of the view to share
+        Canvas canvas = new Canvas(viewToShareBitmap);
+
+        //Create background drawable object
+        Drawable backgroundDrawable = view.getBackground();
+
+        //If background drawable EXISTS
+        if (backgroundDrawable != null) {
+            //Draw the background drawable on the draw on the canvas
+            backgroundDrawable.draw(canvas);
+        }
+        //If background drawable does NOT exist
+        else {
+            //Draw white background on the canvas
             canvas.drawColor(Color.WHITE);
         }
+
+        //Draw the canvas on the View
         view.draw(canvas);
-        return returnedBitmap;
+
+        //Return view to share as a Bitmap
+        return viewToShareBitmap;
     }
 
 
 
 
+
+    //
     public void updateLocationConfirmationDialog(){
         //Create FragmentManager
         FragmentManager fragmentManager = getFragmentManager();
@@ -1510,7 +1517,7 @@ public class PixDetailFragment extends Fragment{
         //Log in Logcat
         Log.i(TAG, "onDetach() called");
 
-        //Null mCallbacks ref. var. (to PixDetailFragment.Callbacks object)
+        //Nullify the callback interface reference variable
         mCallbacks = null;
     }
 
