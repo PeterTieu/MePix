@@ -15,12 +15,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-/**
- * Created by Peter Tieu on 22/12/2017.
- */
 
+
+
+//Dialog fragment to confirm 'Pix Delete'.
+//Called by a menu item in the toolbar of PixDetailFragment fragment
 public class PixDeleteConfirmationDialogFragment extends DialogFragment{
 
+    //Declare instance variables
     private static final String ARG_PIX_TITLE = "pixTitle";
     public static final String ARG_PIX_DESCRIPTION = "pixDescription";
 
