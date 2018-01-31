@@ -5,12 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 
-/**
- * Created by Peter Tieu on 28/12/2017.
- */
 
-//Utility class for 'scaling' picture Bitmap for ImageView dialog fragment,
-//in case height/width of picture Bitmap is greater than allowable by the ImageView dialog fragment
+
+
+//Utility class for:
+    //1: Taking a picture file URI and create and return a Bitmap
+    //2: 'Scaling' picture Bitmap for ImageViewFragment dialog fragment, in case height/width of picture Bitmap is greater than allowable by the ImageView dialog fragment
 public class PictureUtility {
 
     //Getter for 'scaled' picture Bitmap
@@ -74,8 +74,5 @@ public class PictureUtility {
         // which may now have a NEW scale factor
         return BitmapFactory.decodeFile(path, bitmapFactoryOptions);
     }
-
-
-
 
 }
