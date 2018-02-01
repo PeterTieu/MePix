@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--Reference layout - to refer to two-pane layout/view (if w>600dp-->
+
 <resources>
 
     <item

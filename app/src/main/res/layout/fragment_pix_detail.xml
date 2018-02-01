@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--Layout for the detail view-->
+<!--Fragment layout - for the detail view-->
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:id="@+id/pix_detail_scrollview"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -18,7 +19,7 @@
         android:layout_margin="5dp"
         android:orientation="vertical">
 
-        <!--Title of the Pix-->
+        <!--Title of Pix-->
         <EditText
             android:id="@+id/detail_pix_title"
             android:hint="@string/title_hint"
@@ -30,6 +31,7 @@
             android:layout_marginRight="5dp"
             android:inputType="textCapWords|textMultiLine"/>
 
+        <!--Favorite checkbox of Pix-->
         <CheckBox
             android:id="@+id/detail_pix_favorited"
             android:text="@string/favorite"
@@ -49,14 +51,14 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
+                <!--Picture of Pix-->
                 <ImageView
                     android:id="@+id/detail_pix_picture"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    app:srcCompat="@android:drawable/ic_menu_gallery"
-                    />
+                    app:srcCompat="@android:drawable/ic_menu_gallery"/>
 
-                <!--Picture Add button for the Pix-->
+                <!--Picture Add button for Pix-->
                 <ImageButton
                     android:id="@+id/detail_pix_add_picture"
                     android:src="@android:drawable/ic_menu_camera"
@@ -64,9 +66,7 @@
                     android:layout_width="92dp"
                     android:layout_height="50dp"
                     android:textColor="@color/colorButtonText"/>
-
             </LinearLayout>
-            <!--Picture of the Pix-->
 
 
 
@@ -75,6 +75,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
+                <!--Text: "Details"-->
                 <TextView
                     android:text="@string/details"
                     android:textSize="18dp"
@@ -82,24 +83,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
+                <!--Text: "Date"-->
                 <TextView
                     android:text="@string/date"
                     android:layout_marginTop="20dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
+                <!--Text: "Location"-->
                 <TextView
                     android:text="@string/address"
                     android:layout_marginTop="35dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
+                <!--Text: "With"-->
                 <TextView
                     android:text="@string/with"
                     android:layout_width="wrap_content"
                     android:layout_marginTop="35dp"
                     android:layout_height="wrap_content"/>
-
             </LinearLayout>
 
 
@@ -135,18 +138,14 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/tag_people"/>
 
-                <!--Add Tag Button-->
+                <!--Tag Button-->
                 <Button
                     android:id="@+id/detail_pix_tag"
                     android:text="@string/add_tag"
                     android:layout_width="wrap_content"
                     android:layout_height="50dp"
                     android:textColor="@color/colorButtonText"/>
-
             </LinearLayout>
-
-
-
 
         </LinearLayout>
 
@@ -161,11 +160,6 @@
             android:layout_height="match_parent"
             android:inputType="textCapSentences|textMultiLine"/>
 
-
     </LinearLayout>
-
-
-
-
 
 </ScrollView>

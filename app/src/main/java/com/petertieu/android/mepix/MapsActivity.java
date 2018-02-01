@@ -1,13 +1,11 @@
 package com.petertieu.android.mepix;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -16,57 +14,54 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.UUID;
 
 
+
+//Activity for viewing the Pix Location on the Google Map
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
 
+    //================== Declare INSTANCE VARIABLES ============================================
+
+    //Define TAG for Logcat
     private static final String TAG = "MapsActivity";
-    private static final String EXTRA_PIX_ID = "pixId";
+
+    //Keys for intent extras
     private static final String EXTRA_PIX_LATITUDE = "latitude";
     private static final String EXTRA_PIX_LONGITUDE = "longitude";
     private static final String EXTRA_PIX_ADDRESS = "address";
 
 
-    //Declare GoogleMap object
+    //GoogleMap object
     private GoogleMap mMap;
 
-    //Declare UUID of Pix
-    private UUID mPixId;
-
-    //Declare double latitude of Pix location
+    //Latitude from Pix location
     private double mLatitude;
 
-    //Declare double longitude of Pix location
+    //Longitude from Pix location
     private double mLongitude;
 
-    //Declare String address of Pix location
+    //Address from Pix location
     private String mAddress;
 
-    //Declare marker for Pix location
+    //Marker for Pix location
     private MarkerOptions mPixLocationMarker;
 
-    private LatLng mMarkerLocation;
 
 
 
-
+    //================== Define METHODS ============================================
 
     //Declare method to call in order to start this activity
-    public static Intent newIntent(Context context, UUID pixId, double latitude, double longitude, String address){
+    public static Intent newIntent(Context context, double latitude, double longitude, String address){
 
         //Log to Logcat
         Log.i(TAG, "newIntent(..) called");
 
         //Create new intent to start PixViewPagerActivity
         Intent intent = new Intent(context, MapsActivity.class);
-
-        //Add UUID of Pix as intent extra
-        intent.putExtra(EXTRA_PIX_ID, pixId);
 
         //Add latitude as intent extra
         intent.putExtra(EXTRA_PIX_LATITUDE, latitude);
@@ -92,9 +87,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Set layout view of activity
         setContentView(R.layout.activity_maps);
-
-        //Unpack intent extra then assign to UUID instance variable
-        mPixId = (UUID) getIntent().getSerializableExtra(EXTRA_PIX_ID);
 
         //Unpack intent extra then assign to latitude instance variable
         mLatitude = getIntent().getDoubleExtra(EXTRA_PIX_LATITUDE, 0);
@@ -140,20 +132,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        //Define magnitude of extra bounds to control camera zoom level
-        double offsetFromLocation = 0.00003f;
-        //Extra bound #1
-        LatLng northEastLatLon = new LatLng(mLatitude + offsetFromLocation, mLongitude + offsetFromLocation);
-        //Extra bound #2
-        LatLng southWestLatLon = new LatLng(mLatitude - offsetFromLocation, mLongitude - offsetFromLocation);
+        //Define additional bounds to control camera zoom level
+        double offsetFromLocation = 0.00003f; //Offset magnitude
+        LatLng northEastLatLon = new LatLng(mLatitude + offsetFromLocation, mLongitude + offsetFromLocation); //Extra bound #1
+        LatLng southWestLatLon = new LatLng(mLatitude - offsetFromLocation, mLongitude - offsetFromLocation); //Extra bound #2
 
-
-        //Define a rectangular lat/lon boundary perimeter, where the to accommodate the bounds
+        //Define a rectangular lat/lon boundary perimeter  to take into account the additional bounds
         LatLngBounds latLngBounds = new LatLngBounds.Builder()
                                                     .include(pixLocationLatLon)
                                                     .include(northEastLatLon)
                                                     .include(southWestLatLon)
                                                     .build();
+
 
         //Define the The padding of the 'bounds' perimeter.
         int margin = getResources().getDimensionPixelSize(R.dimen.map_inset_margin);
@@ -168,6 +158,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
+    //Override onPause() activity lifecycle callback method
     @Override
     public void onPause(){
         super.onPause();
@@ -176,13 +168,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
+
+    //Override onStop() activity lifecycle callback method
     @Override
     public void onStop(){
         super.onStop();
 
     }
-
-
-
 
 }

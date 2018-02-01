@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--Activity ViewPager layout for hosting and paging between fragments of detail view-->
+<!--Activity layout - for ViewPager - for hosting and paging between fragments of detail view-->
+<!--i.e. Activity layout for hosting PixDetailFragment(s)-->
 
 <android.support.v4.view.ViewPager
     xmlns:android="http://schemas.android.com/apk/res/android"

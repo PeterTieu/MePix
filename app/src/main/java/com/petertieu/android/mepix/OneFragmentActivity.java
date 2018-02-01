@@ -1,6 +1,5 @@
 package com.petertieu.android.mepix;
 
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.annotation.LayoutRes;

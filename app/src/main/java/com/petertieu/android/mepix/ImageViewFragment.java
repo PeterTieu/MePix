@@ -19,30 +19,33 @@ import java.io.File;
 import java.util.Date;
 
 
-/**
- * Created by Peter Tieu on 27/12/2017.
- */
 
 
 //DialogFragment for ImageView dialog
 public class ImageViewFragment extends DialogFragment{
 
-    private static final String TAG = "ImageViewFragment";
+
+    //=================== Declare INSTANCE VARIABLES ===========================
 
     //Declare 'key' for argument bundle
-    private static final String ARGUMENT_PICTURE = "image";
-    private static final String ARGUMENT_TITLE = "title";
-    private static final String ARGUMENT_DATE = "date";
+    private static final String ARGUMENT_PICTURE = "image"; //Key for picture File
+    private static final String ARGUMENT_TITLE = "title";   //Key for Pix title
+    private static final String ARGUMENT_DATE = "date";     //Key for Pix date
 
-    //Declare ImageView view
-    private ImageView mImageView;
 
+    //Rotated version of the Bitmap generated from PictureUtility (in the correct orientation)
     private Bitmap bitmapPictureCorrectOrientation;
 
-    private File mPictureFile;
-    private String mPixTitle;
-    private Date mPixDate;
 
+    private File mPictureFile;  //Pix File (to display in ImageView)
+    private String mPixTitle;   //Pix title (to display in the filename of the picture file saved to Gallery)
+    private Date mPixDate;      //Pix date ((to display in the filename of the picture file saved to Gallery)
+
+
+
+
+
+    //=================== Define METHODS ===========================
 
     //Build encapsulating 'constructor'
     public static ImageViewFragment newInstance(File pictureFile, String pixTitle, Date pixDate){
@@ -66,8 +69,6 @@ public class ImageViewFragment extends DialogFragment{
 
         //Return ImageViewFragment object
         return imageViewFragment;
-
-
     }
 
 
@@ -94,7 +95,7 @@ public class ImageViewFragment extends DialogFragment{
             mPixTitle = "Untitled";
         }
 
-        //Convert original picture from File to 'scaled' picture for use on dialog
+        //Obtain the Bitmap from the picture File
         Bitmap pictureBitmap = PictureUtility.getScaledBitmap(mPictureFile.getPath(), getActivity());
 
         //Rotate picture bitmap to correct orientation - as pictureBitmap is 90 degrees off-rotation
@@ -106,52 +107,51 @@ public class ImageViewFragment extends DialogFragment{
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pix_picture, null);
 
         //Assign ImageView reference variable to associated resource ID
-        ImageView mImageView = (ImageView) view.findViewById(R.id.dialog_image_view);
+        final ImageView mImageView = (ImageView) view.findViewById(R.id.dialog_image_view);
 
         //Set 'scaled' picture Bitmap onto ImageView
         mImageView.setImageBitmap(bitmapPictureCorrectOrientation);
 
-        TextView dialogTitle = new TextView(getActivity());
-        dialogTitle.setText(R.string.pix_picture_text);
+        //Set-up custom title to display in the dialog
+        TextView dialogTitle = new TextView(getActivity()); //Create TextView object
+        dialogTitle.setText(R.string.pix_picture_text); //Set text on TextView
         dialogTitle.setTypeface(null, Typeface.BOLD);
-        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton));
-        dialogTitle.setTextSize(25);
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set text color
+        dialogTitle.setTextSize(25); //Set size of text
+        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set text background color
+
 
         //Return AlertDialog (subclass of Dialog), which sets the dialog properties
         return new AlertDialog.Builder(getActivity())
                 .setView(view) //Set View of dialog
                 .setCustomTitle(dialogTitle) //Set TITLE of dialog
                 .setPositiveButton(android.R.string.ok, null) //Set "ok" button
+                .setNeutralButton(R.string.save_to_gallery, //Set neutral button ("Save to Gallery")
+                        //Set listener for neutral button ("Save to Gallery")
+                        new DialogInterface.OnClickListener(){
 
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                //Set listener for adding picture to gallery
-                .setNeutralButton(R.string.save_to_gallery, new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which){
-//
+                                //Set string for filename
+                                String fileName = mPixTitle + "_" + mPixDate;
 
-//                        Random randomNumberGenerator = new Random();
-//
-//                        int randomNumber = randomNumberGenerator.nextInt();
+                                //Insert image to Gallery.
+                                // Also, return a URL String. If the image failed to be saved in Gallery, the URL would be null
+                                 String savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation, fileName, "");
 
-                        String fileName = mPixTitle + "_" + mPixDate;
-
-                        String savedImageUrl;
-                        savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation , fileName , "");
-
-                        if (savedImageUrl == null){
-                            Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
-                            Toast.makeText(getActivity(), "Please check Storage Permissions", Toast.LENGTH_LONG).show();
-                        }
-                        else{
-                            Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
-                        }
-
-                    }
-                })
+                                //If the image file failed to be saved in Gallery
+                                if (savedImageUrl == null) {
+                                    Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getActivity(), "Please check Storage Permissions", Toast.LENGTH_LONG).show();
+                                }
+                                //If the image file is saved to Gallery
+                                else {
+                                    Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        })
                 .create();
     }
-
-
 
 }

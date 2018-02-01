@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--Layout for the Menu of the DETAIL VIEW (i.e. fragment_detail_list.xml)-->
+<!--Menu item layout - for DETAIL VIEW (i.e. fragment_detail_list.xml)-->
 
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+    <!--Menu item: Update location of Pix-->
     <item
         android:id="@+id/update_pix_location"
         android:title="@string/update_pix_location"
@@ -13,15 +15,15 @@
         app:showAsAction="ifRoom|withText"/>
 
 
-
-    <!--Share Pix-->
+    <!--Menu item: Share Pix-->
     <item
         android:id="@+id/share_pix"
         android:title="@string/share_pix"
         android:icon="@drawable/ic_menu_share"
         app:showAsAction="ifRoom|withText"/>
 
-    <!--Delete Pix-->
+
+    <!--Menu item: Delete Pix-->
     <item
         android:id="@+id/delete_pix"
         android:title="@string/delete_pix"

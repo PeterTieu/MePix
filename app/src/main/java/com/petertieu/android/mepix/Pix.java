@@ -40,7 +40,8 @@ public class Pix{
         //Assign the (UUID) mId field
         mId = id;
 
-        //Initialise the (Date) mDate field - so that pix.getDate.toString() in PixManager.getContentValues(..) would work
+        //Initialise the (Date) mDate field - so that pix.getDate.toString() in PixManager.getContentValues(..) would work.
+        //NOTE: A new Date object is set to the 'current' date (and time) by default
         mDate = new Date();
     }
 

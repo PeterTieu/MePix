@@ -9,11 +9,13 @@ import android.graphics.Point;
 
 
 //Utility class for:
-    //1: Taking a picture file URI and create and return a Bitmap
+    //1: Take as INPUT: picture File URI... then return as OUTPUT: Bitmap
     //2: 'Scaling' picture Bitmap for ImageViewFragment dialog fragment, in case height/width of picture Bitmap is greater than allowable by the ImageView dialog fragment
+//NOTE: A utility class is one that contains helper methods for other classes, and therefore acts a 'helping' class. It shouldn't contain instance variables, as per conventional object classes.
 public class PictureUtility {
 
-    //Getter for 'scaled' picture Bitmap
+
+    //Static method for getting picture File URI and returning Bitmap
     public static Bitmap getScaledBitmap(String path, Activity activity){
 
         //Create Point object to hold 'x' and 'y' co-ordinates
@@ -22,7 +24,7 @@ public class PictureUtility {
         //Get default display size of activity, in this case, the ImageView dialog fragment (i.e. default maximum size for a Bitmap)
         activity.getWindowManager().getDefaultDisplay().getSize(size);
 
-        //Call overloaded method
+        //Call overloaded method getScaledBitmap(..)
         //NOTE: 'size.x' and 'size.y' are max. co-ordinates of activity
         return getScaledBitmap(path, size.x, size.y);
     }

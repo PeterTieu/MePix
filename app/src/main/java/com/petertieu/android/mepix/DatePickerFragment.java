@@ -1,6 +1,5 @@
 package com.petertieu.android.mepix;
 
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,9 +17,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-/**
- * Created by Peter Tieu on 17/12/2017.
- */
+
 
 
 //DialogFragment for DatePicker dialog
@@ -73,7 +70,7 @@ public class DatePickerFragment extends DialogFragment {
         //Assign DatePicker reference variable to associated resource ID
         mDatePicker = (DatePicker) view.findViewById(R.id.dialog_pix_date_picker);
 
-        //Create Calendar object
+        //Create Calendar object, which could take Date objects and convert them into constituent properties (e.g. year, month, day of month, hour, etc.)
         Calendar calendar = Calendar.getInstance();
 
         //Set time in Calendar to time stored in the Pix object
@@ -112,9 +109,9 @@ public class DatePickerFragment extends DialogFragment {
                             //Override listener of DialogInterface.OnClickListener.OnClickListener interface
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                int year = mDatePicker.getYear(); //Get 'year' from DatePicker view
-                                int month = mDatePicker.getMonth(); //Get 'month' from DatePicker view
-                                int dayOfMonth = mDatePicker.getDayOfMonth(); //Get 'dayOfMonth' from DatePicker view
+                                int year = mDatePicker.getYear(); //Get 'year' selected from DatePicker view
+                                int month = mDatePicker.getMonth(); //Get 'month' selected from DatePicker view
+                                int dayOfMonth = mDatePicker.getDayOfMonth(); //Get 'dayOfMonth' selected from DatePicker view
 
                                 //Save set year/month/dayOfMonth to Date object
                                 Date newSetDate = new GregorianCalendar(year, month, dayOfMonth).getTime();

@@ -1,4 +1,5 @@
 package com.petertieu.android.mepix;
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.location.Address;
@@ -14,10 +15,6 @@ import java.util.Locale;
 
 import static com.petertieu.android.mepix.FetchAddressIntentService.Constants.TAG;
 
-
-/**
- * Created by Peter Tieu on 12/01/2018.
- */
 
 
 
@@ -36,16 +33,16 @@ public class FetchAddressIntentService extends IntentService {
 
     //Define constants
     public final class Constants {
-        public static final String TAG = "FetchAddressIntServ"; //Tag for Logcat
-        public static final int SUCCESS_RESULT = 102; //Indicate a success - send Address
-        public static final int FAILURE_RESULT = 104; //Indicate a failure
-        public static final String PACKAGE_NAME = "com.petertieu.android.mepix"; //Package name
-        public static final String RECEIVER = PACKAGE_NAME + ".RECEIVER"; //Receiver extra of Intent
-        public static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY"; //'Key' for result data
+        public static final String TAG = "FetchAddressIntServ";                                 //Tag for Logcat
+        public static final int SUCCESS_RESULT = 102;                                           //Indicate a success - send Address
+        public static final int FAILURE_RESULT = 104;                                           //Indicate a failure
+        public static final String PACKAGE_NAME = "com.petertieu.android.mepix";                //Package name
+        public static final String RECEIVER = PACKAGE_NAME + ".RECEIVER";                       //Receiver extra of Intent
+        public static final String RESULT_DATA_KEY = PACKAGE_NAME + ".RESULT_DATA_KEY";         //'Key' for result data
         public static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA"; //Location extra of Intent
     }
 
-    //Declare ResultReceiver
+    //Declare ResultReceiver - to SEND results to
     protected ResultReceiver mReceiver;
 
     //Build constructor
@@ -54,15 +51,15 @@ public class FetchAddressIntentService extends IntentService {
     }
 
 
-    //Handle data (ResultReceiver object and Location object) sent to this IntentService
+    //Override callback method to handl data (i.e. ResultReceiver object and Location object) sent to this IntentService
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        //Extract ResultReceiver from PixDetailFragment. NOTE: ResultReceiver is where the address data from reverse geocoding will be sent to
-        mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
-
         //Extract Location from PixDetailFragment
         Location location = intent.getParcelableExtra(Constants.LOCATION_DATA_EXTRA);
+
+        //Extract ResultReceiver from PixDetailFragment. NOTE: ResultReceiver is where the address data from reverse geocoding will be sent to
+        mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
 
         //Declare error message variable
         String errorMessage = "";
@@ -75,7 +72,8 @@ public class FetchAddressIntentService extends IntentService {
             return;
         }
 
-        //Create Geocoder to perform reverse geocoding. NOTE: Locale object represents the linguistic presentation of the address information specific to the region
+        //Create Geocoder to perform reverse geocoding.
+        //NOTE: Locale object represents the linguistic presentation of the address information specific to the region
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
 
@@ -129,23 +127,21 @@ public class FetchAddressIntentService extends IntentService {
                 //Send 'negative' results back to PixDetailFragment
                 deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
             }
-
             //If Geocoder exists AND address line is found
             else{
-
-                //Declare
+                //Define Address object to be the Address to contain String representations of the address of the current location
                 address = listOfAddresses.get(0);
 
-                //Define different address representation via the Address object (referenced by 'address')
-                String addressLine = address.getAddressLine(0);
-                String featureName = address.getFeatureName();
-                String locality = address.getLocality();
-                String adminArea = address.getAdminArea();
-                String subAdminArea = address.getSubAdminArea();
-                String subLocality = address.getSubLocality();
-                String subThoroughFare = address.getSubThoroughfare();
-                String thoroughfare = address.getThoroughfare();
-                String postalCode = address.getPostalCode();
+                //Define different address representations via the Address object (referenced by 'address')
+                String addressLine = address.getAddressLine(0);    //Full address
+                String featureName = address.getFeatureName();          //Landmark (e.g. Gold Gate Bridge)
+                String locality = address.getLocality();                //Landmark (e.g. "Mountain View)"
+                String adminArea = address.getAdminArea();              //State
+                String subAdminArea = address.getSubAdminArea();        //Street
+                String subLocality = address.getSubLocality();          //Neighbourhood of locality
+                String subThoroughFare = address.getSubThoroughfare();  //Sub-neighbourhood locality
+                String thoroughfare = address.getThoroughfare();        //Thorough fare
+                String postalCode = address.getPostalCode();            //Postal code
 
                 //Log different address types to Logcat
                 Log.i(TAG, "Address: " + addressLine);
@@ -163,9 +159,10 @@ public class FetchAddressIntentService extends IntentService {
                     //Send 'positive' result back to PixDetailFragment - attaching full address
                     deliverResultToReceiver(Constants.SUCCESS_RESULT, address);
                 }
-            }
-        }
 
+            }
+
+        }
         //If Geocoder is NOT present
         else{
             //Update error message
@@ -181,7 +178,7 @@ public class FetchAddressIntentService extends IntentService {
 
 
 
-    //Send results back to PixDetailFragment
+    //Send results back to PixDetailFragment - OVERLOADED method #1
     private void deliverResultToReceiver(int resultCode, Address address) {
 
         //Create Bundle object to use as argument-bundle
@@ -198,7 +195,7 @@ public class FetchAddressIntentService extends IntentService {
 
 
 
-    //Send results back to PixDetailFragment
+    //Send results back to PixDetailFragment - OVERLOADED method #2
     private void deliverResultToReceiver(int resultCode, String errorMessage) {
 
         //Create Bundle object to use as argument-bundle
@@ -210,11 +207,5 @@ public class FetchAddressIntentService extends IntentService {
         //Send argument-bundle to ResultReceiver (in this case, AddressResultReceiver from PixDetailFragment)
         mReceiver.send(resultCode, bundle);
     }
-
-
-
-
-
-
 
 }

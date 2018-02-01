@@ -46,7 +46,7 @@ public class PixListActivity extends OneFragmentActivity implements PixListFragm
 
         //If no pixes exist (regardless of screen width or smallest screen width value)
         if (PixManager.get(this).getPixes().size() == 0){
-            //Return single fragment view
+            //Return SINGLE fragment view
             return R.layout.activity_fragment;
         }
 
@@ -86,7 +86,7 @@ public class PixListActivity extends OneFragmentActivity implements PixListFragm
             //Create the PixDetailFragment fragment for the 2nd pane
             Fragment newPixDetailFragment = PixDetailFragment.newInstance(pix.getId());
 
-            //Replace the 2nd pane with the PixDetailFragment
+            //Replace the 2nd pane view with the PixDetailFragment
             getSupportFragmentManager().beginTransaction().replace(R.id.detail_fragment_container, newPixDetailFragment).commit();
         }
     }
@@ -113,14 +113,15 @@ public class PixListActivity extends OneFragmentActivity implements PixListFragm
 
 
 
-    //Override method from PixDetailFragment.Callbacks interface to delete Pix from PixDetailFragment in real-time (for two-pane view)
+    //Override method from PixDetailFragment.Callbacks interface
+    // to remove PixDetailFragment from the 2nd pane (when the underlying Pix is deleted via the toolbar of PixDetailFragment)
     @Override
     public void onPixDeleted(Pix pix){
 
         //Log lifecycle callback method in Logcat
         Log.i(TAG, "PixDetailFragment.Callbacks onPixDeleted(..) called");
 
-        //Get PixDetailFragment from SupportFragmentManager
+        //Get PixDetailFragment from SupportFragmentManager, so that we could remove it form the 2nd pane
         PixDetailFragment pixDetailFragment = (PixDetailFragment) getSupportFragmentManager().findFragmentById(R.id.detail_fragment_container);
 
         //Remove PixDetailFragment from 2nd pane

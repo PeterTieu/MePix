@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<paths>
-    <files-path name="pix_photos" path="."/>    //means: Map the root path of the private storage as: crime_photos
-    //Next step: Hook up files.xml (this file) to the FileProvider
-    //by adding a meta-data tag in the AndroidManifest.xml
+<!--Define path for file provider-->
 
+<paths>
+    <files-path name="pix_photos" path="."/>
+    <!--Map the root path of the private storage as: pix_photos
+    Next step: Hook up files.xml (this file) to the FileProvider by adding a meta-data tag in the AndroidManifest.xml-->
 </paths>

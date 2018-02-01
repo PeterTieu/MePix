@@ -1,10 +1,5 @@
 package com.petertieu.android.mepix;
 
-/**
- * Created by Peter Tieu on 13/01/2018.
- */
-
-
 //Class that helps track the lifecycle state of PixViewPagerActivity activity.
 //This is so that we could determine when the hosting activity of PixDetailFragment is PixViewPagerActivity OR PixListActivity.
 //The hosting activity of PixDetailFragment is...

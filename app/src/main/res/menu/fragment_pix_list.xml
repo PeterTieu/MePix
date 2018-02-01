@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--Layout for the Menu of the LIST VIEW (i.e. fragment_pix_list.xml)-->
+<!--Menu item layout - for LIST VIEW (i.e. fragment_pix_list.xml)-->
 
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!--New Pix-->
+    <!--Menu item: New Pix-->
     <item
         android:id="@+id/new_pix"
         android:title="@string/new_pix"

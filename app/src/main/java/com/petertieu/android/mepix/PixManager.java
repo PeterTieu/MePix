@@ -204,7 +204,7 @@ public class PixManager {
                 PixDatabaseSchema.PixTable.NAME, //(String) Name of table to query from
                 null, //(String[]) List of columns to select. "null" selects all columns
                 whereClause, //(String) Which column to select. "null" returns all columns
-                whereArgs, //(String) Which value to return in the selected column
+                whereArgs, //(String) Identifies the value in the column, in order to get the corresponding ROW whereby to place the cursor on
                 null, //(String) How rows are grouped. "null" causes the rows not to be grouped
                 null, //(String) Which rows groups are selected. "null" selects all row groups
                 null //(Sting) How to order the rows. "null" uses the default sort order
@@ -245,7 +245,8 @@ public class PixManager {
 
 
     //======================== READ from the FileProvider ===========================================================================
-    //NOTE; Accessing picture files AND the FileProvider.. have got nothing to do with the SQLiteDatabase database!
+    //NOTE; Accessing picture files AND the FileProvider.. have got NOTHING to do with the SQLiteDatabase database!
+    //This process is  in relations to the FileProvider
 
     //Get picture file of the Pix via its file location
     public File getPictureFile(Pix pix){
