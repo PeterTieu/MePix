@@ -1,6 +1,8 @@
 package com.petertieu.android.mepix;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.provider.MediaStore;
@@ -22,7 +24,7 @@ import java.util.Date;
 
 
 //DialogFragment for ImageView dialog
-public class ImageViewFragment extends DialogFragment{
+public class ImageViewDialogFragment extends DialogFragment{
 
 
     //=================== Declare INSTANCE VARIABLES ===========================
@@ -31,6 +33,8 @@ public class ImageViewFragment extends DialogFragment{
     private static final String ARGUMENT_PICTURE = "image"; //Key for picture File
     private static final String ARGUMENT_TITLE = "title";   //Key for Pix title
     private static final String ARGUMENT_DATE = "date";     //Key for Pix date
+
+    public static final String EXTRA_PIX_PICTURE_SAVED_TO_GALLERY = "pictureSaved";
 
 
     //Rotated version of the Bitmap generated from PictureUtility (in the correct orientation)
@@ -48,7 +52,7 @@ public class ImageViewFragment extends DialogFragment{
     //=================== Define METHODS ===========================
 
     //Build encapsulating 'constructor'
-    public static ImageViewFragment newInstance(File pictureFile, String pixTitle, Date pixDate){
+    public static ImageViewDialogFragment newInstance(File pictureFile, String pixTitle, Date pixDate){
 
         //Create Bundle object (i.e. argument-bundle)
         Bundle argumentBundle = new Bundle();
@@ -61,14 +65,14 @@ public class ImageViewFragment extends DialogFragment{
 
         argumentBundle.putSerializable(ARGUMENT_DATE, pixDate);
 
-        //Create ImageViewFragment
-        ImageViewFragment imageViewFragment = new ImageViewFragment();
+        //Create ImageViewDialogFragment
+        ImageViewDialogFragment imageViewDialogFragment = new ImageViewDialogFragment();
 
         //Set argument-bundle for the PixDetailFragment
-        imageViewFragment.setArguments(argumentBundle);
+        imageViewDialogFragment.setArguments(argumentBundle);
 
-        //Return ImageViewFragment object
-        return imageViewFragment;
+        //Return ImageViewDialogFragment object
+        return imageViewDialogFragment;
     }
 
 
@@ -145,13 +149,37 @@ public class ImageViewFragment extends DialogFragment{
                                     Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
                                     Toast.makeText(getActivity(), "Please check Storage Permissions", Toast.LENGTH_LONG).show();
                                 }
-                                //If the image file is saved to Gallery
+                                //If the image file is SUCCESSFULLY saved to Gallery
                                 else {
-                                    Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
+                                    boolean pictureSavedToGallery = true;
+                                    sendResult(Activity.RESULT_OK, pictureSavedToGallery);
+//                                    Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
                                 }
                             }
                         })
                 .create();
+    }
+
+
+
+
+
+    //Send boolean result for successful/unsuccessful Picture save to Gallery - back to target fragment (PixDetailFragment)
+    private void sendResult(int resultCode, boolean pictureSavedToGallery){
+
+        //If target fragment (PixDetailFragment) does NOT exist
+        if (getTargetFragment() == null){
+            return;
+        }
+
+        //Create Intent object
+        Intent intent = new Intent();
+
+        //Add key-value pair to the Intent
+        intent.putExtra(EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, pictureSavedToGallery);
+
+        //Call onActivityResult(..) of target fragment (PixDetailFragment)
+        getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
 
 }

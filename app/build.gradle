@@ -7,8 +7,8 @@ android {
         applicationId "com.petertieu.android.mepix"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         // Enabling multidex support.
         multiDexEnabled true
@@ -30,8 +30,7 @@ dependencies {
     compile 'com.android.support:design:25.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:recyclerview-v7:26.0.0-alpha1' //dependency to support RecyclerView
-    compile 'com.google.android.gms:play-services:11.0.0'
-    //dependency to include FusedLocationProviderClient class
+    compile 'com.google.android.gms:play-services:11.0.0' //dependency to include FusedLocationProviderClient class
     compile 'com.google.android.gms:play-services-location:10.0.1'
     compile 'com.google.android.gms:play-services-maps:10.0.1'
     compile 'com.android.support:multidex:1.0.0'

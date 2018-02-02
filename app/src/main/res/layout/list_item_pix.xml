@@ -24,7 +24,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_gallery"/>
+        app:srcCompat="@drawable/pix_default_picture"/>
+        <!--app:srcCompat="@android:drawable/ic_menu_gallery"-->
 
 
     <!--Title of Pix-->

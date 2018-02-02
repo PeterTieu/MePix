@@ -63,6 +63,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -99,11 +104,11 @@ public class PixDetailFragment extends Fragment{
     //MAPS instance variables
     private FusedLocationProviderClient mFusedLocationClient;   //Entry point for interacting with FusedLocationProviderApi (to get location fix (i.e. lat/lon))
     protected Location mLocation;                               //Declare Location object to contain location fix (i.e lat/lon values)
-    private Address mAddressOutput;                             //
+    private Address mAddressOutput;                             //Address of Pix (returned from IntentService (FetchAddressIntentService), and picked up by ResultReceiver (AddressResultReceiver)
     private AddressResultReceiver mAddressResultReceiver;       //ResultReceiver to receive reverse geocoding results from the IntentService (FetchAddressIntentService)
     private boolean updatePixLocationMenuItemPressed = false;   //Flag to be triggered when the Locations Update menu item is pressed. This is used in an if-statement to reset the mLocationButton's display display (of the location)
     LocationRequest mLocationRequest;                           //Sets for location update properties (e.g. defines the interval, priority, etc. to request for location update) from FusedLocationProviderApi
-    private LocationCallback mLocationCallback;                 //
+    private LocationCallback mLocationCallback;                 //LocationCallback for getting a location update
 
 
 
@@ -133,7 +138,8 @@ public class PixDetailFragment extends Fragment{
     private static final int REQUEST_CODE_PICTURE_CAMERA = 4;                                   //Request code for receiving results from camera activity/app
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 5;                             //Request code for receiving results from dialog fragment to select Pix date
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 6;              //Request code for receiving results from dialog fragment to delete Pix
-    private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm
+    private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm Pix location update
+    private static final int REQUEST_CODE_PICTURE_SAVED_TO_GALLERY = 8;                         //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
     //private static final int REQUEST_CODE_PICTURE_GALLERY = 8;                                //Request code for receiving results from phone's gallery
 
 
@@ -460,6 +466,13 @@ public class PixDetailFragment extends Fragment{
 
 
 
+    int newLinesCount = 1;
+    int tempNum = newLinesCount;
+    List<String> differentLinesArrayList;
+    int count = 0;
+    boolean hasAsteriskOnPreviousLine = false;
+
+
 
     //Override onCreateView(..) fragment lifecycle callback method
     @Override
@@ -510,6 +523,7 @@ public class PixDetailFragment extends Fragment{
         //================ SET UP mDateButton ==================================================================
         //Assign date EditText instance variable to its associated resource ID
         mDateButton = (Button) view.findViewById(R.id.detail_pix_date);
+
 
         //If a date exists for the Pix
         if (mPix.getDate() != null){
@@ -610,17 +624,170 @@ public class PixDetailFragment extends Fragment{
         mDescription.addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence charSequence, int i1, int i2, int i3) {
                 //Do nothing
             }
+
+
+
+
+
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 //Set description of the Pix to the current String in the EditText
                 mPix.setDescription(charSequence.toString());
 
+
+
+
+                Log.d(TAG, "LINES = " + mDescription.getLineCount());
+
+
+
+
+
+
+
+                StringReader sr = new StringReader(mDescription.getText().toString());
+                LineNumberReader lnr = new LineNumberReader(sr);
+                try {
+                    while (lnr.readLine() != null){}
+                    newLinesCount = lnr.getLineNumber();
+                    Log.d(TAG, "NEWLINE = " + newLinesCount);
+                    lnr.close();
+                } catch (IOException e) {
+                    newLinesCount = mDescription.getLineCount();
+                } finally {
+                    sr.close();
+                }
+
+
+
+
+
+
+
+
+                //Total text
+                String descriptionText = mDescription.getText().toString();
+
+                String[] differentLines = {};
+
+
+
+
+
+
+
+                try {
+                    if (!descriptionText.isEmpty() || descriptionText != null) {
+                        //String array of all the lines separted by newline
+                        differentLines = descriptionText.split("\n");
+                    }
+
+
+                    if (differentLines != null) {
+                        //Get individual lines
+                        for (String rawLine : differentLines) {
+
+                            Log.d("TESTLINE", rawLine);
+
+
+                            if (rawLine.charAt(0) == '*') {
+
+                                Log.d("HASAST", rawLine);
+                            }
+                        }
+                    }
+                } catch (RuntimeException runtimeException){
+
+                }
+
+
+
+                differentLinesArrayList = new ArrayList<String > (Arrays.asList(descriptionText.split("\n")));
+
+
+                for(String rawString : differentLinesArrayList){
+
+                    Log.d("ARRAY", rawString);
+
+                    if (rawString.startsWith("*")){
+                        Log.d("ARRAYAST", rawString);
+                    }
+
+                }
+
+
+                for (count = 0; count < differentLinesArrayList.size(); count++) {
+
+//                    hasAsteriskOnPreviousLine = false;
+
+                    if (differentLinesArrayList.get(count).startsWith("*")) {
+                        Log.d("ARRAYAST1", differentLinesArrayList.get(count));
+
+
+                        //If a newline has been added (i.e. '\n' is detected, i.e. ENTER button is pressed)
+                        if (tempNum != newLinesCount) {
+                            tempNum = newLinesCount;
+                            if (tempNum != 1) {
+                                Log.d(TAG, "NEWLINE DETECTED");
+                                charSequence = charSequence + "-";
+                            }
+                        }
+
+
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+//                String processedLine = differentLines[0];
+//
+//                for (int intt=0; i<differentLines.length; intt++){
+//
+//
+//
+//                    if (differentLines[intt].equals('*')){
+//                        differentLines[intt+1] = "*" + differentLines[intt];
+//                    }
+//
+//                    Log.d("TESTLINE", differentLines[intt]);
+//                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 //Update the Pix
                 updatePix();
+
+
+
             }
 
             @Override
@@ -628,6 +795,41 @@ public class PixDetailFragment extends Fragment{
                 //Do nothing
             }
         });
+
+
+
+//        mDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+//                if (actionId == EditorInfo.IME_NULL && keyEvent.getAction()==KeyEvent.ACTION_DOWN){
+//                    Toast.makeText(getActivity(), mPix.getDescription(), Toast.LENGTH_SHORT).show();
+//                }
+//
+//                return true;
+//            }
+//        });
+
+
+//        mDescription.setOnKeyListener(new View.OnKeyListener() {
+//
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event)
+//            {
+//                if (keyCode == event.KEYCODE_ENTER)
+//                {
+//                    Log.i(TAG, "captured");
+//
+//                    return false;
+//                }
+//
+//                return false;
+//            }
+//        });
+
+
+
+
+
 
 
 
@@ -789,10 +991,10 @@ public class PixDetailFragment extends Fragment{
                 if (mPictureFile.length() != 0) {
 
                     //Open picture view DialogFragment
-                    ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
+                    ImageViewDialogFragment pictureViewDialog = ImageViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
-                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_CAMERA);
+                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_SAVED_TO_GALLERY);
 
                     //Create FragmentManager (which has access to all fragments)
                     FragmentManager fragmentManager = getFragmentManager();
@@ -1623,7 +1825,6 @@ public class PixDetailFragment extends Fragment{
 
         //If resultCode matches camera activity
         if (requestCode == REQUEST_CODE_PICTURE_CAMERA) {
-
             //Get content URI of FileProvider for which picture file taken from camera has been saved
             Uri uriFileProvider = FileProvider.getUriForFile(
                     getActivity(), //Return the parent activity (i.e. PixViewPagerActivity or PixListActiivty)
@@ -1706,7 +1907,29 @@ public class PixDetailFragment extends Fragment{
                 //Update Pix SQLiteDatabase and two-pane UI (upon changes to the Pix)
 //                updatePix();
             }
+        }
 
+
+
+
+
+        //If resultCode matches 'ImageViewDialogFragment's "Save Picture to Gallery" button's
+        if (requestCode == REQUEST_CODE_PICTURE_SAVED_TO_GALLERY){
+            //Get boolean object to indicate whether Picture has been saved to Gallery
+            boolean pictureSavedToGallery = intent.getBooleanExtra(ImageViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+
+            //If Picture has been saved to Gallery
+            if (pictureSavedToGallery) {
+                //Display toast for successful save
+                Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
+
+                //======= Hide soft keyboard (if it is on the screen) ========
+                //Get InputMethodManager object
+                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+            }
         }
 
     }
@@ -1752,8 +1975,5 @@ public class PixDetailFragment extends Fragment{
             Log.e(TAG, "Error requesting location updates", securityException);
         }
     }
-
-
-
 
 }

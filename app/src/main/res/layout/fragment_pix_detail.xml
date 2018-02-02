@@ -56,7 +56,9 @@
                     android:id="@+id/detail_pix_picture"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    app:srcCompat="@android:drawable/ic_menu_gallery"/>
+                    app:srcCompat="@drawable/pix_default_picture"
+                    android:padding="10dp"/>
+                <!--app:srcCompat="@android:drawable/ic_menu_gallery"-->
 
                 <!--Picture Add button for Pix-->
                 <ImageButton
@@ -136,7 +138,7 @@
                     android:id="@+id/detail_edit_pix_tag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/tag_people"/>
+                    android:hint="@string/tag_anyone"/>
 
                 <!--Tag Button-->
                 <Button

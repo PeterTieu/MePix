@@ -1,13 +1,16 @@
 package com.petertieu.android.mepix;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -23,6 +26,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -63,12 +67,15 @@ public class PixListFragment extends Fragment{
     //Identifier of dialog fragment of picture ImageView
     private static final String IDENTIFIER_DIALOG_FRAGMENT_PICTURE = "IdentifierDialogFragmentPicture";
 
-    //List locations permissions required,
+    //List locations permissions required
     private static final String[] LOCATION_PERMISSIONS = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
     private static final String[] STORAGE_PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
 
+    //Define request codes
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
     private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
+    private static final int REQUEST_CODE_PICTURE_SAVED_TO_GALLERY = 2; //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
+
 
 
 
@@ -354,10 +361,11 @@ public class PixListFragment extends Fragment{
                 mCallbacks.onPixSelected(pix);
 
                 //Display toast to notify user a new pix has been added
-                Toast.makeText(getActivity(), R.string.new_pix_added, Toast.LENGTH_LONG).show();
+                Toast toast = Toast.makeText(getActivity(), R.string.new_pix_added, Toast.LENGTH_LONG); //Create Toast
+                toast.setGravity(Gravity.CENTER, 0,150); //Set positoin of Toast
+                toast.show(); //Show Toast
 
                 return true;
-
 
             default:
                 return super.onOptionsItemSelected(menuItem);
@@ -519,7 +527,10 @@ public class PixListFragment extends Fragment{
                     if (mPictureFile.length() != 0) {
 
                         //Open picture view dialog
-                        ImageViewFragment pictureViewDialog = ImageViewFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
+                        ImageViewDialogFragment pictureViewDialog = ImageViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
+
+                        //Set PixDetailFragment as target fragment for the dialog fragment
+                        pictureViewDialog.setTargetFragment(PixListFragment.this, REQUEST_CODE_PICTURE_SAVED_TO_GALLERY);
 
                         //Create FragmentManager (which has access to all fragments)
                         FragmentManager fragmentManager = getFragmentManager();
@@ -742,6 +753,11 @@ public class PixListFragment extends Fragment{
             if (mPictureFile == null || !mPictureFile.exists()){
                 //Talkback accessibility: Associate textual description to 'empty' view
                 mPictureView.setContentDescription(getString(R.string.pix_no_picture_description));
+
+                //Set the Btimap image of mPictureView to the default picture
+                //NOTE: This line may look redundant, since the default picture of mPictureView is already R.drawable.pix_default_picture...
+                // However, this actually fixes the bug whereby mPictureView views with Pix pictures sometimes get copied over to empty mPictureViews (i.e. ones without Pix picture)
+                mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
             }
 
             //If picture file EXISTS
@@ -864,6 +880,35 @@ public class PixListFragment extends Fragment{
 
     }
 
+
+
+
+
+    //Override onActivityResult(..) callback method
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+
+        //Log in Logcat
+        Log.i(TAG, "onActivityResult(..) called");
+
+        //If a result code DOES NOT exist
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        //If resultCode matches 'ImageViewDialogFragment's "Save Picture to Gallery" button's
+        if (requestCode == REQUEST_CODE_PICTURE_SAVED_TO_GALLERY){
+            //Get boolean object to indicate whether Picture has been saved to Gallery
+            boolean pictureSavedToGallery = intent.getBooleanExtra(ImageViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+
+            //If Picture has been saved to Gallery
+            if (pictureSavedToGallery) {
+                //Display toast for successful save
+                Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
+            }
+        }
+
+    }
 
 
 
