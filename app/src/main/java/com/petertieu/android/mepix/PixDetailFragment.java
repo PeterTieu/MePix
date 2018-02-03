@@ -475,6 +475,15 @@ public class PixDetailFragment extends Fragment{
     boolean hasAsteriskOnPreviousLine = false;
     String text;
 
+    boolean logged = true;
+
+    int tempNumber;
+
+    boolean lineArrayListSizeChanged = false;
+
+    int currentCharSequenceSize;
+    int previousCharSequenceSize=0;
+
 
 
 
@@ -703,6 +712,7 @@ public class PixDetailFragment extends Fragment{
 
 
 
+                //CHECK FOR NEW LINE
                 if (charSequence.toString().indexOf("\n") != -1){
                     newLinesCount = mDescription.getLineCount();
                     Log.d("LINECOUNT", Integer.toString(newLinesCount));
@@ -720,7 +730,7 @@ public class PixDetailFragment extends Fragment{
                 //Total text
                 String descriptionText = mDescription.getText().toString();
 
-                String[] differentLines = {};
+//                String[] differentLines = {};
 
 
 
@@ -728,29 +738,29 @@ public class PixDetailFragment extends Fragment{
 
 
 
-                try {
-                    if (!descriptionText.isEmpty() || descriptionText != null) {
-                        //String array of all the lines separted by newline
-                        differentLines = descriptionText.split("\n");
-                    }
-
-
-                    if (differentLines != null) {
-                        //Get individual lines
-                        for (String rawLine : differentLines) {
-
-                            Log.d("TESTLINE", rawLine);
-
-
-                            if (rawLine.charAt(0) == '*') {
-
-                                Log.d("HASAST", rawLine);
-                            }
-                        }
-                    }
-                } catch (RuntimeException runtimeException){
-
-                }
+//                try {
+//                    if (!descriptionText.isEmpty() || descriptionText != null) {
+//                        //String array of all the lines separted by newline
+//                        differentLines = descriptionText.split("\n");
+//                    }
+//
+//
+//                    if (differentLines != null) {
+//                        //Get individual lines
+//                        for (String rawLine : differentLines) {
+//
+//                            Log.d("TESTLINE", rawLine);
+//
+//
+//                            if (rawLine.charAt(0) == '*') {
+//
+//                                Log.d("HASAST", rawLine);
+//                            }
+//                        }
+//                    }
+//                } catch (RuntimeException runtimeException){
+//
+//                }
 
 
 
@@ -769,7 +779,7 @@ public class PixDetailFragment extends Fragment{
 
 
 
-                text = charSequence.toString() + "*";
+//                text = charSequence.toString() + "*";
 
 
 
@@ -786,10 +796,10 @@ public class PixDetailFragment extends Fragment{
                             Log.d("NEWLINETEST", "NEWLINE DETECTED");
 
 
-                            mDescription.removeTextChangedListener(this);
-                            mDescription.setText(text);
-                            mDescription.setSelection(text.length());
-                            mDescription.addTextChangedListener(this);
+//                            mDescription.removeTextChangedListener(this);
+//                            mDescription.setText(text);
+//                            mDescription.setSelection(text.length());
+//                            mDescription.addTextChangedListener(this);
 
                         }
                         tempNum = newLinesCount;
@@ -831,15 +841,118 @@ public class PixDetailFragment extends Fragment{
 
 
 
+
+
                     //If the previous line has got asterisk
                     if (differentLinesArrayList.get(count).startsWith("*") && (charSequence.toString().indexOf("\n") != -1)) {
-                        Log.d("ASTTEST", differentLinesArrayList.get(count));
-
+                        Log.d("testingthis1", "HASAST AND NEW LINE");
+                        Log.d("testingthis2", differentLinesArrayList.get(count));
                     }
 
 
 
+
+
+
+
+
+
+
+
+
+
+//                    text = charSequence.toString() + "*";
+//
+//                    //If space has been pressed AND the previous line has got asterisk
+//                    if (differentLinesArrayList.get(count).startsWith("*") && (charSequence.toString().indexOf("\n") != -1)) {
+//                        Log.d("ASTTEST", differentLinesArrayList.get(count));
+//
+//                        mDescription.removeTextChangedListener(this);
+//                        mDescription.setText(text);
+//                        mDescription.setSelection(text.length());
+//                        mDescription.addTextChangedListener(this);
+//
+//                    }
+
+
+
                 }
+
+
+
+
+
+                if (tempNumber != differentLinesArrayList.size()-1){
+                    lineArrayListSizeChanged = true;
+                    tempNumber = differentLinesArrayList.size()-1;
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                //Picks up new line, but Problem: also picks up every character typed
+                try {
+                    //If the previous line has got asterisk, AND a newline has been created
+                    if (differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("*") && (charSequence.toString().indexOf("\n", charSequence.length()-1) != -1)) {
+
+
+
+                        currentCharSequenceSize = charSequence.length();
+
+                        if (currentCharSequenceSize > previousCharSequenceSize) {
+
+                            Log.d("testingthis3", "HASAST AND NEW LINE");
+
+
+                            text = charSequence + "*";
+
+                            mDescription.removeTextChangedListener(this);
+                            mDescription.setText(text);
+                            mDescription.setSelection(text.length());
+                            mDescription.addTextChangedListener(this);
+
+
+                        }
+
+                        previousCharSequenceSize = currentCharSequenceSize;
+
+
+
+
+//                        if (charSequence.toString().indexOf("\n", charSequence.length()-1) != -1){
+//                            text = charSequence.subSequence(0, charSequence);
+//                        }
+
+
+
+
+
+
+
+
+
+
+
+
+                        }
+
+
+
+                }
+                catch(SecurityException securityException){
+
+                }
+
 
 
 
