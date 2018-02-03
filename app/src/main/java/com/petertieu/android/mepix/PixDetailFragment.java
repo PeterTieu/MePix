@@ -35,12 +35,14 @@ import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -471,6 +473,9 @@ public class PixDetailFragment extends Fragment{
     List<String> differentLinesArrayList;
     int count = 0;
     boolean hasAsteriskOnPreviousLine = false;
+    String text;
+
+
 
 
 
@@ -626,22 +631,42 @@ public class PixDetailFragment extends Fragment{
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i1, int i2, int i3) {
                 //Do nothing
+
+//                newLinesCount = mDescription.getLineCount();
+//                Log.d("LINECOUNT", Integer.toString(newLinesCount));
             }
-
-
-
 
 
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+
                 //Set description of the Pix to the current String in the EditText
                 mPix.setDescription(charSequence.toString());
 
 
 
+//                mDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//                    @Override
+//                    public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+//
+//                        if (actionId == EditorInfo.IME_ACTION_DONE){
+//                            newLinesCount++;
+//                            return true;
+//                        }
+//
+//                        if (  (keyEvent.getAction() == KeyEvent.KEYCODE_E) || (keyEvent.getAction() == KeyEvent.ACTION_DOWN) || ((keyEvent.getAction() == KeyEvent.ACTION_UP) ) ){
+//                            newLinesCount++;
+//                        }
+//
+//                        return true;
+//                    }
+//                });
+//
+//
+//                Log.d("NEWLINE", Integer.toString(newLinesCount));
 
-                Log.d(TAG, "LINES = " + mDescription.getLineCount());
 
 
 
@@ -649,18 +674,41 @@ public class PixDetailFragment extends Fragment{
 
 
 
-                StringReader sr = new StringReader(mDescription.getText().toString());
-                LineNumberReader lnr = new LineNumberReader(sr);
-                try {
-                    while (lnr.readLine() != null){}
-                    newLinesCount = lnr.getLineNumber();
-                    Log.d(TAG, "NEWLINE = " + newLinesCount);
-                    lnr.close();
-                } catch (IOException e) {
+
+
+//                StringReader sr = new StringReader(mDescription.getText().toString());
+//                LineNumberReader lnr = new LineNumberReader(sr);
+//                try {
+//                    while (lnr.readLine() != null){}
+//                    newLinesCount = lnr.getLineNumber();
+//                    Log.d(TAG, "NEWLINE = " + newLinesCount);
+//                    lnr.close();
+//                } catch (IOException e) {
+//                    newLinesCount = mDescription.getLineCount();
+//
+//                } finally {
+//                    sr.close();
+//                }
+//
+//                Log.d("NEWLINECOUNT", Integer.toString(newLinesCount));
+
+
+
+
+
+
+
+
+
+
+
+
+                if (charSequence.toString().indexOf("\n") != -1){
                     newLinesCount = mDescription.getLineCount();
-                } finally {
-                    sr.close();
+                    Log.d("LINECOUNT", Integer.toString(newLinesCount));
                 }
+
+//                Log.d("LINECOUNT", Integer.toString(newLinesCount));
 
 
 
@@ -720,79 +768,103 @@ public class PixDetailFragment extends Fragment{
                 }
 
 
+
+                text = charSequence.toString() + "*";
+
+
+
+
                 for (count = 0; count < differentLinesArrayList.size(); count++) {
 
-//                    hasAsteriskOnPreviousLine = false;
-
-                    if (differentLinesArrayList.get(count).startsWith("*")) {
-                        Log.d("ARRAYAST1", differentLinesArrayList.get(count));
+                    //If a newline has been added (i.e. '\n' is detected, i.e. ENTER button is pressed)
+                    if (tempNum != newLinesCount ) {
 
 
-                        //If a newline has been added (i.e. '\n' is detected, i.e. ENTER button is pressed)
-                        if (tempNum != newLinesCount) {
-                            tempNum = newLinesCount;
-                            if (tempNum != 1) {
-                                Log.d(TAG, "NEWLINE DETECTED");
-                                charSequence = charSequence + "-";
-                            }
+
+                        if (tempNum != 1) {
+
+                            Log.d("NEWLINETEST", "NEWLINE DETECTED");
+
+
+                            mDescription.removeTextChangedListener(this);
+                            mDescription.setText(text);
+                            mDescription.setSelection(text.length());
+                            mDescription.addTextChangedListener(this);
+
                         }
+                        tempNum = newLinesCount;
+                    }
 
+
+
+
+
+
+
+
+
+
+
+
+
+//                    text = charSequence.toString() + "*";
+//                    mDescription.removeTextChangedListener(this);
+//                    mDescription.setText(text);
+//                    mDescription.setSelection(text.length());
+//                    mDescription.addTextChangedListener(this);
+
+
+
+
+
+
+
+
+
+                    //If the previous line has got asterisk
+                    if (differentLinesArrayList.get(count).startsWith("*")) {
+                        Log.d("ASTTEST", differentLinesArrayList.get(count));
+                    }
+
+
+
+
+
+
+                    //If the previous line has got asterisk
+                    if (differentLinesArrayList.get(count).startsWith("*") && (charSequence.toString().indexOf("\n") != -1)) {
+                        Log.d("ASTTEST", differentLinesArrayList.get(count));
 
                     }
+
+
+
                 }
-
-
-
-
-
-
-
-
-
-
-//                String processedLine = differentLines[0];
-//
-//                for (int intt=0; i<differentLines.length; intt++){
-//
-//
-//
-//                    if (differentLines[intt].equals('*')){
-//                        differentLines[intt+1] = "*" + differentLines[intt];
-//                    }
-//
-//                    Log.d("TESTLINE", differentLines[intt]);
-//                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
                 //Update the Pix
                 updatePix();
 
-
-
             }
+
+
+
+
+
+
+
+
+
 
             @Override
             public void afterTextChanged(Editable editable) {
                 //Do nothing
+
+
+
+
+
             }
         });
 
