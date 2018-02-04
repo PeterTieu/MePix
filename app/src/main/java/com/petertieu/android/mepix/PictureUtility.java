@@ -10,7 +10,7 @@ import android.graphics.Point;
 
 //Utility class for:
     //1: Take as INPUT: picture File URI... then return as OUTPUT: Bitmap
-    //2: 'Scaling' picture Bitmap for ImageViewDialogFragment dialog fragment, in case height/width of picture Bitmap is greater than allowable by the ImageView dialog fragment
+    //2: 'Scaling' picture Bitmap for PictureViewDialogFragment dialog fragment, in case height/width of picture Bitmap is greater than allowable by the ImageView dialog fragment
 //NOTE: A utility class is one that contains helper methods for other classes, and therefore acts a 'helping' class. It shouldn't contain instance variables, as per conventional object classes.
 public class PictureUtility {
 

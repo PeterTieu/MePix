@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -26,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -74,7 +72,7 @@ public class PixListFragment extends Fragment{
     //Define request codes
     private static final int REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 0; //Request code for location fix
     private static final int REQUEST_CODE_FOR_STORAGE_PERMISSIONS = 1; //Request code to WRITE to external storage
-    private static final int REQUEST_CODE_PICTURE_SAVED_TO_GALLERY = 2; //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
+    private static final int REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT = 2; //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
 
 
 
@@ -376,6 +374,8 @@ public class PixListFragment extends Fragment{
 
 
 
+    PixViewHolder mPixViewHolder;
+
     //Define the Adapter class
     private class PixAdapter extends RecyclerView.Adapter<PixViewHolder>{
 
@@ -412,7 +412,10 @@ public class PixListFragment extends Fragment{
             View view = layoutInflater.inflate(R.layout.list_item_pix, viewGroup, false);
 
             //Pass the inflated View into the ViewHolder constructor
-            return new PixViewHolder(view);
+            mPixViewHolder = new PixViewHolder(view);
+
+            //Return the PixViewHolder object
+            return mPixViewHolder;
         }
 
 
@@ -439,7 +442,11 @@ public class PixListFragment extends Fragment{
 
 
 
+//    //Declare the Pix instance variable
+//    private Pix mPix;
 
+//    //Declare ImageView for "Picture" of Pix
+//    private ImageView mPictureView;
 
     //Define the ViewHolder class
     private class PixViewHolder extends RecyclerView.ViewHolder{
@@ -527,10 +534,10 @@ public class PixListFragment extends Fragment{
                     if (mPictureFile.length() != 0) {
 
                         //Open picture view dialog
-                        ImageViewDialogFragment pictureViewDialog = ImageViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
+                        PictureViewDialogFragment pictureViewDialog = PictureViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                         //Set PixDetailFragment as target fragment for the dialog fragment
-                        pictureViewDialog.setTargetFragment(PixListFragment.this, REQUEST_CODE_PICTURE_SAVED_TO_GALLERY);
+                        pictureViewDialog.setTargetFragment(PixListFragment.this, REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT);
 
                         //Create FragmentManager (which has access to all fragments)
                         FragmentManager fragmentManager = getFragmentManager();
@@ -896,16 +903,38 @@ public class PixListFragment extends Fragment{
             return;
         }
 
-        //If resultCode matches 'ImageViewDialogFragment's "Save Picture to Gallery" button's
-        if (requestCode == REQUEST_CODE_PICTURE_SAVED_TO_GALLERY){
+        //If resultCode matches 'PictureViewDialogFragment's "Save Picture to Gallery" button's
+        if (requestCode == REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT){
             //Get boolean object to indicate whether Picture has been saved to Gallery
-            boolean pictureSavedToGallery = intent.getBooleanExtra(ImageViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+            boolean pictureSavedToGallery = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+            boolean pictureDeleteSelected = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_DELETE_SELECTED, false);
 
             //If Picture has been saved to Gallery
             if (pictureSavedToGallery) {
                 //Display toast for successful save
                 Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
             }
+
+
+
+
+            if (pictureDeleteSelected){
+                Toast.makeText(getActivity(), "Picture Deleted", Toast.LENGTH_LONG).show();
+
+
+                mPictureFile.delete();
+
+
+                mPixViewHolder.mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
+
+                mPixViewHolder.updatePix();
+
+//                mCallbacks.onPixUpdatedFromListView(mPixViewHolder.mPix);
+
+            }
+
+
+
         }
 
     }

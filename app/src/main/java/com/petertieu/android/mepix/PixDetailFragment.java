@@ -35,14 +35,12 @@ import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -65,9 +63,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -141,7 +136,7 @@ public class PixDetailFragment extends Fragment{
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DATE = 5;                             //Request code for receiving results from dialog fragment to select Pix date
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_DELETE_CONFIRMATION = 6;              //Request code for receiving results from dialog fragment to delete Pix
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm Pix location update
-    private static final int REQUEST_CODE_PICTURE_SAVED_TO_GALLERY = 8;                         //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
+    private static final int REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT = 8;                     //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
     //private static final int REQUEST_CODE_PICTURE_GALLERY = 8;                                //Request code for receiving results from phone's gallery
 
 
@@ -468,19 +463,9 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    int newLinesCount = 1;
-    int tempNum = newLinesCount;
+
     List<String> differentLinesArrayList;
-    int count = 0;
-    boolean hasAsteriskOnPreviousLine = false;
     String text;
-
-    boolean logged = true;
-
-    int tempNumber;
-
-    boolean lineArrayListSizeChanged = false;
-
     int currentCharSequenceSize;
     int previousCharSequenceSize=0;
 
@@ -637,12 +622,11 @@ public class PixDetailFragment extends Fragment{
         //Add listener to description EditText
         mDescription.addTextChangedListener(new TextWatcher() {
 
+
+
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i1, int i2, int i3) {
                 //Do nothing
-
-//                newLinesCount = mDescription.getLineCount();
-//                Log.d("LINECOUNT", Integer.toString(newLinesCount));
             }
 
 
@@ -650,310 +634,149 @@ public class PixDetailFragment extends Fragment{
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-
                 //Set description of the Pix to the current String in the EditText
                 mPix.setDescription(charSequence.toString());
 
 
 
-//                mDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//                    @Override
-//                    public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-//
-//                        if (actionId == EditorInfo.IME_ACTION_DONE){
-//                            newLinesCount++;
-//                            return true;
-//                        }
-//
-//                        if (  (keyEvent.getAction() == KeyEvent.KEYCODE_E) || (keyEvent.getAction() == KeyEvent.ACTION_DOWN) || ((keyEvent.getAction() == KeyEvent.ACTION_UP) ) ){
-//                            newLinesCount++;
-//                        }
-//
-//                        return true;
-//                    }
-//                });
-//
-//
-//                Log.d("NEWLINE", Integer.toString(newLinesCount));
+                //============== IMPLEMENT AUTOMATIC BULLET FUNCTIONALITY: ===================================================================================================
+                // ================ If the current line in mDescription EditText has (bullet points) "*" or "-" at the start ================================
+                // ================ then pressing soft-key "ENTER" would automatically create the corresponding "*" or "-" ==================================
+                //THE APPROACH:
+                // An "*" or "-" would only automatically appear in the current line IF and ONLY IF both these conditions hold:
+                    //1: The previous line starts with a "*"/"-"
+                    //2: The last key that was typed in the soft-keyboard was the ENTER button
 
 
-
-
-
-
-
-
-
-
-//                StringReader sr = new StringReader(mDescription.getText().toString());
-//                LineNumberReader lnr = new LineNumberReader(sr);
-//                try {
-//                    while (lnr.readLine() != null){}
-//                    newLinesCount = lnr.getLineNumber();
-//                    Log.d(TAG, "NEWLINE = " + newLinesCount);
-//                    lnr.close();
-//                } catch (IOException e) {
-//                    newLinesCount = mDescription.getLineCount();
-//
-//                } finally {
-//                    sr.close();
-//                }
-//
-//                Log.d("NEWLINECOUNT", Integer.toString(newLinesCount));
-
-
-
-
-
-
-
-
-
-
-
-
-                //CHECK FOR NEW LINE
-                if (charSequence.toString().indexOf("\n") != -1){
-                    newLinesCount = mDescription.getLineCount();
-                    Log.d("LINECOUNT", Integer.toString(newLinesCount));
-                }
-
-//                Log.d("LINECOUNT", Integer.toString(newLinesCount));
-
-
-
-
-
-
-
-
-                //Total text
+                //Get the entire description and store it in a String
                 String descriptionText = mDescription.getText().toString();
 
-//                String[] differentLines = {};
 
-
-
-
-
-
-
-//                try {
-//                    if (!descriptionText.isEmpty() || descriptionText != null) {
-//                        //String array of all the lines separted by newline
-//                        differentLines = descriptionText.split("\n");
-//                    }
-//
-//
-//                    if (differentLines != null) {
-//                        //Get individual lines
-//                        for (String rawLine : differentLines) {
-//
-//                            Log.d("TESTLINE", rawLine);
-//
-//
-//                            if (rawLine.charAt(0) == '*') {
-//
-//                                Log.d("HASAST", rawLine);
-//                            }
-//                        }
-//                    }
-//                } catch (RuntimeException runtimeException){
-//
-//                }
-
-
-
-                differentLinesArrayList = new ArrayList<String > (Arrays.asList(descriptionText.split("\n")));
-
-
-                for(String rawString : differentLinesArrayList){
-
-                    Log.d("ARRAY", rawString);
-
-                    if (rawString.startsWith("*")){
-                        Log.d("ARRAYAST", rawString);
-                    }
-
-                }
-
-
-
-//                text = charSequence.toString() + "*";
-
-
-
-
-                for (count = 0; count < differentLinesArrayList.size(); count++) {
-
-                    //If a newline has been added (i.e. '\n' is detected, i.e. ENTER button is pressed)
-                    if (tempNum != newLinesCount ) {
-
-
-
-                        if (tempNum != 1) {
-
-                            Log.d("NEWLINETEST", "NEWLINE DETECTED");
-
-
-//                            mDescription.removeTextChangedListener(this);
-//                            mDescription.setText(text);
-//                            mDescription.setSelection(text.length());
-//                            mDescription.addTextChangedListener(this);
-
-                        }
-                        tempNum = newLinesCount;
-                    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                    text = charSequence.toString() + "*";
-//                    mDescription.removeTextChangedListener(this);
-//                    mDescription.setText(text);
-//                    mDescription.setSelection(text.length());
-//                    mDescription.addTextChangedListener(this);
-
-
-
-
-
-
-
-
-
-                    //If the previous line has got asterisk
-                    if (differentLinesArrayList.get(count).startsWith("*")) {
-                        Log.d("ASTTEST", differentLinesArrayList.get(count));
-                    }
-
-
-
-
-
-
-
-
-                    //If the previous line has got asterisk
-                    if (differentLinesArrayList.get(count).startsWith("*") && (charSequence.toString().indexOf("\n") != -1)) {
-                        Log.d("testingthis1", "HASAST AND NEW LINE");
-                        Log.d("testingthis2", differentLinesArrayList.get(count));
-                    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                    text = charSequence.toString() + "*";
-//
-//                    //If space has been pressed AND the previous line has got asterisk
-//                    if (differentLinesArrayList.get(count).startsWith("*") && (charSequence.toString().indexOf("\n") != -1)) {
-//                        Log.d("ASTTEST", differentLinesArrayList.get(count));
-//
-//                        mDescription.removeTextChangedListener(this);
-//                        mDescription.setText(text);
-//                        mDescription.setSelection(text.length());
-//                        mDescription.addTextChangedListener(this);
-//
-//                    }
-
-
-
-                }
-
-
-
-
-
-                if (tempNumber != differentLinesArrayList.size()-1){
-                    lineArrayListSizeChanged = true;
-                    tempNumber = differentLinesArrayList.size()-1;
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                //Picks up new line, but Problem: also picks up every character typed
+                //Try 'risky' task - asList(..) and split(..) could throw RuntimeException
                 try {
-                    //If the previous line has got asterisk, AND a newline has been created
-                    if (differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("*") && (charSequence.toString().indexOf("\n", charSequence.length()-1) != -1)) {
+                    //Split the description text into components that are separated by newlines (i.e. components separated by the soft-key "ENTER" button),
+                    // and store each of them as String objects in a String ArrayList
+                    differentLinesArrayList = new ArrayList<String>(Arrays.asList(descriptionText.split("\n")));
+                }
+                //Catch any RuntimeExceptions thrown by asList(..) or split(..)
+                catch (RuntimeException runtimeException){
+                    Log.e(TAG, "The split strings are empty");
+                }
 
 
 
+                //---------------- Set up automatic ASTERISK -----------------------------------------------------------------------------------
+
+                //Declare checks
+                boolean previousLineStartsWithAsterisk = differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("*"); //Check if previous line starts with an ASTERISK
+                boolean previousLineStartsWithHyphen = differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("-"); //Check if previous line starts with a HYPHEN
+                boolean lastKeyTypedWasEnter = charSequence.toString().indexOf("\n", charSequence.length() - 1) != -1; //Check if last character inputted from soft-keyboard was "ENTER"
+
+
+                //Try 'risky' task - startsWith(..) or indexOf(..) could throw RuntimeException
+                try {
+                    //If the starting character of the previous line was an asterisk AND the very last soft-key typed was "ENTER" (hence bringing us to the new line)
+                    if (previousLineStartsWithAsterisk && lastKeyTypedWasEnter) {
+
+                        //Get the CURRENT total number of characters in the EditText
                         currentCharSequenceSize = charSequence.length();
 
+                        //If the CURRENT total number of characters in the EditText is LARGER than the PREVIOUS total number of characters in the EditText.
+                        // IOW, we have INCREASED the length of the EditText by typing any key OTHER THAN backspace!
+                        //NOTE: This check is required, because without it - when the only character in the line is "*", and the backspace button is pressed to remove the "*", nothing would happen.
+                        // i.e., pressing backspace wouldn't even remove the "*"
                         if (currentCharSequenceSize > previousCharSequenceSize) {
 
-                            Log.d("testingthis3", "HASAST AND NEW LINE");
+                            //Log to Logcat
+                            Log.d("EditText length: ", "INCREASED");
 
-
+                            //'Save' the EditText text BUT also add "*" to instance variable, "text",
                             text = charSequence + "*";
 
-                            mDescription.removeTextChangedListener(this);
-                            mDescription.setText(text);
-                            mDescription.setSelection(text.length());
-                            mDescription.addTextChangedListener(this);
-
-
+                            //Now, CHANGE/UPDATE the EditText text so that it could include the "*" on the new line
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have an extra "*" key on the new line)
+                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
                         }
 
+
+                        //If the CURRENT line has only ONE character (i.e. the "*" character).. AND... the soft-keyboard "ENTER" button is pressed
+                        if ((differentLinesArrayList.get(differentLinesArrayList.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
+
+                            //'Save' the EditText text BUT delete the ONE character in the CURRENT line (i.e. the "*" character)
+                            text = charSequence.subSequence(0, charSequence.length() - 2).toString();
+
+                            //Now, CHANGE/UPDATE the EditText text so that it could delete the "*" character
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have the "*" removed on the line)
+                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                        }
+
+                        //Update the previous size of the character sequence to the current size
                         previousCharSequenceSize = currentCharSequenceSize;
+                    }
+                }
+                //Catch any RuntimeExceptions thrown by startsWith(..) or indexOf(..)
+                catch (RuntimeException runtimeException){
+                    Log.e(TAG, "charSequence has length zero");
+                }
 
 
 
 
-//                        if (charSequence.toString().indexOf("\n", charSequence.length()-1) != -1){
-//                            text = charSequence.subSequence(0, charSequence);
-//                        }
+                    //---------------- Set up automatic HYPHEN (as per above) -----------------------------------------------------------------------------------
 
+                //Try 'risky' task - startsWith(..) or indexOf(..) could throw RuntimeException
+                try {
+                    //If the starting character of the previous line was a hyphen AND the very last soft-key typed was "ENTER" (hence bringing us to the new line)
+                    if (previousLineStartsWithHyphen && lastKeyTypedWasEnter) {
 
+                        //Get the CURRENT total number of characters in the EditText
+                        currentCharSequenceSize = charSequence.length();
 
+                        //If the CURRENT total number of characters in the EditText is LARGER than the PREVIOUS total number of characters in the EditText.
+                        // IOW, we have INCREASED the length of the EditText by typing any key OTHER THAN backspace!
+                        //NOTE: This check is required, because without it - when the only character in the line is "-", and the backspace button is pressed to remove the "-", nothing would happen.
+                        // i.e., pressing backspace wouldn't even remove the "-"
+                        if (currentCharSequenceSize > previousCharSequenceSize) {
 
+                            //Log to Logcat
+                            Log.d("EditText length: ", "INCREASED");
 
+                            //'Save' the EditText text BUT also add "-" to instance variable, "text",
+                            text = charSequence + "-";
 
-
-
-
-
-
-
+                            //Now, CHANGE/UPDATE the EditText text so that it could include the "-" on the new line
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have an extra "-" key on the new line)
+                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
                         }
 
 
+                        //If the CURRENT line has only ONE character (i.e. the "-" character).. AND... the soft-keyboard "ENTER" button is pressed
+                        if ((differentLinesArrayList.get(differentLinesArrayList.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
 
+                            //'Save' the EditText text BUT delete the ONE character in the CURRENT line (i.e. the "-" character)
+                            text = charSequence.subSequence(0, charSequence.length() - 2).toString();
+
+                            //Now, CHANGE/UPDATE the EditText text so that it could delete the "-" character
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have the "-" removed on the line)
+                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                        }
+
+                        //Update the previous size of the character sequence to the current size
+                        previousCharSequenceSize = currentCharSequenceSize;
+                    }
                 }
-                catch(SecurityException securityException){
-
+                //Catch any RuntimeExceptions thrown by startsWith(..) or indexOf(..)
+                catch (RuntimeException runtimeException){
+                    Log.e(TAG, "charSequence has length zero");
                 }
-
-
 
 
                 //Update the Pix
@@ -963,58 +786,11 @@ public class PixDetailFragment extends Fragment{
 
 
 
-
-
-
-
-
-
-
             @Override
             public void afterTextChanged(Editable editable) {
                 //Do nothing
-
-
-
-
-
             }
         });
-
-
-
-//        mDescription.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//            @Override
-//            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-//                if (actionId == EditorInfo.IME_NULL && keyEvent.getAction()==KeyEvent.ACTION_DOWN){
-//                    Toast.makeText(getActivity(), mPix.getDescription(), Toast.LENGTH_SHORT).show();
-//                }
-//
-//                return true;
-//            }
-//        });
-
-
-//        mDescription.setOnKeyListener(new View.OnKeyListener() {
-//
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event)
-//            {
-//                if (keyCode == event.KEYCODE_ENTER)
-//                {
-//                    Log.i(TAG, "captured");
-//
-//                    return false;
-//                }
-//
-//                return false;
-//            }
-//        });
-
-
-
-
-
 
 
 
@@ -1176,10 +952,10 @@ public class PixDetailFragment extends Fragment{
                 if (mPictureFile.length() != 0) {
 
                     //Open picture view DialogFragment
-                    ImageViewDialogFragment pictureViewDialog = ImageViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
+                    PictureViewDialogFragment pictureViewDialog = PictureViewDialogFragment.newInstance(mPictureFile, mPix.getTitle(), mPix.getDate());
 
                     //Set PixDetailFragment as target fragment for the dialog fragment
-                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_SAVED_TO_GALLERY);
+                    pictureViewDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT);
 
                     //Create FragmentManager (which has access to all fragments)
                     FragmentManager fragmentManager = getFragmentManager();
@@ -1459,18 +1235,31 @@ public class PixDetailFragment extends Fragment{
 
             //"Update Pix" MenuItem
             case(R.id.update_pix_location):
-                //If location is enabled (by user)
-                if(isGpsEnabled()) {
-                    //Log to Logcat
-                    Log.i(TAG, "CONNECTED to locations");
-
-                    //Open 'Update Location Confirmation' dialog
-                    updateLocationConfirmationDialog();
+                //If location permissions requested in the Manifest have NOT been granted
+                if (hasLocationPermission() == false) {
+                    //Request (user) for location permissions - as they are 'dangerous' permissions
+                    requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
                 }
-                //If location is NOT enabled (by user)
-                else{
-                    //Open "Enable Location" dialog - for the user to enable location via Settings
-                    enableLocationDialog();
+
+                //Try 'risky' task - isGpsEnabled() could throw a RuntimeException - if the location permisson has not been granted by the user
+                try {
+                    //If location is enabled (by user)
+                    if (isGpsEnabled()) {
+                        //Log to Logcat
+                        Log.i(TAG, "CONNECTED to locations");
+
+                        //Open 'Update Location Confirmation' dialog
+                        updateLocationConfirmationDialog();
+                    }
+                    //If location is NOT enabled (by user)
+                    else {
+                        //Open "Enable Location" dialog - for the user to enable location via Settings
+                        enableLocationDialog();
+                    }
+                }
+                catch (RuntimeException runtimeException){
+                    Log.e(TAG, "Location permission has not been granted by user");
+
                 }
                 return true;
 
@@ -2098,10 +1887,12 @@ public class PixDetailFragment extends Fragment{
 
 
 
-        //If resultCode matches 'ImageViewDialogFragment's "Save Picture to Gallery" button's
-        if (requestCode == REQUEST_CODE_PICTURE_SAVED_TO_GALLERY){
+        //If resultCode matches PictureViewDialogFragment's "Save Picture to Gallery" button's
+        if (requestCode == REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT){
             //Get boolean object to indicate whether Picture has been saved to Gallery
-            boolean pictureSavedToGallery = intent.getBooleanExtra(ImageViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+            boolean pictureSavedToGallery = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+
+            boolean pictureDeleteSelected = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_DELETE_SELECTED, false);
 
             //If Picture has been saved to Gallery
             if (pictureSavedToGallery) {
@@ -2115,7 +1906,37 @@ public class PixDetailFragment extends Fragment{
                 //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
                 inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
             }
+
+            if (pictureDeleteSelected){
+                Toast.makeText(getActivity(), "Picture Deleted", Toast.LENGTH_LONG).show();
+
+                //======= Hide soft keyboard (if it is on the screen) ========
+                //Get InputMethodManager object
+                InputMethodManager inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
+                inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
+
+                mPictureFile.delete();
+
+                mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
+
+                updatePix();
+                updatePictureView();
+
+            }
+
         }
+
+
+
+
+
+
+//        //If resultCode matches 'PictureViewDialogFragment's' "Delete Picture" button's
+//        if (requestCode == REQUEST_CODE_PICTURE_DELETE_SELECTED){
+//
+//        }
 
     }
 
