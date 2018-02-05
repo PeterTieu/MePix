@@ -97,6 +97,12 @@ public class PixDetailFragment extends Fragment{
     private DateFormat mDateFormat; //DateFormat object for formatting display of the Date
     LinearLayout mViewToShare;      //View of the Pix that is captured - for sharing
 
+    List<String> listContainingAllLinesOfDescription;   //List containing the text of the mDescription EditText, where each String object in the list resembles a line. EAch line separated by the soft-keyboard "ENTER" key (i.e. "\n")
+    String curentDescriptionEditTextString;             //String of the entire mDescription EditText
+    int currentCharSequenceSize;                        //CURRENT size of the mDescription EditText
+    int previousCharSequenceSize=0;                     //PREVIOUS size of the mDescription EditText (immediately before the most recent change on the text)
+
+
 
     //MAPS instance variables
     private FusedLocationProviderClient mFusedLocationClient;   //Entry point for interacting with FusedLocationProviderApi (to get location fix (i.e. lat/lon))
@@ -138,6 +144,9 @@ public class PixDetailFragment extends Fragment{
     private static final int REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION = 7;     //Request code for receiving results from dialog fragment to confirm Pix location update
     private static final int REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT = 8;                     //Request code for receiving results form dialog fragment to Pix picture being saved to gallery
     //private static final int REQUEST_CODE_PICTURE_GALLERY = 8;                                //Request code for receiving results from phone's gallery
+
+
+
 
 
 
@@ -236,7 +245,7 @@ public class PixDetailFragment extends Fragment{
 
         //_______ Request for (dangerous) PERMISSION: WRITE_TO_EXTERNAL (from permission group: Storage) _________
 
-        //If the STORAGE permissions have not been granted
+        //If the STORAGE permissions have not been granted at runtime by user
         if (hasWriteExternalStoragePermission() == false){
             //Request for STORAGE permissions
             requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
@@ -246,12 +255,12 @@ public class PixDetailFragment extends Fragment{
 
         //_________ Request for (dangerous) PERMISSIONS from permission group: Location _________________
 
-        //If location permissions requested in the Manifest have NOT been granted
+        //If location permissions have NOT been granted at runtime by user
         if (hasLocationPermission() == false) {
             //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
-        //If location permissions requested in the Manifest HAVE been granted
+        //If location permissions has been granted by user
         else {
             //========== Configure location services ====================================================
             //Create FusedLocationProviderClient object - to get location fix
@@ -350,7 +359,7 @@ public class PixDetailFragment extends Fragment{
 
     //======================== Define HELPER METHODS used in onCreate(..) =============================================
 
-    //Check if (dangerous) permissions from the STORAGE permission group have been granted (by the user)
+    //Check if (dangerous) permissions from the STORAGE permission group have been granted at runtime (by the user)
     private boolean hasWriteExternalStoragePermission(){
 
         //Check if the permissions have been granted
@@ -362,7 +371,10 @@ public class PixDetailFragment extends Fragment{
     }
 
 
-    //Check if (dangerous) permissions from the STORAGE permission group have been granted (by the user)
+
+
+
+    //Check if (dangerous) permissions from the STORAGE permission group have been granted at runtime (by the user)
     private boolean hasLocationPermission(){
 
         //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
@@ -464,15 +476,6 @@ public class PixDetailFragment extends Fragment{
 
 
 
-    List<String> differentLinesArrayList;
-    String text;
-    int currentCharSequenceSize;
-    int previousCharSequenceSize=0;
-
-
-
-
-
     //Override onCreateView(..) fragment lifecycle callback method
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle){
@@ -490,10 +493,10 @@ public class PixDetailFragment extends Fragment{
         //Assign title instance variable to its associated resource ID
         mTitle = (EditText) view.findViewById(R.id.detail_pix_title);
 
-        //Set text of the title to title instance variable of the Pix
+        //Set curentDescriptionEditTextString of the title to title instance variable of the Pix
         mTitle.setText(mPix.getTitle());
 
-        //Add listener to text EditText
+        //Add listener to curentDescriptionEditTextString EditText
         mTitle.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -526,7 +529,7 @@ public class PixDetailFragment extends Fragment{
 
         //If a date exists for the Pix
         if (mPix.getDate() != null){
-            //Set text of the date button to date of the Pix
+            //Set curentDescriptionEditTextString of the date button to date of the Pix
             mDateButton.setText(mDateFormat.format("EEE d MMMM yyyy", mPix.getDate()));
         }
 
@@ -538,8 +541,8 @@ public class PixDetailFragment extends Fragment{
                 //Create FragmentManager
                 FragmentManager fragmentManager = getFragmentManager();
 
-                //Create DatePickerFragment fragment
-                DatePickerFragment datePickerDialog = DatePickerFragment.newInstance(mPix.getDate());
+                //Create DateDialogFragment fragment
+                DateDialogFragment datePickerDialog = DateDialogFragment.newInstance(mPix.getDate());
 
                 //Start the dialog fragment
                 datePickerDialog.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_DATE);
@@ -558,7 +561,7 @@ public class PixDetailFragment extends Fragment{
 
         //If address stored in Pix EXISTS.
         //Without this if-block: When the location is disabled, mLocationButton would not display the current/stored location.
-        // It would just display the default text of the mLocationButton, i.e. "Unable to fetch location"
+        // It would just display the default curentDescriptionEditTextString of the mLocationButton, i.e. "Unable to fetch location"
         if (mPix.getAddress() != null) {
             //Display the stored address in mLoationButton
             mLocationButton.setText(mPix.getAddress());
@@ -569,18 +572,36 @@ public class PixDetailFragment extends Fragment{
 
             @Override
             public void onClick(View view) {
-                //If location is enabled (by user)
-                if(isGpsEnabled()) {
-                    //Create Intent to open MapsActivity
-                    Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
 
-                    //Start intent to open MapsActivity
-                    getActivity().startActivity(mapsActivityIntent);
+
+                //If location permissions have not been granted at runtime by user
+                if (hasLocationPermission() == false) {
+                    //Request (user) for location permissions - as they are 'dangerous' permissions
+                    requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+                    return;
                 }
-                //If location is NOT enabled (by user)
+                //If location permissions has been granted by user
                 else {
-                    //Open "Enable Location" dialog - for the user to enable location via Settings
-                    enableLocationDialog();
+                    //Try 'risky' task - isGpsEnabled() could throw a RuntimeException - if the location permisson has not been granted by the user
+                    try {
+                        //If location is enabled (by user)
+                        if (isGpsEnabled()) {
+                            //Create Intent to open MapsActivity
+                            Intent mapsActivityIntent = MapsActivity.newIntent(getActivity(), mPix.getLatitude(), mPix.getLongitude(), mPix.getAddress());
+
+                            //Start intent to open MapsActivity
+                            getActivity().startActivity(mapsActivityIntent);
+                        }
+                        //If location is NOT enabled (by user)
+                        else {
+                            //Open "Enable Location" dialog - for the user to enable location via Settings
+                            enableLocationDialog();
+                        }
+                    }
+                    //Catch any RuntimeException exception thrown by isGPSEnabled
+                    catch (RuntimeException runtimeExceptio) {
+                        Log.e(TAG, "Location permission has not been granted by user");
+                    }
                 }
             }
         });
@@ -616,7 +637,7 @@ public class PixDetailFragment extends Fragment{
         //Assign description EditText instance variable to its associated resource ID
         mDescription = (EditText) view.findViewById(R.id.detail_pix_description);
 
-        //Set text of the title to description instance variable of the Pix
+        //Set curentDescriptionEditTextString of the title to description instance variable of the Pix
         mDescription.setText(mPix.getDescription());
 
         //Add listener to description EditText
@@ -654,9 +675,9 @@ public class PixDetailFragment extends Fragment{
 
                 //Try 'risky' task - asList(..) and split(..) could throw RuntimeException
                 try {
-                    //Split the description text into components that are separated by newlines (i.e. components separated by the soft-key "ENTER" button),
+                    //Split the description curentDescriptionEditTextString into components that are separated by newlines (i.e. components separated by the soft-key "ENTER" button),
                     // and store each of them as String objects in a String ArrayList
-                    differentLinesArrayList = new ArrayList<String>(Arrays.asList(descriptionText.split("\n")));
+                    listContainingAllLinesOfDescription = new ArrayList<String>(Arrays.asList(descriptionText.split("\n")));
                 }
                 //Catch any RuntimeExceptions thrown by asList(..) or split(..)
                 catch (RuntimeException runtimeException){
@@ -668,8 +689,8 @@ public class PixDetailFragment extends Fragment{
                 //---------------- Set up automatic ASTERISK -----------------------------------------------------------------------------------
 
                 //Declare checks
-                boolean previousLineStartsWithAsterisk = differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("*"); //Check if previous line starts with an ASTERISK
-                boolean previousLineStartsWithHyphen = differentLinesArrayList.get(differentLinesArrayList.size() - 1).startsWith("-"); //Check if previous line starts with a HYPHEN
+                boolean previousLineStartsWithAsterisk = listContainingAllLinesOfDescription.get(listContainingAllLinesOfDescription.size() - 1).startsWith("*"); //Check if previous line starts with an ASTERISK
+                boolean previousLineStartsWithHyphen = listContainingAllLinesOfDescription.get(listContainingAllLinesOfDescription.size() - 1).startsWith("-"); //Check if previous line starts with a HYPHEN
                 boolean lastKeyTypedWasEnter = charSequence.toString().indexOf("\n", charSequence.length() - 1) != -1; //Check if last character inputted from soft-keyboard was "ENTER"
 
 
@@ -690,28 +711,28 @@ public class PixDetailFragment extends Fragment{
                             //Log to Logcat
                             Log.d("EditText length: ", "INCREASED");
 
-                            //'Save' the EditText text BUT also add "*" to instance variable, "text",
-                            text = charSequence + "*";
+                            //'Save' the EditText curentDescriptionEditTextString BUT also add "*" to instance variable, "curentDescriptionEditTextString",
+                            curentDescriptionEditTextString = charSequence + "*";
 
-                            //Now, CHANGE/UPDATE the EditText text so that it could include the "*" on the new line
-                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
-                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have an extra "*" key on the new line)
-                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
-                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                            //Now, CHANGE/UPDATE the EditText curentDescriptionEditTextString so that it could include the "*" on the new line
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText curentDescriptionEditTextString while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(curentDescriptionEditTextString); //Change/update the EditText curentDescriptionEditTextString (NOTE: The new change will have an extra "*" key on the new line)
+                            mDescription.setSelection(curentDescriptionEditTextString.length()); //Set the cursor to end of the EditText curentDescriptionEditTextString. If this line is omitted, the cursor would start at the beginning of the EditText curentDescriptionEditTextString by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText curentDescriptionEditTextString
                         }
 
 
                         //If the CURRENT line has only ONE character (i.e. the "*" character).. AND... the soft-keyboard "ENTER" button is pressed
-                        if ((differentLinesArrayList.get(differentLinesArrayList.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
+                        if ((listContainingAllLinesOfDescription.get(listContainingAllLinesOfDescription.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
 
-                            //'Save' the EditText text BUT delete the ONE character in the CURRENT line (i.e. the "*" character)
-                            text = charSequence.subSequence(0, charSequence.length() - 2).toString();
+                            //'Save' the EditText curentDescriptionEditTextString BUT delete the ONE character in the CURRENT line (i.e. the "*" character)
+                            curentDescriptionEditTextString = charSequence.subSequence(0, charSequence.length() - 2).toString();
 
-                            //Now, CHANGE/UPDATE the EditText text so that it could delete the "*" character
-                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
-                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have the "*" removed on the line)
-                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
-                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                            //Now, CHANGE/UPDATE the EditText curentDescriptionEditTextString so that it could delete the "*" character
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText curentDescriptionEditTextString while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(curentDescriptionEditTextString); //Change/update the EditText curentDescriptionEditTextString (NOTE: The new change will have the "*" removed on the line)
+                            mDescription.setSelection(curentDescriptionEditTextString.length()); //Set the cursor to end of the EditText curentDescriptionEditTextString. If this line is omitted, the cursor would start at the beginning of the EditText curentDescriptionEditTextString by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText curentDescriptionEditTextString
                         }
 
                         //Update the previous size of the character sequence to the current size
@@ -745,28 +766,28 @@ public class PixDetailFragment extends Fragment{
                             //Log to Logcat
                             Log.d("EditText length: ", "INCREASED");
 
-                            //'Save' the EditText text BUT also add "-" to instance variable, "text",
-                            text = charSequence + "-";
+                            //'Save' the EditText curentDescriptionEditTextString BUT also add "-" to instance variable, "curentDescriptionEditTextString",
+                            curentDescriptionEditTextString = charSequence + "-";
 
-                            //Now, CHANGE/UPDATE the EditText text so that it could include the "-" on the new line
-                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
-                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have an extra "-" key on the new line)
-                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
-                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                            //Now, CHANGE/UPDATE the EditText curentDescriptionEditTextString so that it could include the "-" on the new line
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText curentDescriptionEditTextString while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(curentDescriptionEditTextString); //Change/update the EditText curentDescriptionEditTextString (NOTE: The new change will have an extra "-" key on the new line)
+                            mDescription.setSelection(curentDescriptionEditTextString.length()); //Set the cursor to end of the EditText curentDescriptionEditTextString. If this line is omitted, the cursor would start at the beginning of the EditText curentDescriptionEditTextString by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText curentDescriptionEditTextString
                         }
 
 
                         //If the CURRENT line has only ONE character (i.e. the "-" character).. AND... the soft-keyboard "ENTER" button is pressed
-                        if ((differentLinesArrayList.get(differentLinesArrayList.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
+                        if ((listContainingAllLinesOfDescription.get(listContainingAllLinesOfDescription.size() - 1).length() == 1) && charSequence.toString().indexOf("\n", charSequence.length()-1) != -1) {
 
-                            //'Save' the EditText text BUT delete the ONE character in the CURRENT line (i.e. the "-" character)
-                            text = charSequence.subSequence(0, charSequence.length() - 2).toString();
+                            //'Save' the EditText curentDescriptionEditTextString BUT delete the ONE character in the CURRENT line (i.e. the "-" character)
+                            curentDescriptionEditTextString = charSequence.subSequence(0, charSequence.length() - 2).toString();
 
-                            //Now, CHANGE/UPDATE the EditText text so that it could delete the "-" character
-                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText text while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
-                            mDescription.setText(text); //Change/update the EditText text (NOTE: The new change will have the "-" removed on the line)
-                            mDescription.setSelection(text.length()); //Set the cursor to end of the EditText text. If this line is omitted, the cursor would start at the beginning of the EditText text by default!
-                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText text
+                            //Now, CHANGE/UPDATE the EditText curentDescriptionEditTextString so that it could delete the "-" character
+                            mDescription.removeTextChangedListener(this); //Remove the onTextChanged listener. NOTE: This MUST be done so that we could change/update the EditText curentDescriptionEditTextString while inside this onTextChanged listener WITHOUT causing an infinite loop and crashing the app!!
+                            mDescription.setText(curentDescriptionEditTextString); //Change/update the EditText curentDescriptionEditTextString (NOTE: The new change will have the "-" removed on the line)
+                            mDescription.setSelection(curentDescriptionEditTextString.length()); //Set the cursor to end of the EditText curentDescriptionEditTextString. If this line is omitted, the cursor would start at the beginning of the EditText curentDescriptionEditTextString by default!
+                            mDescription.addTextChangedListener(this); //Re-add the onTextChanged listener - now that we have changed/updated the EditText curentDescriptionEditTextString
                         }
 
                         //Update the previous size of the character sequence to the current size
@@ -871,10 +892,17 @@ public class PixDetailFragment extends Fragment{
         //Set listener for mPhotoButton
         mPictureAddButton.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
 
-                //Open device's camera activity/app
-                cameraIntent();
+                //If the STORAGE permissions have not been granted at runtime by user
+                if (hasWriteExternalStoragePermission() == false) {
+                    //Request for STORAGE permissions
+                    requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
+                }
+                //If the STORAGE permission HAS been granted (at runtime, by the user)
+                else {
+                    //Open device's camera activity/app
+                    cameraIntent();
 
 //                //Set dialog prompt items
 //                final CharSequence[] dialogItems = {"Take Picture", "Choose from Gallery"};
@@ -928,6 +956,7 @@ public class PixDetailFragment extends Fragment{
 //
 //                //Show dialog
 //                alertDialogBuilder.show();
+                }
             }
         });
 
@@ -1011,15 +1040,15 @@ public class PixDetailFragment extends Fragment{
 
             //Set-up custom title to display in the dialog
             TextView dialogTitle = new TextView(getActivity()); //Create TextView object
-            dialogTitle.setText(R.string.prompt_enable_location); //Set text on TextView
-            dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set color of text
-            dialogTitle.setTextSize(22); //Set size of text
-            dialogTitle.setGravity(Gravity.CENTER); //Set position of text in the title box of the dialog
-            dialogTitle.setTypeface(null, Typeface.BOLD); //Set the text to be bold
+            dialogTitle.setText(R.string.prompt_enable_location); //Set curentDescriptionEditTextString on TextView
+            dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set color of curentDescriptionEditTextString
+            dialogTitle.setTextSize(22); //Set size of curentDescriptionEditTextString
+            dialogTitle.setGravity(Gravity.CENTER); //Set position of curentDescriptionEditTextString in the title box of the dialog
+            dialogTitle.setTypeface(null, Typeface.BOLD); //Set the curentDescriptionEditTextString to be bold
             dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set background color title box of the dialog
 
             dialog.setCustomTitle(dialogTitle); //Set the dialog's title block to be the TextView defined (above)
-            dialog.setMessage(Html.fromHtml("Location connectivity is off" + "<br>" + "</br>"+ "Turn on Location in Settings")); //Set message
+            dialog.setMessage(Html.fromHtml("Location connectivity is off." + "<br>" + "</br>"+ "Turn on Location connectivity in Settings.")); //Set message
             dialog.setPositiveButton(getContext().getResources().getString(R.string.settings), new DialogInterface.OnClickListener() { //Set Positive button for dialog
                 @Override
                 public void onClick(DialogInterface paramDialogInterface, int paramInt) {
@@ -1036,7 +1065,6 @@ public class PixDetailFragment extends Fragment{
                 }
             });
             dialog.show(); //Show dialog
-
     }
 
 
@@ -1182,9 +1210,6 @@ public class PixDetailFragment extends Fragment{
 
             //Talkback accessbility: Associate textual description to 'existing' view
             mPictureView.setContentDescription(getString(R.string.pix_picture_description));
-
-//            mPictureView.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_menu_gallery));
-//            mPictureFile.delete();
         }
 
     }
@@ -1235,33 +1260,38 @@ public class PixDetailFragment extends Fragment{
 
             //"Update Pix" MenuItem
             case(R.id.update_pix_location):
-                //If location permissions requested in the Manifest have NOT been granted
+
+                //If location permissions have not been granted at runtime by user
                 if (hasLocationPermission() == false) {
                     //Request (user) for location permissions - as they are 'dangerous' permissions
                     requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+                    return false;
                 }
+                //If location permissions has been granted by user
+                else {
+                    //Try 'risky' task - isGpsEnabled() could throw a RuntimeException - if the location permisson has not been granted by the user
+                    try {
+                        //If location is enabled (by user)
+                        if (isGpsEnabled()) {
+                            //Log to Logcat
+                            Log.i(TAG, "CONNECTED to locations");
 
-                //Try 'risky' task - isGpsEnabled() could throw a RuntimeException - if the location permisson has not been granted by the user
-                try {
-                    //If location is enabled (by user)
-                    if (isGpsEnabled()) {
-                        //Log to Logcat
-                        Log.i(TAG, "CONNECTED to locations");
-
-                        //Open 'Update Location Confirmation' dialog
-                        updateLocationConfirmationDialog();
+                            //Open 'Update Location Confirmation' dialog
+                            updateLocationConfirmationDialog();
+                        }
+                        //If location is NOT enabled (by user)
+                        else {
+                            //Open "Enable Location" dialog - for the user to enable location via Settings
+                            enableLocationDialog();
+                        }
                     }
-                    //If location is NOT enabled (by user)
-                    else {
-                        //Open "Enable Location" dialog - for the user to enable location via Settings
-                        enableLocationDialog();
-                    }
-                }
-                catch (RuntimeException runtimeException){
-                    Log.e(TAG, "Location permission has not been granted by user");
+                    //Catch any RuntimeException exception thrown by isGPSEnabled
+                    catch (RuntimeException runtimeException) {
+                        Log.e(TAG, "Location permission has not been granted by user");
 
+                    }
+                    return true;
                 }
-                return true;
 
 
             //Set default values
@@ -1282,7 +1312,7 @@ public class PixDetailFragment extends Fragment{
         //Create FragmentManager
         FragmentManager fragmentManager = getFragmentManager();
 
-        //Create DatePickerFragment fragment
+        //Create DateDialogFragment fragment
         PixDeleteConfirmationDialogFragment pixDeleteConfirmationDialog = PixDeleteConfirmationDialogFragment.newInstance(mPix.getTitle(), mPix.getDescription());
 
         //Start the dialog fragment, setting PixDetailFragment as the target fragment of this dialog
@@ -1305,7 +1335,7 @@ public class PixDetailFragment extends Fragment{
         mDescription.setCursorVisible(false);
 
 
-        //Unable the EditText view from showing 'highlighted text' - prior to the 'screenshot'
+        //Unable the EditText view from showing 'highlighted curentDescriptionEditTextString' - prior to the 'screenshot'
         Editable editableTitle = mTitle.getText();
         String titleString = editableTitle.toString();
         mTitle.setText(titleString);
@@ -1416,10 +1446,10 @@ public class PixDetailFragment extends Fragment{
         //Create FragmentManager
         FragmentManager fragmentManager = getFragmentManager();
 
-        //Create DatePickerFragment fragment
+        //Create DateDialogFragment fragment
         //Argument 1: The STORED address line (i.e. the address line that is stored in the SQLiteDatabase for this Pix)
         //Argument 2: The CURRENT address line (i.e. the address line obtained from the location request, i.e. the address line of the CURRENT LOCATION)
-        PixUpdateLocationConfirmationDialogFragment pixUpdateLocationConfirmation = PixUpdateLocationConfirmationDialogFragment.newInstance(mPix.getAddress(), mAddressOutput.getAddressLine(0));
+        UpdateLocationConfirmationDialogFragment pixUpdateLocationConfirmation = UpdateLocationConfirmationDialogFragment.newInstance(mPix.getAddress(), mAddressOutput.getAddressLine(0));
 
         //Start the dialog fragment
         pixUpdateLocationConfirmation.setTargetFragment(PixDetailFragment.this, REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION);
@@ -1459,10 +1489,11 @@ public class PixDetailFragment extends Fragment{
 
         //_________ Request for (dangerous) PERMISSIONS from permission group: Location _________________
 
-        //If location permissions requested in the Manifest have NOT been granted
+        //If location permissions have not been granted at runtime by user
         if (hasLocationPermission() == false) {
             //Request (user) for location permissions - as they are 'dangerous' permissions
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
+            return;
         }
         //If location permissions requested in the Manifest HAVE been granted
         else {
@@ -1594,8 +1625,10 @@ public class PixDetailFragment extends Fragment{
         //Log in Logcat
         Log.i(TAG, "onStop() called");
 
-        //Stop location updates (i.e. so that the location update does not keep persisting)
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if (mFusedLocationClient != null) {
+            //Stop location updates (i.e. so that the location update does not keep persisting)
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        }
     }
 
 
@@ -1661,7 +1694,7 @@ public class PixDetailFragment extends Fragment{
         //If request code matches the date dialog fragment's
         if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_DATE) {
             //Get Date object from Date dialog fragment
-            Date setDate = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            Date setDate = (Date) intent.getSerializableExtra(DateDialogFragment.EXTRA_DATE);
 
             //Set new date for Pix
             mPix.setDate(setDate);
@@ -1853,7 +1886,7 @@ public class PixDetailFragment extends Fragment{
         //If resultcode matches 'Location Update Confirmation' dialog's
         if (requestCode == REQUEST_CODE_DIALOG_FRAGMENT_UPDATE_LOCATION_CONFIRMATION){
             //Get boolean object from 'Update Pix Location' confirmation dialog fragment - i.e., whether the positve button was pressed
-            boolean confirmUpdatePix = intent.getBooleanExtra(PixUpdateLocationConfirmationDialogFragment.EXTRA_PIX_UPDATE_LOCATION_CONFIRMATION, false);
+            boolean confirmUpdatePix = intent.getBooleanExtra(UpdateLocationConfirmationDialogFragment.EXTRA_PIX_UPDATE_LOCATION_CONFIRMATION, false);
 
             //If the positive button was pressed - i.e. to confirm the update of the location of Pix
             if (confirmUpdatePix == true) {
@@ -1889,12 +1922,13 @@ public class PixDetailFragment extends Fragment{
 
         //If resultCode matches PictureViewDialogFragment's "Save Picture to Gallery" button's
         if (requestCode == REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT){
-            //Get boolean object to indicate whether Picture has been saved to Gallery
+            //Get boolean object to indicate whether the "Save to Gallery" button has been pressed
             boolean pictureSavedToGallery = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
 
+            //Get boolean object to indicate whether the "Delete Picture" has been pressed
             boolean pictureDeleteSelected = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_DELETE_SELECTED, false);
 
-            //If Picture has been saved to Gallery
+            //If Picture has been saved to Gallery (i.e. "Save Picture to Gallery" button selected)
             if (pictureSavedToGallery) {
                 //Display toast for successful save
                 Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
@@ -1907,7 +1941,22 @@ public class PixDetailFragment extends Fragment{
                 inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
             }
 
+            //If "Delete Picture" button was selected
             if (pictureDeleteSelected){
+
+                //Delete the File in the FileProvider containing the picture
+                mPictureFile.delete();
+
+                //Set mPictureView to be (back to) the default picture
+                mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
+
+                //Update the Pix - but in this situation we do this to simultateously update the LIST VIEW (if sw>600dp, i.e. we are in two-pane layout/mode) using a callback method inside updatePix() (onPixUpdatedFromDetailView(Pix))
+                updatePix();
+
+                //Update picture view
+                updatePictureView();
+
+
                 Toast.makeText(getActivity(), "Picture Deleted", Toast.LENGTH_LONG).show();
 
                 //======= Hide soft keyboard (if it is on the screen) ========
@@ -1916,27 +1965,8 @@ public class PixDetailFragment extends Fragment{
 
                 //Request to hide soft keyboard. Argument 1 (IBinder): Any view visible on screen (e.g. mTitle)
                 inputMethodManager.hideSoftInputFromWindow(mFavoritedButton.getWindowToken(), 0);
-
-                mPictureFile.delete();
-
-                mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
-
-                updatePix();
-                updatePictureView();
-
             }
-
         }
-
-
-
-
-
-
-//        //If resultCode matches 'PictureViewDialogFragment's' "Delete Picture" button's
-//        if (requestCode == REQUEST_CODE_PICTURE_DELETE_SELECTED){
-//
-//        }
 
     }
 

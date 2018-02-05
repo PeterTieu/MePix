@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 //Dialog fragment to confirm 'Pix Location Update'.
 //Called by a menu item in the toolbar of PixDetailFragment fragment
-public class PixUpdateLocationConfirmationDialogFragment extends DialogFragment{
+public class UpdateLocationConfirmationDialogFragment extends DialogFragment{
 
 
     //============ Declare instance variables ===================================
@@ -43,7 +43,7 @@ public class PixUpdateLocationConfirmationDialogFragment extends DialogFragment{
     //============ Decfine methods ===================================
 
     //Build encapsulating 'constructor'
-    public static PixUpdateLocationConfirmationDialogFragment newInstance(String storedAddressLine, String currentAddressLine){
+    public static UpdateLocationConfirmationDialogFragment newInstance(String storedAddressLine, String currentAddressLine){
 
         //Create argument-bundle (Bundle object)
         Bundle argumentBundle = new Bundle();
@@ -53,13 +53,13 @@ public class PixUpdateLocationConfirmationDialogFragment extends DialogFragment{
         argumentBundle.putString(ARG_PIX_CURRENT_ADDRESS_LINE, currentAddressLine); //Pix CURRENT address line
 
         //Create object of this class
-        PixUpdateLocationConfirmationDialogFragment pixUpdateLocationConfirmationDialogFragment = new PixUpdateLocationConfirmationDialogFragment();
+        UpdateLocationConfirmationDialogFragment updateLocationConfirmationDialogFragment = new UpdateLocationConfirmationDialogFragment();
 
         //Set argument-bundle to this object
-        pixUpdateLocationConfirmationDialogFragment.setArguments(argumentBundle);
+        updateLocationConfirmationDialogFragment.setArguments(argumentBundle);
 
         //Return object of this class, which has argument-bundle
-        return pixUpdateLocationConfirmationDialogFragment;
+        return updateLocationConfirmationDialogFragment;
     }
 
 
@@ -78,12 +78,12 @@ public class PixUpdateLocationConfirmationDialogFragment extends DialogFragment{
 
         //Set-up custom title to display in the dialog
         TextView dialogTitle = new TextView(getActivity()); //Create TextView object
-        dialogTitle.setText("\nUpdate Location of this Pix\n"); //Set text on TextView
-        dialogTitle.setTextSize(22); //Set size of text
-        dialogTitle.setGravity(Gravity.CENTER); //Set  position of text in the title box of the dialog
-        dialogTitle.setTypeface(null, Typeface.BOLD); //Set the text to be bold//Set the text to be bold
-        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set text color
-        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set text background color
+        dialogTitle.setText("\nUpdate Location of this Pix\n"); //Set curentDescriptionEditTextString on TextView
+        dialogTitle.setTextSize(22); //Set size of curentDescriptionEditTextString
+        dialogTitle.setGravity(Gravity.CENTER); //Set  position of curentDescriptionEditTextString in the title box of the dialog
+        dialogTitle.setTypeface(null, Typeface.BOLD); //Set the curentDescriptionEditTextString to be bold//Set the curentDescriptionEditTextString to be bold
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set curentDescriptionEditTextString color
+        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set curentDescriptionEditTextString background color
 
 
         //Create View object for dialog

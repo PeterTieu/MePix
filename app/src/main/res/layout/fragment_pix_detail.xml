@@ -23,7 +23,7 @@
         <EditText
             android:id="@+id/detail_pix_title"
             android:hint="@string/title_hint"
-            android:textSize="24dp"
+            android:textSize="23dp"
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -157,7 +157,7 @@
         <EditText
             android:id="@+id/detail_pix_description"
             android:hint="@string/description_hint"
-            android:textSize="18dp"
+            android:textSize="17dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="textCapSentences|textMultiLine"/>

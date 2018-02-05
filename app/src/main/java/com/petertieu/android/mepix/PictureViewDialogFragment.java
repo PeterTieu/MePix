@@ -34,13 +34,6 @@ public class PictureViewDialogFragment extends DialogFragment{
     private static final String ARGUMENT_TITLE = "title";   //Key for Pix title
     private static final String ARGUMENT_DATE = "date";     //Key for Pix date
 
-    public static final String EXTRA_PIX_PICTURE_SAVED_TO_GALLERY = "pictureSaved";
-    public static final String EXTRA_PIX_PICTURE_DELETE_SELECTED = "pictureDelteSelected";
-
-
-    private boolean pictureSavedToGallery = false;
-    private boolean pictureDeleteSelected = false;
-
 
     //Rotated version of the Bitmap generated from PictureUtility (in the correct orientation)
     private Bitmap bitmapPictureCorrectOrientation;
@@ -49,6 +42,16 @@ public class PictureViewDialogFragment extends DialogFragment{
     private File mPictureFile;  //Pix File (to display in ImageView)
     private String mPixTitle;   //Pix title (to display in the filename of the picture file saved to Gallery)
     private Date mPixDate;      //Pix date ((to display in the filename of the picture file saved to Gallery)
+
+
+    //Declare 'extra' indentifiers (for sending data to the target fragment (i.e. PixDetailFragment))
+    public static final String EXTRA_PIX_PICTURE_SAVED_TO_GALLERY = "pictureSaved";         //Identifier key to indicate whether the "Save Picture to Gallery" button was pressed
+    public static final String EXTRA_PIX_PICTURE_DELETE_SELECTED = "pictureDelteSelected";  //Indeifier key to indicate whether the "Delete Picture" button was pressed
+
+
+    //Declare flag (for sending to the target fragment (i.e. PixDetailFragment)
+    private boolean pictureSavedToGallery = false;  //Flag to indicate whether the "Save Picture to Gallery" button was pressed
+    private boolean pictureDeleteSelected = false;  //Flag to indicate whether the "Delete Picture" button was pressed
 
 
 
@@ -121,52 +124,52 @@ public class PictureViewDialogFragment extends DialogFragment{
         //Set 'scaled' picture Bitmap onto ImageView
         mImageView.setImageBitmap(bitmapPictureCorrectOrientation);
 
+
+
+
+        //========================================= SET UP ALERT DIALOG ==================================================================
         //Set-up custom title to display in the dialog
         TextView dialogTitle = new TextView(getActivity()); //Create TextView object
-        dialogTitle.setText(R.string.pix_picture_text); //Set text on TextView
+        dialogTitle.setText(R.string.pix_picture_text); //Set curentDescriptionEditTextString on TextView
         dialogTitle.setTypeface(null, Typeface.BOLD);
-        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set text color
-        dialogTitle.setTextSize(25); //Set size of text
-        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set text background color
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set curentDescriptionEditTextString color
+        dialogTitle.setTextSize(25); //Set size of curentDescriptionEditTextString
+        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set curentDescriptionEditTextString background color
 
 
-
-
-
-
-
-
-
-
-
+        //Create AlertDialog object
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-
-        alertDialog.setView(view);
-
+        alertDialog.setView(view); //Set view for the AlertDialog to encapsulate
         alertDialog.setCustomTitle(dialogTitle); //Set TITLE of dialog
-
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(android.R.string.ok), //Set "ok" button
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getResources().getString(android.R.string.cancel), //Set "ok" button
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //Do nothing
                     }
                 }
         );
-
-
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getResources().getString(R.string.save_to_gallery), //Set neutral button ("Save to Gallery")
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Delete Picture", //Set neutral button ("Save to Gallery")
 
                 new DialogInterface.OnClickListener() {
-
                     //Set listener for neutral button ("Save to Gallery")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
+                        pictureDeleteSelected = true; //Trigger flag to indicate "Delete Picture" button has been pressed
+                        sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected); //Send results of the "Picture Saved to Gallery" flag and "Delete Picture" flag to the target activity (i.e. PixListFragment)
+                        pictureDeleteSelected = false; //Result the flag
+
+                    }
+                }
+        );
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getResources().getString(R.string.save_to_gallery), //Set neutral button ("Save to Gallery")
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
                         //Set string for filename
                         String fileName = mPixTitle + "_" + mPixDate;
 
-                        //Insert image to Gallery.
-                        // Also, return a URL String. If the image failed to be saved in Gallery, the URL would be null
+                        //Insert image to Gallery. Also, return a URL String - If the image failed to be saved in Gallery, the URL would be null
                         String savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation, fileName, "");
 
                         //If the image file failed to be saved in Gallery
@@ -176,10 +179,9 @@ public class PictureViewDialogFragment extends DialogFragment{
                         }
                         //If the image file is SUCCESSFULLY saved to Gallery
                         else {
-                            pictureSavedToGallery = true;
-                            sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected);
-//                          Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
-                            pictureSavedToGallery = false;
+                            pictureSavedToGallery = true; //Trigger flag to indicate if "Save to GallerY' button has been pressed
+                            sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected); //Send results of the "Picture Saved to Gallery" flag and "Delete Picture" flag to the target activity (i.e. PixListFragment)
+                            pictureSavedToGallery = false; //Resset the flag
                         }
 
                     }
@@ -187,93 +189,8 @@ public class PictureViewDialogFragment extends DialogFragment{
         );
 
 
-
-
-
-
-
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Delete Picture", //Set neutral button ("Save to Gallery")
-
-                new DialogInterface.OnClickListener() {
-
-                    //Set listener for neutral button ("Save to Gallery")
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        pictureDeleteSelected = true;
-
-                        sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected);
-
-                        pictureDeleteSelected = false;
-
-                    }
-                }
-        );
-
-
+        //Return the completed AlertDialog
         return alertDialog;
-
-
-
-
-
-
-
-
-
-
-
-//        //Return AlertDialog (subclass of Dialog), which sets the dialog properties
-//        return new AlertDialog.Builder(getActivity())
-//                .setView(view) //Set View of dialog
-//                .setCustomTitle(dialogTitle) //Set TITLE of dialog
-//                .setPositiveButton(android.R.string.ok, null) //Set "ok" button
-//                .setNeutralButton(R.string.save_to_gallery, //Set neutral button ("Save to Gallery")
-//                        //Set listener for neutral button ("Save to Gallery")
-//                        new DialogInterface.OnClickListener(){
-//
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//
-//                                //Set string for filename
-//                                String fileName = mPixTitle + "_" + mPixDate;
-//
-//                                //Insert image to Gallery.
-//                                // Also, return a URL String. If the image failed to be saved in Gallery, the URL would be null
-//                                 String savedImageUrl = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmapPictureCorrectOrientation, fileName, "");
-//
-//                                //If the image file failed to be saved in Gallery
-//                                if (savedImageUrl == null) {
-//                                    Toast.makeText(getActivity(), "Unable to save Picture to Gallery", Toast.LENGTH_LONG).show();
-//                                    Toast.makeText(getActivity(), "Please check Storage Permissions", Toast.LENGTH_LONG).show();
-//                                }
-//                                //If the image file is SUCCESSFULLY saved to Gallery
-//                                else {
-//                                    pictureSavedToGallery = true;
-//                                    sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected);
-////                                    Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
-//                                    pictureSavedToGallery = false;
-//                                }
-//                            }
-//                        })
-//
-//                .setNeutralButton("Delete Picture",
-//
-//                        new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//
-//                                pictureDeleteSelected = true;
-//
-//                                sendResult(Activity.RESULT_OK, pictureSavedToGallery, pictureDeleteSelected);
-//
-//                                pictureDeleteSelected = false;
-//
-//                            }
-//                        })
-//                .create();
-
-
     }
 
 

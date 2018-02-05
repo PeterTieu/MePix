@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -49,6 +51,9 @@ public class PixListFragment extends Fragment{
 
     //Declare Adapter instance variable
     private PixAdapter mPixAdapter;
+
+    //Declare ViewHolder instance variable
+    PixViewHolder mPixViewHolder;
 
     //Declare "no pixes view" layout
     private LinearLayout mNoPixView;
@@ -127,12 +132,12 @@ public class PixListFragment extends Fragment{
         //Reset options menu
         getActivity().invalidateOptionsMenu();
 
-        //Check if permission for location tracking has been granted (by user)
+        //If permission for location tracking has NOT been granted at runtime (by user)
         if (hasLocationPermission() == false){
             //Request (user) for location permissions - as they are 'dangerous' permissions (and therefore must be requested)
             requestPermissions(LOCATION_PERMISSIONS, REQUEST_CODE_FOR_LOCATION_PERMISSIONS);
         }
-
+        //If permission for location tracking HAS been granted at runtime (by user)
         if (hasWriteExternalStoragePermission() == false){
             //Request (user) for storage permissions - as they are 'dangerous' permissions (and therefore must be requested)
             requestPermissions(STORAGE_PERMISSIONS, REQUEST_CODE_FOR_STORAGE_PERMISSIONS);
@@ -143,7 +148,7 @@ public class PixListFragment extends Fragment{
 
 
 
-    //Check if location permission requested in the Manifest has been granted
+    //Check if LOCATION permissions have been granted at runtime (by user)
     private boolean hasLocationPermission(){
 
         //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
@@ -159,6 +164,8 @@ public class PixListFragment extends Fragment{
 
 
 
+
+    //Check if STORAGE permissions have been granted at runtime (by user)
     private boolean hasWriteExternalStoragePermission(){
 
         //If permission is granted, result = PackageManager.PERMISSION_GRANTED (else, PackageManager.PERMISSION_DENIED).
@@ -374,8 +381,6 @@ public class PixListFragment extends Fragment{
 
 
 
-    PixViewHolder mPixViewHolder;
-
     //Define the Adapter class
     private class PixAdapter extends RecyclerView.Adapter<PixViewHolder>{
 
@@ -442,11 +447,7 @@ public class PixListFragment extends Fragment{
 
 
 
-//    //Declare the Pix instance variable
-//    private Pix mPix;
 
-//    //Declare ImageView for "Picture" of Pix
-//    private ImageView mPictureView;
 
     //Define the ViewHolder class
     private class PixViewHolder extends RecyclerView.ViewHolder{
@@ -597,7 +598,7 @@ public class PixListFragment extends Fragment{
 
             //If the title of the Pix does NOT exist or only has spaces
             if (mPix.getTitle() == null || mPix.getTitle().isEmpty() || mPix.getTitle().trim().length()==0){
-                //Set text of the list item's title
+                //Set curentDescriptionEditTextString of the list item's title
                 mPixTitle.setText("* Untitled *");
 
                 //Set colour of the list item's title
@@ -608,7 +609,7 @@ public class PixListFragment extends Fragment{
             }
             //If the title of the Pix DOES exist
             else{
-                //Set text of the list item's title to title of the Pix
+                //Set curentDescriptionEditTextString of the list item's title to title of the Pix
                 mPixTitle.setText(mPix.getTitle());
 
                 //Set color of the list item's title
@@ -625,7 +626,7 @@ public class PixListFragment extends Fragment{
 
             //If the description of the Pix does NOT exist or only has spaces
             if (mPix.getDescription() == null || mPix.getDescription().isEmpty() || mPix.getDescription().trim().length()==0){
-                //Set text of the list item's description
+                //Set curentDescriptionEditTextString of the list item's description
                 mPixDescription.setText("* No description *");
 
                 //Set type-face of the list item's description
@@ -636,7 +637,7 @@ public class PixListFragment extends Fragment{
             }
             //If the description of the Pix DOES exist
             else{
-                //Set text of the list item's description
+                //Set curentDescriptionEditTextString of the list item's description
                 mPixDescription.setText(mPix.getDescription());
 
                 //If the view is in one-pane mode
@@ -644,6 +645,11 @@ public class PixListFragment extends Fragment{
                     //Set to the max-width of the description to a lower amount, since there would be less space for it to fit into the view
                     // in two-pane view, as opposed to one-pane view
                     mPixDescription.setMaxWidth(440);
+                }
+
+                if (mPixTagged == null || mPixTagged.toString().isEmpty()){
+                    mPixDescription.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                    mPixDescription.setMaxLines(2);
                 }
             }
 
@@ -653,7 +659,7 @@ public class PixListFragment extends Fragment{
             mPixDate.setText(mPixDateFormat.format("EEE d MMM yy", mPix.getDate()));
 
             //If the Pix's address does NOT exist
-            if (mPix.getAddress() == null){
+            if (mPix.getAddress() == null || mPixAddress.toString().isEmpty()){
                 //Display nothing on location field
                 mPixAddress.setText("");
             }
@@ -667,7 +673,7 @@ public class PixListFragment extends Fragment{
 
             //If the Pix's tag field does NOT exist
             if(mPix.getTag() == null || mPix.getTag().isEmpty()){
-                //Set text for the Pix's tag field
+                //Set curentDescriptionEditTextString for the Pix's tag field
                 mPixTagged.setText("");
             }
             //If the Pix's tag field DOES exist
@@ -720,9 +726,9 @@ public class PixListFragment extends Fragment{
 
             //If layout is in two-pane (i.e. sw > 600dp)
             if (getActivity().findViewById(R.id.detail_fragment_container) != null){
-                //Remove text display of address
+                //Remove curentDescriptionEditTextString display of address
                 mPixAddress.setText("");
-                //Remove text display of tagged contacts
+                //Remove curentDescriptionEditTextString display of tagged contacts
                 mPixTagged.setText("");
             }
 
@@ -905,39 +911,39 @@ public class PixListFragment extends Fragment{
 
         //If resultCode matches 'PictureViewDialogFragment's "Save Picture to Gallery" button's
         if (requestCode == REQUEST_CODE_PICTURE_VIEW_DIALOG_FRAGMENT){
-            //Get boolean object to indicate whether Picture has been saved to Gallery
+            //Get boolean object to indicate whether the "Save to Gallery" button has been pressed
             boolean pictureSavedToGallery = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_SAVED_TO_GALLERY, false);
+
+            //Get boolean object to indicate whether the "Delete Picture" button has been pressed
             boolean pictureDeleteSelected = intent.getBooleanExtra(PictureViewDialogFragment.EXTRA_PIX_PICTURE_DELETE_SELECTED, false);
 
-            //If Picture has been saved to Gallery
+            //Result returned from pressing the "Save Picture to Gallery" button (i.e. result returned indicating whether the picture has been saved to the gallery)
             if (pictureSavedToGallery) {
                 //Display toast for successful save
                 Toast.makeText(getActivity(), "Picture saved to Gallery", Toast.LENGTH_LONG).show();
             }
 
-
-
-
+            //Result returned from pressing the "Delete Pix" button
             if (pictureDeleteSelected){
-                Toast.makeText(getActivity(), "Picture Deleted", Toast.LENGTH_LONG).show();
 
-
+                //Delete the picture File from the FileProvider
                 mPictureFile.delete();
 
-
+                //Set the mPictureView View (back) to the 'default' picture
                 mPixViewHolder.mPictureView.setImageDrawable(getResources().getDrawable(R.drawable.pix_default_picture));
 
+
+                //Display Toast to notify that the picture has been deleted
+                Toast.makeText(getActivity(), "Picture Deleted", Toast.LENGTH_LONG).show();
+
+                //Update the Pix - but this to simultateously update the DETAIL view (if sw>600dp, i.e. we are in two-pane layout/mode) using the callback method inside updatePix() (onPixUpdatedFromListView(Pix))
                 mPixViewHolder.updatePix();
-
-//                mCallbacks.onPixUpdatedFromListView(mPixViewHolder.mPix);
-
             }
-
-
 
         }
 
     }
+
 
 
 

@@ -78,12 +78,12 @@ public class PixDeleteConfirmationDialogFragment extends DialogFragment{
 
         //Set-up custom title to display in the dialog
         TextView dialogTitle = new TextView(getActivity()); //Create TextView object
-        dialogTitle.setText("\nDelete this Pix\n"); //Set text on TextView
-        dialogTitle.setTextSize(22); //Set size of text
-        dialogTitle.setGravity(Gravity.CENTER); //Set  position of text in the title box of the dialog
-        dialogTitle.setTypeface(null, Typeface.BOLD); //Set the text to be bold
-        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set text color
-        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set text background color
+        dialogTitle.setText("\nDelete this Pix\n"); //Set curentDescriptionEditTextString on TextView
+        dialogTitle.setTextSize(22); //Set size of curentDescriptionEditTextString
+        dialogTitle.setGravity(Gravity.CENTER); //Set  position of curentDescriptionEditTextString in the title box of the dialog
+        dialogTitle.setTypeface(null, Typeface.BOLD); //Set the curentDescriptionEditTextString to be bold
+        dialogTitle.setTextColor(getResources().getColor(R.color.colorButton)); //Set curentDescriptionEditTextString color
+        dialogTitle.setBackgroundColor(getResources().getColor(R.color.yellow)); //Set curentDescriptionEditTextString background color
 
 
         //If Pix title does NOT exist, is empty, or contains only spaces

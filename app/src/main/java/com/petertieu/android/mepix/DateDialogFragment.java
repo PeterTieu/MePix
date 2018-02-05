@@ -21,7 +21,7 @@ import java.util.GregorianCalendar;
 
 
 //DialogFragment for DatePicker dialog
-public class DatePickerFragment extends DialogFragment {
+public class DateDialogFragment extends DialogFragment {
 
     //Declare 'key'
     private static final String ARG_PIX_DATE = "pixDate";
@@ -35,7 +35,7 @@ public class DatePickerFragment extends DialogFragment {
 
 
     //Build encapsulating 'constructor'
-    public static DatePickerFragment newInstance(Date pixDate){
+    public static DateDialogFragment newInstance(Date pixDate){
 
         //Create Bundle object (i.e. argument-bundle)
         Bundle argumentBundle = new Bundle();
@@ -43,14 +43,14 @@ public class DatePickerFragment extends DialogFragment {
         //Set key-value pairs for argument-bundle
         argumentBundle.putSerializable(ARG_PIX_DATE, pixDate);
 
-        //Create DatePickerFragment
-        DatePickerFragment datePickerFragment = new DatePickerFragment();
+        //Create DateDialogFragment
+        DateDialogFragment dateDialogFragment = new DateDialogFragment();
 
         //Set argument-bundle for the PixDetailFragment
-        datePickerFragment.setArguments(argumentBundle);
+        dateDialogFragment.setArguments(argumentBundle);
 
-        //Return DatePickerFragment object
-        return datePickerFragment;
+        //Return DateDialogFragment object
+        return dateDialogFragment;
     }
 
 
@@ -96,14 +96,14 @@ public class DatePickerFragment extends DialogFragment {
                 .Builder(getActivity()) //Create Builder
                 .setView(view) //Set View of dialog
                 .setCustomTitle(dialogTitle) //Set TITLE of dialog
-                .setNegativeButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
-                .setNeutralButton("Today", new DialogInterface.OnClickListener() { //Set NEUTRAL BUTTON of the dialog, and a listener to set Date to CURRENT date
+                .setNeutralButton(android.R.string.cancel, null) //Set NEGATIVE BUTTON of the dialog. null: no listener for the cancel button
+                .setNegativeButton(R.string.set_date_to_today, new DialogInterface.OnClickListener() { //Set NEUTRAL BUTTON of the dialog, and a listener to set Date to CURRENT date
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         sendResult(Activity.RESULT_OK, new Date());
                     }
                 })
-                .setPositiveButton(android.R.string.ok, //Set POSITIVE BUTTON of the dialog, and a listener for it
+                .setPositiveButton(R.string.set_date_to_selected, //Set POSITIVE BUTTON of the dialog, and a listener for it
                         new DialogInterface.OnClickListener() {
 
                             //Override listener of DialogInterface.OnClickListener.OnClickListener interface

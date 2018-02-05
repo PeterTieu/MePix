@@ -66,13 +66,19 @@
     <string name="pix_picture_description">There is a picture for this Pix</string>
 
 
-    ImageViewDialogFragmentment dialog-->
+    <!--PictureViewDialogFragmentment dialog-->
     <string name="save_to_gallery">Save to Gallery</string>
     <string name="clear_picture">Clear Picture</string>
+
+
+    DateDialogFragmentment-->
+    <string name="set_date_to_today">Set Today</string>
+    <string name="set_date_to_selected">Set Selected</string>
 
 
     <!--MapsActivity-->
     <string name="pix_location">Pix Location:</string>
     <string name="title_activity_maps">Map</string>
+
 
 </resources>
